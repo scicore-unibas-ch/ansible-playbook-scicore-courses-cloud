@@ -2,11 +2,9 @@
 
 - name: Create security groups and ssh key
   hosts: localhost
-  gather_facts: true
-  become: false
-
 
   tasks:
+
 
     - name: Create a ssh keypair for the slurm cluster
       openssh_keypair:
@@ -134,3 +132,60 @@
 
     - debug:
         msg: "To connecto to login node try: ssh -F {{ slurm_cluster_ssh_cfg_path }} slurm_login"
+
+    - name: Add login machine to ansible inventory
+      add_host:
+        name: slurm_login
+        groups:
+          - slurm_cluster
+          - slurm_login
+        ansible_host: "{{ _slurm_login_floating_ip }}"
+        ansible_user: "{{ slurm_cluster_ssh_remote_user }}"
+        ansible_ssh_private_key_file: "{{ slurm_cluster_ssh_key_path }}"
+        ansible_ssh_extra_args: "-F {{ slurm_cluster_ssh_cfg_path }}"
+
+    - name: Waiting for the machines to be online
+      delegate_to: slurm_login
+      wait_for_connection:
+
+    # - name: Query information about all the cluster machines (those using the cluster ssh key)
+    #   os_server_info:
+    #     filters:
+    #       key_name: "{{ slurm_cluster_ssh_key_name }}"
+    #   environment:
+    #     OS_PROJECT_DOMAIN_ID: "{{ lookup('env','OS_PROJECT_DOMAIN_ID') }}"
+    #     OS_PROJECT_ID: "{{ lookup('env','OS_PROJECT_ID') }}"
+    #     OS_REGION_NAME: "{{ lookup('env','OS_REGION_NAME') }}"
+    #     OS_USER_DOMAIN_NAME: "{{ lookup('env','OS_USER_DOMAIN_NAME') }}"
+    #     OS_PROJECT_NAME: "{{ lookup('env','OS_PROJECT_NAME') }}"
+    #     OS_IDENTITY_API_VERSION: "{{ lookup('env','OS_IDENTITY_API_VERSION') }}"
+    #     OS_PASSWORD: "{{ lookup('env','OS_PASSWORD') }}"
+    #     OS_AUTH_URL: "{{ lookup('env','OS_AUTH_URL') }}"
+    #     OS_USERNAME: "{{ lookup('env','OS_USERNAME') }}"
+    #     OS_INTERFACE: "{{ lookup('env','OS_INTERFACE') }}"
+    #   register: _os_server_info
+
+    # - name: DEBUG | Print details about all the cluster machines
+    #   debug:
+    #     var: _os_server_info
+    #   when: slurm_cluster_debug | bool
+
+    # - name: Create the ansible inventory
+    #   template:
+    #     dest: inventory/hosts
+    #     src: ansible_inventory.j2
+
+- name: Create the ansible inventory
+  hosts: all
+  become: yes
+  gather_facts: yes
+  remote_user: "{{ slurm_cluster_ssh_remote_user }}"
+
+  tasks:
+
+    - name: Create the ansible inventory
+      delegate_to: localhost
+      become: no
+      template:
+        dest: inventory/hosts
+        src: ansible_inventory.j2
