@@ -2,7 +2,7 @@
 
 - name: Create security groups and ssh key
   hosts: localhost
-  gather_facts: false
+  gather_facts: true
   become: false
 
 

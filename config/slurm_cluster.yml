@@ -3,12 +3,12 @@
 # set slurm_cluster_debug=True to print more verbose info during the playbook execution
 slurm_cluster_debug: False
 
-slurm_cluster_os_project: "{{ lookup('env', 'OS_PROJECT_NAME') }}"
+slurm_cluster_os_project: "{{ ansible_env.OS_PROJECT_NAME }}"
 
 slurm_cluster_ssh_remote_user: "centos"
-slurm_cluster_ssh_key_path: "{{ lookup('env', 'HOME') }}/.ssh/{{ slurm_cluster_os_project }}_slurm_cluster_id_rsa"
+slurm_cluster_ssh_key_path: "{{ ansible_env.HOME }}/.ssh/{{ slurm_cluster_os_project }}_slurm_cluster_id_rsa"
 slurm_cluster_ssh_key_name: "{{ slurm_cluster_os_project }}_slurm_cluster"
-slurm_cluster_ssh_cfg_path: "{{ lookup('env', 'HOME') }}/.ssh/{{ slurm_cluster_os_project }}_slurm_cluster.cfg"
+slurm_cluster_ssh_cfg_path: "{{ ansible_env.HOME }}/.ssh/{{ slurm_cluster_os_project }}_slurm_cluster.cfg"
 
 slurm_cluster_security_group_default: "slurm_cluster_default"
 slurm_cluster_security_group_login: "slurm_cluster_login"
