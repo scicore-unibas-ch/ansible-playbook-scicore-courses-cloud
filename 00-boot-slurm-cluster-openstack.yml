@@ -5,7 +5,6 @@
 
   tasks:
 
-
     - name: Create a ssh keypair for the slurm cluster
       openssh_keypair:
         path: "{{ slurm_cluster_ssh_key_path }}"

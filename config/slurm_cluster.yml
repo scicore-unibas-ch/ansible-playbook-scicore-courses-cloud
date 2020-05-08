@@ -1,11 +1,16 @@
 ---
 
-# set slurm_cluster_debug=True to print more verbose info during the playbook execution
-slurm_cluster_debug: False
+## YOU PROBABLY WANT TO UPDATE THESE VARS
+slurm_cluster_default_image: "CentOS7.8"
+slurm_cluster_ssh_remote_user: "centos"
+slurm_cluster_default_flavor: "m1.small"
+slurm_cluster_floating_ips_pool: "public_vlan"
+slurm_cluster_num_workers: 2
+## YOU PROBABLY WANT TO UPDATE THESE VARS
 
+## UPDATE VARS BELOW ACCORDING TO YOUR PREFERENCE BUT IT'S NOT MANDATORY FOR INITIAL TESTING ##
 slurm_cluster_os_project: "{{ ansible_env.OS_PROJECT_NAME }}"
 
-slurm_cluster_ssh_remote_user: "centos"
 slurm_cluster_ssh_key_path: "{{ ansible_env.HOME }}/.ssh/{{ slurm_cluster_os_project }}_slurm_cluster_id_rsa"
 slurm_cluster_ssh_key_name: "{{ slurm_cluster_os_project }}_slurm_cluster"  # name used to register the ssh key in openstack
 slurm_cluster_ssh_cfg_path: "{{ ansible_env.HOME }}/.ssh/{{ slurm_cluster_os_project }}_slurm_cluster.cfg"
@@ -18,15 +23,11 @@ slurm_cluster_open_ports_in_login_node:
   - 80
   - 443
 
-slurm_cluster_default_image: "CentOS7.8"
 slurm_cluster_login_image: "{{ slurm_cluster_default_image }}"
-
-slurm_cluster_default_flavor: "m1.small"
 slurm_cluster_login_flavor: "{{ slurm_cluster_default_flavor }}"
 
-slurm_cluster_floating_ips_pool: "public_vlan"
-
-
-slurm_cluster_num_workers: 2
 slurm_cluster_compute_image: "{{ slurm_cluster_default_image }}"
 slurm_cluster_compute_flavor: "{{ slurm_cluster_default_flavor }}"
+
+# set slurm_cluster_debug=True to print more verbose info during the playbook execution
+slurm_cluster_debug: False
