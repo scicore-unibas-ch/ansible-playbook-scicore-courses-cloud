@@ -344,7 +344,7 @@
           os_server_volume:
             server: "slurm_nfs_server"
             volume: "slurm_cluster_nfs_data"
-            device: /dev/vdb
+            device: "{{ slurm_cluster_nfs_server_disk_device }}"
           when: slurm_cluster_nfs_server_dedicated_machine
 
 
