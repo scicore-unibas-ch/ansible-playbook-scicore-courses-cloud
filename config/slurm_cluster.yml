@@ -36,6 +36,10 @@ slurm_cluster_nfs_server_dedicated_machine: false
 slurm_cluster_nfs_server_image: "{{ slurm_cluster_default_image }}"
 slurm_cluster_nfs_server_flavor: "{{ slurm_cluster_default_flavor }}"
 
+# based on this we will create a volume, attach it to nfs server and export it
+# size is in GB
+slurm_cluster_nfs_server_disk_size: 50
+
 # Set this to true to boot a dedicated machine for slurm master
 # The default is that slurm master is hosted in the login node
 slurm_cluster_slurm_master_dedicated_machine: false

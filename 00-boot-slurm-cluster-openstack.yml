@@ -146,8 +146,8 @@
             ansible_ssh_extra_args: "-F {{ slurm_cluster_ssh_cfg_path }}"
           changed_when: false
           when:
-            -  not slurm_cluster_nfs_server_dedicated_machine
-            -  not slurm_cluster_slurm_master_dedicated_machine
+            - not slurm_cluster_nfs_server_dedicated_machine
+            - not slurm_cluster_slurm_master_dedicated_machine
 
         - name: Add login machine to in-memory ansible inventory. NFS runs in login node. Slurm master not
           add_host:
@@ -162,8 +162,8 @@
             ansible_ssh_extra_args: "-F {{ slurm_cluster_ssh_cfg_path }}"
           changed_when: false
           when:
-            -  not slurm_cluster_nfs_server_dedicated_machine
-            -  slurm_cluster_slurm_master_dedicated_machine
+            - not slurm_cluster_nfs_server_dedicated_machine
+            - slurm_cluster_slurm_master_dedicated_machine
 
         - name: Add login machine to in-memory ansible inventory. Slurm master runs in login. NFS not
           add_host:
@@ -178,8 +178,8 @@
             ansible_ssh_extra_args: "-F {{ slurm_cluster_ssh_cfg_path }}"
           changed_when: false
           when:
-            -  slurm_cluster_nfs_server_dedicated_machine
-            -  not slurm_cluster_slurm_master_dedicated_machine
+            - slurm_cluster_nfs_server_dedicated_machine
+            - not slurm_cluster_slurm_master_dedicated_machine
 
         - name: Add login machine to in-memory ansible inventory. Neither NFS or slurm master run in login
           add_host:
@@ -193,8 +193,8 @@
             ansible_ssh_extra_args: "-F {{ slurm_cluster_ssh_cfg_path }}"
           changed_when: false
           when:
-            -  slurm_cluster_nfs_server_dedicated_machine
-            -  slurm_cluster_slurm_master_dedicated_machine
+            - slurm_cluster_nfs_server_dedicated_machine
+            - slurm_cluster_slurm_master_dedicated_machine
 
     - name: Waiting for the login machine to be online
       delegate_to: slurm_login
@@ -323,6 +323,29 @@
           wait_for_connection:
 
       when: slurm_cluster_slurm_master_dedicated_machine | bool
+
+    - name: Create a cinder volume to export by nfs
+      os_volume:
+        display_name: "slurm_cluster_nfs_data"
+        size: "{{ slurm_cluster_nfs_server_disk_size }}"
+        state: present
+
+    - name: Attach NFS data volume to NFS server
+      block:
+
+        - name: Attach NFS volume to login (if NFS server runs in login)
+          os_server_volume:
+            server: "slurm_login"
+            volume: "slurm_cluster_nfs_data"
+            device: /dev/vdb
+          when: not slurm_cluster_nfs_server_dedicated_machine
+
+        - name: Attach NFS volume to dedicated NFS server
+          os_server_volume:
+            server: "slurm_nfs_server"
+            volume: "slurm_cluster_nfs_data"
+            device: /dev/vdb
+          when: slurm_cluster_nfs_server_dedicated_machine
 
 
     # Left here as reference
