@@ -189,6 +189,15 @@
       wait_for_connection:
       loop: "{{ _slurm_compute_nodes_info.results }}"
 
+
+    # Left here as reference
+    #
+    # An alternative to build the static inventory is to use ansible module "os_server_info"
+    # but this would require a specific template adapted to the output of "os_server_info"
+    #
+    # With the current approach template "ansible_inventory.j2" uses "hostvars" which should be
+    # easier to port to a different cloud in case we need it in the future
+    #
     # - name: Query information about all the cluster machines (those using the cluster ssh key)
     #   os_server_info:
     #     filters:
