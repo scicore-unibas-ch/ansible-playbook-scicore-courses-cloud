@@ -49,6 +49,12 @@
         name: "{{ slurm_cluster_security_group_default }}"
         description: "Security group for the slurm cluster allowing any internal traffic"
 
+    - name: Add default fw rules to allow any outgoing traffic in the slurm cluster
+      os_security_group_rule:
+        security_group: "{{ slurm_cluster_security_group_default }}"
+        direction: egress
+        remote_ip_prefix: 0.0.0.0/0
+
     - name: Add default fw rules to allow any internal traffic in the slurm cluster
       os_security_group_rule:
         security_group: "{{ slurm_cluster_security_group_default }}"
@@ -78,7 +84,6 @@
         flavor: "{{ slurm_cluster_login_flavor }}"
         network: "{{ _os_project_network_id }}"
         security_groups:
-          - "default"
           - "{{ slurm_cluster_security_group_default }}"
           - "{{ slurm_cluster_security_group_login }}"
         floating_ip_pools: "{{ slurm_cluster_floating_ips_pool | default('public') }}"
@@ -156,7 +161,6 @@
         key_name: "{{ slurm_cluster_ssh_key_name }}"
         flavor: "{{ slurm_cluster_compute_flavor }}"
         security_groups:
-          - "default"
           - "{{ slurm_cluster_security_group_default }}"
         network: "{{ _os_project_network_id }}"
         wait: no
