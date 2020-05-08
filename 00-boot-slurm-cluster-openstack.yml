@@ -144,9 +144,50 @@
         ansible_ssh_private_key_file: "{{ slurm_cluster_ssh_key_path }}"
         ansible_ssh_extra_args: "-F {{ slurm_cluster_ssh_cfg_path }}"
 
-    - name: Waiting for the machines to be online
+    - name: Waiting for the login machine to be online
       delegate_to: slurm_login
       wait_for_connection:
+
+    - name: Launch the slurm compute nodes
+      os_server:
+        name: "slurm_compute_{{ item }}"
+        image: "{{ slurm_cluster_compute_image }}"
+        key_name: "{{ slurm_cluster_ssh_key_name }}"
+        flavor: "{{ slurm_cluster_compute_flavor }}"
+        security_groups:
+          - "{{ slurm_cluster_security_group_default }}"
+        network: "{{ _os_project_network_id }}"
+        wait: no
+        meta:
+          hostname: "slurm_compute_{{ item }}"
+          role: "slurm_compute"
+      with_sequence: count={{ slurm_cluster_num_workers }} format=%02u
+      register: _slurm_compute_nodes_info
+
+    - name: DEBUG | Print compute nodes info
+      debug:
+        var: _slurm_compute_nodes_info
+      when: slurm_cluster_debug | bool
+
+    - debug:
+        var: _slurm_compute_nodes_info.results[0].openstack.name
+
+    - name: Add compute nodes to in-memory ansible inventory
+      add_host:
+        name: "{{ item.openstack.name }}"
+        groups:
+          - slurm_cluster
+          - slurm_compute
+        ansible_host: "{{ item.openstack.accessIPv4 }}"
+        ansible_user: "{{ slurm_cluster_ssh_remote_user }}"
+        ansible_ssh_private_key_file: "{{ slurm_cluster_ssh_key_path }}"
+        ansible_ssh_extra_args: "-F {{ slurm_cluster_ssh_cfg_path }}"
+      loop: "{{ _slurm_compute_nodes_info.results }}"
+
+    - name: Waiting for the slurm compute nodes to be online
+      delegate_to: "{{ item.openstack.name }}"
+      wait_for_connection:
+      loop: "{{ _slurm_compute_nodes_info.results }}"
 
     # - name: Query information about all the cluster machines (those using the cluster ssh key)
     #   os_server_info:

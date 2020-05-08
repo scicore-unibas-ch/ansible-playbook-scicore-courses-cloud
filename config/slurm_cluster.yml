@@ -25,3 +25,8 @@ slurm_cluster_default_flavor: "m1.small"
 slurm_cluster_login_flavor: "{{ slurm_cluster_default_flavor }}"
 
 slurm_cluster_floating_ips_pool: "public_vlan"
+
+
+slurm_cluster_num_workers: 2
+slurm_cluster_compute_image: "{{ slurm_cluster_default_image }}"
+slurm_cluster_compute_flavor: "{{ slurm_cluster_default_flavor }}"
