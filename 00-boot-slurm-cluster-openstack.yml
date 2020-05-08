@@ -128,29 +128,80 @@
             src: ssh_config.j2
             dest: "{{ slurm_cluster_ssh_cfg_path }}"
 
-    - name: Waiting for port 22 to be accessible in the login node
-      wait_for:
-        host: "{{ _slurm_login_floating_ip }}"
-        port: 22
 
-    - debug:
-        msg: "To connecto to login node try: ssh -F {{ slurm_cluster_ssh_cfg_path }} slurm_login"
+    - name: Add login machine to in-memory ansible inventory. Choose the right groups depending on the services hosted in the login node
+      block:
 
-    - name: Add login machine to in-memory ansible inventory
-      add_host:
-        name: slurm_login
-        groups:
-          - slurm_cluster_all
-          - slurm_login_group
-        ansible_host: "{{ _slurm_login_floating_ip }}"
-        ansible_user: "{{ slurm_cluster_ssh_remote_user }}"
-        ansible_ssh_private_key_file: "{{ slurm_cluster_ssh_key_path }}"
-        ansible_ssh_extra_args: "-F {{ slurm_cluster_ssh_cfg_path }}"
-      changed_when: false
+        - name: Add login machine to in-memory ansible inventory. NFS and slurm master run in login node
+          add_host:
+            name: slurm_login
+            groups:
+              - slurm_cluster_all
+              - slurm_login_group
+              - slurm_nfs_server_group
+              - slurm_master_group
+            ansible_host: "{{ _slurm_login_floating_ip }}"
+            ansible_user: "{{ slurm_cluster_ssh_remote_user }}"
+            ansible_ssh_private_key_file: "{{ slurm_cluster_ssh_key_path }}"
+            ansible_ssh_extra_args: "-F {{ slurm_cluster_ssh_cfg_path }}"
+          changed_when: false
+          when:
+            -  not slurm_cluster_nfs_server_dedicated_machine
+            -  not slurm_cluster_slurm_master_dedicated_machine
+
+        - name: Add login machine to in-memory ansible inventory. NFS runs in login node. Slurm master not
+          add_host:
+            name: slurm_login
+            groups:
+              - slurm_cluster_all
+              - slurm_login_group
+              - slurm_nfs_server_group
+            ansible_host: "{{ _slurm_login_floating_ip }}"
+            ansible_user: "{{ slurm_cluster_ssh_remote_user }}"
+            ansible_ssh_private_key_file: "{{ slurm_cluster_ssh_key_path }}"
+            ansible_ssh_extra_args: "-F {{ slurm_cluster_ssh_cfg_path }}"
+          changed_when: false
+          when:
+            -  not slurm_cluster_nfs_server_dedicated_machine
+            -  slurm_cluster_slurm_master_dedicated_machine
+
+        - name: Add login machine to in-memory ansible inventory. Slurm master runs in login. NFS not
+          add_host:
+            name: slurm_login
+            groups:
+              - slurm_cluster_all
+              - slurm_login_group
+              - slurm_master_group
+            ansible_host: "{{ _slurm_login_floating_ip }}"
+            ansible_user: "{{ slurm_cluster_ssh_remote_user }}"
+            ansible_ssh_private_key_file: "{{ slurm_cluster_ssh_key_path }}"
+            ansible_ssh_extra_args: "-F {{ slurm_cluster_ssh_cfg_path }}"
+          changed_when: false
+          when:
+            -  slurm_cluster_nfs_server_dedicated_machine
+            -  not slurm_cluster_slurm_master_dedicated_machine
+
+        - name: Add login machine to in-memory ansible inventory. Neither NFS or slurm master run in login
+          add_host:
+            name: slurm_login
+            groups:
+              - slurm_cluster_all
+              - slurm_login_group
+            ansible_host: "{{ _slurm_login_floating_ip }}"
+            ansible_user: "{{ slurm_cluster_ssh_remote_user }}"
+            ansible_ssh_private_key_file: "{{ slurm_cluster_ssh_key_path }}"
+            ansible_ssh_extra_args: "-F {{ slurm_cluster_ssh_cfg_path }}"
+          changed_when: false
+          when:
+            -  slurm_cluster_nfs_server_dedicated_machine
+            -  slurm_cluster_slurm_master_dedicated_machine
 
     - name: Waiting for the login machine to be online
       delegate_to: slurm_login
       wait_for_connection:
+
+    - debug:
+        msg: "To connecto to login node try: ssh -F {{ slurm_cluster_ssh_cfg_path }} slurm_login"
 
     - name: Launch the slurm compute nodes
       os_server:
@@ -190,6 +241,88 @@
       delegate_to: "{{ item.openstack.name }}"
       wait_for_connection:
       loop: "{{ _slurm_compute_nodes_info.results }}"
+
+    - name: Launch dedicated machine for NFS server if slurm_cluster_nfs_server_dedicated_machine=true
+      block:
+
+        - name: Launch the NFS server machine
+          os_server:
+            name: "slurm_nfs_server"
+            image: "{{ slurm_cluster_nfs_server_image }}"
+            key_name: "{{ slurm_cluster_ssh_key_name }}"
+            flavor: "{{ slurm_cluster_nfs_server_flavor }}"
+            security_groups:
+              - "{{ slurm_cluster_security_group_default }}"
+            network: "{{ _os_project_network_id }}"
+            wait: no
+            meta:
+              hostname: "slurm_nfs_server"
+              role: "slurm_nfs_server"
+          register: _slurm_nfs_server_info
+
+        - name: DEBUG | Print nfs server info
+          debug:
+            var: _slurm_nfs_server_info
+          when: slurm_cluster_debug | bool
+
+        - name: Add slurm_nfs_server to in-memory ansible inventory
+          add_host:
+            name: "{{ _slurm_nfs_server_info.openstack.name }}"
+            groups:
+              - slurm_cluster_all
+              - slurm_nfs_server_group
+            ansible_host: "{{ _slurm_nfs_server_info.openstack.accessIPv4 }}"
+            ansible_user: "{{ slurm_cluster_ssh_remote_user }}"
+            ansible_ssh_private_key_file: "{{ slurm_cluster_ssh_key_path }}"
+            ansible_ssh_extra_args: "-F {{ slurm_cluster_ssh_cfg_path }}"
+          changed_when: false
+
+        - name: Waiting for the slurm nfs server to be online
+          delegate_to: "{{ _slurm_nfs_server_info.openstack.name }}"
+          wait_for_connection:
+
+      when: slurm_cluster_nfs_server_dedicated_machine | bool
+
+    - name: Launch dedicated machine for slurm master if slurm_cluster_slurm_master_dedicated_machine=True
+      block:
+
+        - name: Launch the slurm master machine
+          os_server:
+            name: "slurm_master"
+            image: "{{ slurm_cluster_slurm_master_image }}"
+            key_name: "{{ slurm_cluster_ssh_key_name }}"
+            flavor: "{{ slurm_cluster_slurm_master_flavor }}"
+            security_groups:
+              - "{{ slurm_cluster_security_group_default }}"
+            network: "{{ _os_project_network_id }}"
+            wait: no
+            meta:
+              hostname: "slurm_master"
+              role: "slurm_master"
+          register: _slurm_master_info
+
+        - name: DEBUG | Print slurm master server info
+          debug:
+            var: _slurm_master_info
+          when: slurm_cluster_debug | bool
+
+        - name: Add slurm master to in-memory ansible inventory
+          add_host:
+            name: "{{ _slurm_master_info.openstack.name }}"
+            groups:
+              - slurm_cluster_all
+              - slurm_master_group
+            ansible_host: "{{ _slurm_master_info.openstack.accessIPv4 }}"
+            ansible_user: "{{ slurm_cluster_ssh_remote_user }}"
+            ansible_ssh_private_key_file: "{{ slurm_cluster_ssh_key_path }}"
+            ansible_ssh_extra_args: "-F {{ slurm_cluster_ssh_cfg_path }}"
+          changed_when: false
+
+        - name: Waiting for the slurm master to be online
+          delegate_to: "{{ _slurm_master_info.openstack.name }}"
+          wait_for_connection:
+
+      when: slurm_cluster_slurm_master_dedicated_machine | bool
 
 
     # Left here as reference

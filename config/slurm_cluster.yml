@@ -30,6 +30,18 @@ slurm_cluster_compute_image: "{{ slurm_cluster_default_image }}"
 slurm_cluster_compute_flavor: "{{ slurm_cluster_default_flavor }}"
 slurm_cluster_num_workers: 2
 
+# Set this to true to boot a dedicated machine for NFS server
+# The default is that NFS server is hosted in the login node
+slurm_cluster_nfs_server_dedicated_machine: false
+slurm_cluster_nfs_server_image: "{{ slurm_cluster_default_image }}"
+slurm_cluster_nfs_server_flavor: "{{ slurm_cluster_default_flavor }}"
+
+# Set this to true to boot a dedicated machine for slurm master
+# The default is that slurm master is hosted in the login node
+slurm_cluster_slurm_master_dedicated_machine: false
+slurm_cluster_slurm_master_image: "{{ slurm_cluster_default_image }}"
+slurm_cluster_slurm_master_flavor: "{{ slurm_cluster_default_flavor }}"
+
 slurm_cluster_ohpc_repos_url: "https://github.com/openhpc/ohpc/releases/download/v1.3.GA/ohpc-release-1.3-1.el7.x86_64.rpm"
 
 # set slurm_cluster_debug=True to print more verbose info during the playbook execution

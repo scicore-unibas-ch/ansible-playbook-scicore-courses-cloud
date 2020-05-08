@@ -15,6 +15,16 @@ localhost ansible_connection=local ansible_python_interpreter="/usr/bin/env pyth
 {{ host }} ansible_host={{ hostvars[host]['ansible_default_ipv4']['address'] }} ansible_ssh_extra_args='{{ hostvars[host]['ansible_ssh_extra_args'] }}'
 {% endfor %}
 
+[slurm_nfs_server_group]
+{% for host in groups['slurm_nfs_server_group'] %}
+{{ host }} ansible_host={{ hostvars[host]['ansible_default_ipv4']['address'] }} ansible_ssh_extra_args='{{ hostvars[host]['ansible_ssh_extra_args'] }}'
+{% endfor %}
+
+[slurm_master_group]
+{% for host in groups['slurm_master_group'] %}
+{{ host }} ansible_host={{ hostvars[host]['ansible_default_ipv4']['address'] }} ansible_ssh_extra_args='{{ hostvars[host]['ansible_ssh_extra_args'] }}'
+{% endfor %}
+
 
 # We use "hostvars[host]['ansible_default_ipv4']['address']" instead of "hostvars[host]['ansible_host']"
 # to make sure we always use the internal ip (private range) for every machine. This simplifies the setup
