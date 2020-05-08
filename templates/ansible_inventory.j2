@@ -1,13 +1,16 @@
 localhost ansible_connection=local ansible_python_interpreter="/usr/bin/env python"
 
+[slurm_cluster]
 {% for host in groups['slurm_cluster'] %}
 {{ host }} ansible_host={{ hostvars[host]['ansible_host'] }} ansible_ssh_extra_args='{{ hostvars[host]['ansible_ssh_extra_args'] }}'
 {% endfor %}
 
+[slurm_login]
 {% for host in groups['slurm_login'] %}
 {{ host }} ansible_host={{ hostvars[host]['ansible_host'] }} ansible_ssh_extra_args='{{ hostvars[host]['ansible_ssh_extra_args'] }}'
 {% endfor %}
 
+[slurm_compute]
 {% for host in groups['slurm_compute'] %}
 {{ host }} ansible_host={{ hostvars[host]['ansible_host'] }} ansible_ssh_extra_args='{{ hostvars[host]['ansible_ssh_extra_args'] }}'
 {% endfor %}
