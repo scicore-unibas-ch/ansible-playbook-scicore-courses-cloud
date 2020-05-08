@@ -1,16 +1,22 @@
 localhost ansible_connection=local ansible_python_interpreter="/usr/bin/env python"
 
-[slurm_cluster]
-{% for host in groups['slurm_cluster'] %}
-{{ host }} ansible_host={{ hostvars[host]['ansible_host'] }} ansible_ssh_extra_args='{{ hostvars[host]['ansible_ssh_extra_args'] }}'
+[slurm_cluster_all]
+{% for host in groups['slurm_cluster_all'] %}
+{{ host }} ansible_host={{ hostvars[host]['ansible_default_ipv4']['address'] }} ansible_ssh_extra_args='{{ hostvars[host]['ansible_ssh_extra_args'] }}'
 {% endfor %}
 
-[slurm_login]
-{% for host in groups['slurm_login'] %}
-{{ host }} ansible_host={{ hostvars[host]['ansible_host'] }} ansible_ssh_extra_args='{{ hostvars[host]['ansible_ssh_extra_args'] }}'
+[slurm_login_group]
+{% for host in groups['slurm_login_group'] %}
+{{ host }} ansible_host={{ hostvars[host]['ansible_default_ipv4']['address'] }} ansible_ssh_extra_args='{{ hostvars[host]['ansible_ssh_extra_args'] }}'
 {% endfor %}
 
-[slurm_compute]
-{% for host in groups['slurm_compute'] %}
-{{ host }} ansible_host={{ hostvars[host]['ansible_host'] }} ansible_ssh_extra_args='{{ hostvars[host]['ansible_ssh_extra_args'] }}'
+[slurm_compute_group]
+{% for host in groups['slurm_compute_group'] %}
+{{ host }} ansible_host={{ hostvars[host]['ansible_default_ipv4']['address'] }} ansible_ssh_extra_args='{{ hostvars[host]['ansible_ssh_extra_args'] }}'
 {% endfor %}
+
+
+# We use "hostvars[host]['ansible_default_ipv4']['address']" instead of "hostvars[host]['ansible_host']"
+# to make sure we always use the internal ip (private range) for every machine. This simplifies the setup
+# and makes easier to later create /etc/hosts in every machine.
+# This works fine because using our custom ssh config we will use the login node public ip when needed

@@ -140,8 +140,8 @@
       add_host:
         name: slurm_login
         groups:
-          - slurm_cluster
-          - slurm_login
+          - slurm_cluster_all
+          - slurm_login_group
         ansible_host: "{{ _slurm_login_floating_ip }}"
         ansible_user: "{{ slurm_cluster_ssh_remote_user }}"
         ansible_ssh_private_key_file: "{{ slurm_cluster_ssh_key_path }}"
@@ -177,8 +177,8 @@
       add_host:
         name: "{{ item.openstack.name }}"
         groups:
-          - slurm_cluster
-          - slurm_compute
+          - slurm_cluster_all
+          - slurm_compute_group
         ansible_host: "{{ item.openstack.accessIPv4 }}"
         ansible_user: "{{ slurm_cluster_ssh_remote_user }}"
         ansible_ssh_private_key_file: "{{ slurm_cluster_ssh_key_path }}"
