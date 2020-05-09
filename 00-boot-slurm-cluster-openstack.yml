@@ -21,13 +21,13 @@
         _os_project_network_id: "private"
       when: "'{{ lookup('env', 'OS_AUTH_URL') }}' == 'https://keystone.cloud.switch.ch:5000/v3'"
 
-    - name: Query network info from the OpenStack API if it's not hardcoded
+    - name: Query network info from the OpenStack API if it's not hardcoded before
       block:
 
         - name: Query subnet info for the project
           os_subnets_info:
             filters:
-              project_id: "{{ slurm_cluster_os_project }}"
+              project_id: "{{ lookup('env', 'OS_PROJECT_ID') }}"
           register: _subnet_info
 
         - name: DEBUG | Print os project subnet info
@@ -38,19 +38,23 @@
         - name: Set ansible variable with the os project internal subnet cidr
           set_fact:
             _os_project_subnet_cidr: "{{ _subnet_info.openstack_subnets[0].cidr }}"
+          when:
 
+        - name: Set ansible variable with the os project internal network name
+          set_fact:
+            _os_project_network_name: "{{ _subnet_info.openstack_subnets[0].name }}"
+
+        # this one must be last in the block or conditional will won't match
         - name: Set ansible variable with the os project internal network id
           set_fact:
             _os_project_network_id: "{{ _subnet_info.openstack_subnets[0].network_id }}"
 
-      when:
-        - _os_project_subnet_cidr is not defined
-        - _os_project_network_id is not defined
+      when: _os_project_network_id is not defined
+
 
     - name: Create default security group for the slurm cluster
       os_security_group:
         name: "{{ slurm_cluster_security_group_default }}"
-        project: "{{ slurm_cluster_os_project }}"
         description: "Security group for the slurm cluster allowing any internal traffic"
 
     - name: Add default fw rules to allow any internal traffic in the slurm cluster
@@ -58,12 +62,10 @@
         security_group: "{{ slurm_cluster_security_group_default }}"
         direction: ingress
         remote_ip_prefix: "{{ _os_project_subnet_cidr }}"
-        project: "{{ slurm_cluster_os_project }}"
 
     - name: Create security group for the login node
       os_security_group:
         name: "{{ slurm_cluster_security_group_login }}"
-        project: "{{ slurm_cluster_os_project }}"
         description: "Security group for the login node in the slurm cluster"
 
     - name: Add fw rules for the login node (allowed access from the internet)
@@ -74,7 +76,6 @@
         port_range_min: "{{ item }}"
         port_range_max: "{{ item }}"
         remote_ip_prefix: 0.0.0.0/0
-        project: "{{ slurm_cluster_os_project }}"
       loop: "{{ slurm_cluster_open_ports_in_login_node }}"
 
     - name: Launch the login node and attach a floating ip to it
@@ -99,28 +100,47 @@
         var: _slurm_login_info
       when: slurm_cluster_debug
 
-    - name: Generate the required ssh config to use admin machine as bastion host
+    - name: Generate the required ssh config to use login node as bastion host
       block:
 
-        - name: Set variables with internal (tenant) and external (floating) IPs of the admin VM
+        - name: Set variable with private (tenant) ip of login node
           set_fact:
-            _slurm_login_internal_ip: "{{ item.value[0].addr | ipaddr }}"
-            _slurm_login_floating_ip: "{{ item.value[1].addr | ipaddr }}"
-          with_dict: "{{ _slurm_login_info.openstack.addresses }}"
+            _slurm_login_internal_ip: "{{  _slurm_login_info.openstack.addresses.private[0].addr | ipv4('private') }}"
+
+        - name: DEBUG | Print login node internal ip
+          debug:
+            var: _slurm_login_internal_ip
+          when: slurm_cluster_debug
+
+        - name: Set variable with public (floating) IPs of the login node (Switch Engines)
+          set_fact:
+            _slurm_login_floating_ip: "{{ _slurm_login_info.openstack.addresses.private[2].addr | ipv4('public') }}"
+          when: "'{{ lookup('env', 'OS_AUTH_URL') }}' == 'https://keystone.cloud.switch.ch:5000/v3'"
+
+        - name: Set variables with public (floating) IPs of the login node (Default)
+          set_fact:
+            _slurm_login_floating_ip: "{{ _slurm_login_info.openstack.addresses.private[1].addr | ipv4('public') }}"
+          when: _slurm_login_floating_ip is not defined
+
+        - name: DEBUG | Print public floating ip of login node
+          debug:
+            var: _slurm_login_floating_ip
+          when: slurm_cluster_debug | bool
 
         - name: DEBUG | Print floating ip of login node
           debug:
             var: _slurm_login_floating_ip
           when: slurm_cluster_debug | bool
 
-        - name: DEBUG | Print internal ip of login node
-          debug:
-            var: _slurm_login_internal_ip
-          when: slurm_cluster_debug | bool
+        - name: Set variable with the os project internal network range as required by ssh config e.g. 192.168.33.* (Switch Engines)
+          set_fact:
+            _os_project_internal_ip_range: "10.0.*.*"
+          when: "'{{ lookup('env', 'OS_AUTH_URL') }}' == 'https://keystone.cloud.switch.ch:5000/v3'"
 
         - name: Set variable with the os project internal network range as required by ssh config e.g. 192.168.33.*
           set_fact:
             _os_project_internal_ip_range: "{{ _slurm_login_internal_ip | regex_replace('([0-9]+)$','*') }}"
+          when: _os_project_internal_ip_range is not defined
 
         - name: DEBUG | Print _os_project_internal_ip_range to be used in the ssh config
           debug:
@@ -234,12 +254,15 @@
         groups:
           - slurm_cluster_all
           - slurm_compute_group
-        ansible_host: "{{ item.openstack.accessIPv4 }}"
+        ansible_host: "{{ item.openstack.private_v4 }}"
         ansible_user: "{{ slurm_cluster_ssh_remote_user }}"
         ansible_ssh_private_key_file: "{{ slurm_cluster_ssh_key_path }}"
         ansible_ssh_extra_args: "-F {{ slurm_cluster_ssh_cfg_path }}"
       loop: "{{ _slurm_compute_nodes_info.results }}"
       changed_when: false
+
+    - debug:
+        var: _slurm_compute_nodes_info.results
 
     - name: Waiting for the slurm compute nodes to be online
       delegate_to: "{{ item.openstack.name }}"
