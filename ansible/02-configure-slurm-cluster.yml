@@ -86,6 +86,14 @@
       notify: Restart SLURM service
       tags: slurm_config
 
+    - name: Create local /scratch folder with permission 777
+      file:
+        path: /scratch
+        state: directory
+        mode: 0777
+        owner: root
+        group: root
+
     # - name: Create the local accounts defined in the portal
     #   import_role:
     #     name: ansible-role-dcc-portal-accounts
