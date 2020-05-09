@@ -5,7 +5,7 @@
 
   tasks:
 
-    - name: Set variable _switch_engines_cloud to False
+    - name: Set variable _switch_engines_cloud to False (by default we assume this is not SwitchEngines)
       set_fact:
         _switch_engines_cloud: False
 
