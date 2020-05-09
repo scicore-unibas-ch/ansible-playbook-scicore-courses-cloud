@@ -145,12 +145,12 @@
             var: _slurm_login_floating_ip
           when: slurm_cluster_debug | bool
 
-        - name: Set variable with the os project internal network range as required by ssh config e.g. 192.168.33.* (Switch Engines)
+        - name: Set variable with the os project internal network range as required by ssh config e.g. 192.168.33.* (hardcoded for Switch Engines)
           set_fact:
             _os_project_internal_ip_range: "10.0.*.*"
           when: _switch_engines_cloud
 
-        - name: Set variable with the os project internal network range as required by ssh config e.g. 192.168.33.*
+        - name: Set variable with the os project internal network range as required by ssh config e.g. 192.168.33.* (by default we assume a Class C)
           set_fact:
             _os_project_internal_ip_range: "{{ _slurm_login_internal_ip | regex_replace('([0-9]+)$','*') }}"
           when: _os_project_internal_ip_range is not defined
