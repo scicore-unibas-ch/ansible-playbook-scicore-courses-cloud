@@ -12,7 +12,7 @@
     - name: Check if we are using Switch Engines cloud to apply required exceptions
       set_fact:
         _switch_engines_cloud: True
-      when: "'{{ lookup('env', 'OS_AUTH_URL') }}' == 'https://keystone.cloud.switch.ch:5000/v3'"
+      when: lookup('env', 'OS_AUTH_URL') == 'https://keystone.cloud.switch.ch:5000/v3'
 
     - name: Create a ssh keypair for the slurm cluster
       openssh_keypair:
