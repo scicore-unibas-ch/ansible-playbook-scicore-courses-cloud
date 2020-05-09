@@ -98,21 +98,6 @@
         var: _slurm_login_info
       when: slurm_cluster_debug
 
-    - debug:
-        var: _slurm_login_info.openstack.addresses
-
-    - name: LELELELELE
-      debug:
-        msg: "{{ item.value }}"
-      with_dict: "{{ _slurm_login_info.openstack.addresses }}"
-
-    - name: set fact list of ips
-      set_fact:
-        _list_of_ips: "{{ item.value }}"
-      with_dict: "{{ _slurm_login_info.openstack.addresses }}"
-
-    - debug:
-        var: _list_of_ips
 
     - name: Generate the required ssh config to use login node as bastion host
       block:
@@ -122,6 +107,7 @@
             _slurm_login_list_of_ips: "{{ item.value }}"
           with_dict: "{{ _slurm_login_info.openstack.addresses }}"
 
+        # _slurm_login_list_of_ips[0] is always the project/tenant private ip
         - name: Set variable with private (tenant) ip of login node
           set_fact:
             _slurm_login_internal_ip: "{{  _slurm_login_list_of_ips[0].addr | ipaddr('private') }}"
@@ -131,22 +117,22 @@
             var: _slurm_login_internal_ip
           when: slurm_cluster_debug | bool
 
+        # Switch engines uses ipv6 so _slurm_login_internal_ip has 3 elements
+        # _slurm_login_list_of_ips[0] > internal private ip
+        # _slurm_login_list_of_ips[1] > ipv6 address
+        # _slurm_login_list_of_ips[2] > floating ip
         - name: Set variable with public (floating) IPs of the login node (Switch Engines)
           set_fact:
             _slurm_login_floating_ip: "{{ _slurm_login_list_of_ips[2].addr | ipaddr('public') }}"
           when: "'{{ lookup('env', 'OS_AUTH_URL') }}' == 'https://keystone.cloud.switch.ch:5000/v3'"
 
+        # by default we assume _slurm_login_list_of_ips[1] is the public floating ip
         - name: Set variables with public (floating) IPs of the login node (Default)
           set_fact:
             _slurm_login_floating_ip: "{{ _slurm_login_list_of_ips[1].addr | ipaddr('public') }}"
           when: _slurm_login_floating_ip is not defined
 
         - name: DEBUG | Print public floating ip of login node
-          debug:
-            var: _slurm_login_floating_ip
-          when: slurm_cluster_debug | bool
-
-        - name: DEBUG | Print floating ip of login node
           debug:
             var: _slurm_login_floating_ip
           when: slurm_cluster_debug | bool
@@ -166,7 +152,7 @@
             var: _os_project_internal_ip_range
           when: slurm_cluster_debug | bool
 
-        - name: Create a ssh config to connect to any machine in the slurm cluster
+        - name: Create a ssh config to connect to any machine in the slurm cluster using login node as bastion host
           template:
             src: ssh_config.j2
             dest: "{{ slurm_cluster_ssh_cfg_path }}"
