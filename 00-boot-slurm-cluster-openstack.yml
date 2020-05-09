@@ -5,6 +5,15 @@
 
   tasks:
 
+    - name: Set variable _switch_engines_cloud to False
+      set_fact:
+        _switch_engines_cloud: False
+
+    - name: Check if we are using Switch Engines cloud to apply required exceptions
+      set_fact:
+        _switch_engines_cloud: True
+      when: "'{{ lookup('env', 'OS_AUTH_URL') }}' == 'https://keystone.cloud.switch.ch:5000/v3'"
+
     - name: Create a ssh keypair for the slurm cluster
       openssh_keypair:
         path: "{{ slurm_cluster_ssh_key_path }}"
@@ -20,7 +29,7 @@
       set_fact:
         _os_project_network_name: "private"
         _os_project_subnet_cidr: "10.0.0.0/16"
-      when: "'{{ lookup('env', 'OS_AUTH_URL') }}' == 'https://keystone.cloud.switch.ch:5000/v3'"
+      when: _switch_engines_cloud
 
 
     - name: Query network info from the OpenStack API if it's not hardcoded before
@@ -123,7 +132,7 @@
         - name: Set variable with public (floating) IPs of the login node (Switch Engines)
           set_fact:
             _slurm_login_floating_ip: "{{ _slurm_login_list_of_ips[2].addr | ipv4 }}"
-          when: "'{{ lookup('env', 'OS_AUTH_URL') }}' == 'https://keystone.cloud.switch.ch:5000/v3'"
+          when: _switch_engines_cloud
 
         # by default we assume _slurm_login_list_of_ips[1] is the public floating ip
         - name: Set variables with public (floating) IPs of the login node (Default)
@@ -139,7 +148,7 @@
         - name: Set variable with the os project internal network range as required by ssh config e.g. 192.168.33.* (Switch Engines)
           set_fact:
             _os_project_internal_ip_range: "10.0.*.*"
-          when: "'{{ lookup('env', 'OS_AUTH_URL') }}' == 'https://keystone.cloud.switch.ch:5000/v3'"
+          when: _switch_engines_cloud
 
         - name: Set variable with the os project internal network range as required by ssh config e.g. 192.168.33.*
           set_fact:
@@ -252,7 +261,7 @@
         var: _slurm_compute_nodes_info
       when: slurm_cluster_debug | bool
 
-    - name: Add compute nodes to in-memory ansible inventory
+    - name: Add compute nodes to in-memory ansible inventory (Switch Engines provides private ip in field private_v4)
       add_host:
         name: "{{ item.openstack.name }}"
         groups:
@@ -264,6 +273,21 @@
         ansible_ssh_extra_args: "-F {{ slurm_cluster_ssh_cfg_path }}"
       loop: "{{ _slurm_compute_nodes_info.results }}"
       changed_when: false
+      when: _switch_engines_cloud
+
+    - name: Add compute nodes to in-memory ansible inventory (If this is not Switch Engines we use field accessIPv4)
+      add_host:
+        name: "{{ item.openstack.name }}"
+        groups:
+          - slurm_cluster_all
+          - slurm_compute_group
+        ansible_host: "{{ item.openstack.accessIPv4 }}"
+        ansible_user: "{{ slurm_cluster_ssh_remote_user }}"
+        ansible_ssh_private_key_file: "{{ slurm_cluster_ssh_key_path }}"
+        ansible_ssh_extra_args: "-F {{ slurm_cluster_ssh_cfg_path }}"
+      loop: "{{ _slurm_compute_nodes_info.results }}"
+      changed_when: false
+      when: not _switch_engines_cloud
 
     - name: Waiting for the slurm compute nodes to be online
       delegate_to: "{{ item.openstack.name }}"
