@@ -14,12 +14,14 @@
         name: "{{ slurm_cluster_ssh_key_name }}"
         public_key_file: "{{ slurm_cluster_ssh_key_path }}.pub"
 
-    # ansible module os_subnets_info crashes whith Switch Engines cloud
+    # ansible module "os_subnets_info" crashes whith Switch Engines cloud but the network
+    # name and cidr is the same for every project so we hardcode it here
     - name: Hardcode _os_project_subnet_cidr and _os_project_network_id for Switch cloud
       set_fact:
+        _os_project_network_name: "private"
         _os_project_subnet_cidr: "10.0.0.0/16"
-        _os_project_network_id: "private"
       when: "'{{ lookup('env', 'OS_AUTH_URL') }}' == 'https://keystone.cloud.switch.ch:5000/v3'"
+
 
     - name: Query network info from the OpenStack API if it's not hardcoded before
       block:
@@ -35,21 +37,22 @@
             var: _subnet_info
           when: slurm_cluster_debug | bool
 
+        - name: Set ansible variable with the os project internal network name
+          set_fact:
+            _os_project_network_name: "{{ _subnet_info.openstack_subnets[0].name }}"
+
         - name: Set ansible variable with the os project internal subnet cidr
           set_fact:
             _os_project_subnet_cidr: "{{ _subnet_info.openstack_subnets[0].cidr }}"
           when:
 
-        - name: Set ansible variable with the os project internal network name
-          set_fact:
-            _os_project_network_name: "{{ _subnet_info.openstack_subnets[0].name }}"
-
-        # this one must be last in the block or conditional will won't match
         - name: Set ansible variable with the os project internal network id
           set_fact:
             _os_project_network_id: "{{ _subnet_info.openstack_subnets[0].network_id }}"
 
-      when: _os_project_network_id is not defined
+      when: (_os_project_subnet_cidr is not defined) or
+            (_os_project_network_name is not defined) or
+            (_os_project_network_id is not defined)
 
 
     - name: Create default security group for the slurm cluster
