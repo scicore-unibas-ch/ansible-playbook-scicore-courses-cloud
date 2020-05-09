@@ -303,7 +303,7 @@
             groups:
               - slurm_cluster_all
               - slurm_nfs_server_group
-            ansible_host: "{{ _slurm_nfs_server_info.openstack.accessIPv4 }}"
+            ansible_host: "{{ _slurm_nfs_server_info.openstack.private_v4 }}"
             ansible_user: "{{ slurm_cluster_ssh_remote_user }}"
             ansible_ssh_private_key_file: "{{ slurm_cluster_ssh_key_path }}"
             ansible_ssh_extra_args: "-F {{ slurm_cluster_ssh_cfg_path }}"
