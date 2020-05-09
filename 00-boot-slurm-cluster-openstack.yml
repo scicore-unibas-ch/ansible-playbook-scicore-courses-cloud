@@ -44,7 +44,6 @@
         - name: Set ansible variable with the os project internal subnet cidr
           set_fact:
             _os_project_subnet_cidr: "{{ _subnet_info.openstack_subnets[0].cidr }}"
-          when:
 
       when: (_os_project_network_name is not defined) or
             (_os_project_subnet_cidr is not defined)
@@ -110,7 +109,7 @@
         # _slurm_login_list_of_ips[0] is always the project/tenant private ip
         - name: Set variable with private (tenant) ip of login node
           set_fact:
-            _slurm_login_internal_ip: "{{  _slurm_login_list_of_ips[0].addr | ipaddr('private') }}"
+            _slurm_login_internal_ip: "{{  _slurm_login_list_of_ips[0].addr | ipv4 }}"
 
         - name: DEBUG | Print login node internal ip
           debug:
@@ -123,13 +122,13 @@
         # _slurm_login_list_of_ips[2] > floating ip
         - name: Set variable with public (floating) IPs of the login node (Switch Engines)
           set_fact:
-            _slurm_login_floating_ip: "{{ _slurm_login_list_of_ips[2].addr | ipaddr('public') }}"
+            _slurm_login_floating_ip: "{{ _slurm_login_list_of_ips[2].addr | ipv4 }}"
           when: "'{{ lookup('env', 'OS_AUTH_URL') }}' == 'https://keystone.cloud.switch.ch:5000/v3'"
 
         # by default we assume _slurm_login_list_of_ips[1] is the public floating ip
         - name: Set variables with public (floating) IPs of the login node (Default)
           set_fact:
-            _slurm_login_floating_ip: "{{ _slurm_login_list_of_ips[1].addr | ipaddr('public') }}"
+            _slurm_login_floating_ip: "{{ _slurm_login_list_of_ips[1].addr | ipv4 }}"
           when: _slurm_login_floating_ip is not defined
 
         - name: DEBUG | Print public floating ip of login node
@@ -265,9 +264,6 @@
         ansible_ssh_extra_args: "-F {{ slurm_cluster_ssh_cfg_path }}"
       loop: "{{ _slurm_compute_nodes_info.results }}"
       changed_when: false
-
-    - debug:
-        var: _slurm_compute_nodes_info.results
 
     - name: Waiting for the slurm compute nodes to be online
       delegate_to: "{{ item.openstack.name }}"
