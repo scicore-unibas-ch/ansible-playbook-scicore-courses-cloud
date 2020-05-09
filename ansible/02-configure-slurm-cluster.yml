@@ -1,0 +1,273 @@
+---
+
+- name: Configure slurm cluster (slurm master and slurm workers)
+  hosts:
+    - slurm_master_group
+    - slurm_compute_group
+  gather_facts: true
+  become: true
+  remote_user: "{{ slurm_cluster_ssh_remote_user }}"
+
+  tasks:
+
+    - name: Common setup
+      import_tasks: shared_tasks/common_setup.yml
+
+    - name: Configure NFS mounts
+      import_role:
+        name: ome.nfs_mount
+      tags: nfs
+
+    - name: Add OpenHPC repositories
+      yum:
+        name: "{{ bm_ohpc_repos_url }}"
+        state: installed
+
+    - name: Install OpenHPC runtime Slurm packages
+      yum:
+        name:
+          - "slurm-ohpc"
+          - "munge-ohpc"
+          - "slurm-example-configs-ohpc"
+        state: present
+
+    - name: Ensure the Slurm spool directory exists
+      file:
+        path: /var/spool/slurm
+        owner: slurm
+        group: slurm
+        mode: 0755
+        state: directory
+
+    - name: Ensure the Slurm log directory exists
+      file:
+        path: /var/log/slurm
+        owner: slurm
+        group: slurm
+        mode: 0755
+        state: directory
+
+    - name: Generate a Munge key for the cluster (in slurm master machine)
+      command: "dd if=/dev/urandom of=/etc/munge/munge.key bs=1 count=1024"
+      args:
+        creates: "/etc/munge/munge.key"
+      when: "'slurm_master_group' in group_names"
+
+    - name: Retrieve Munge key from Slurm master host
+      slurp:
+        src: "/etc/munge/munge.key"
+      register: _slurm_munge_key
+      when: "'slurm_master_group' in group_names"
+
+    - name: Write Munge key to every machine
+      copy:
+        content: "{{ hostvars[groups.slurm_master_group[0]]['_slurm_munge_key']['content'] | b64decode }}"
+        dest: "/etc/munge/munge.key"
+        owner: munge
+        group: munge
+        mode: 0400
+      notify:
+        - Restart Munge service
+
+    - name: Start and enable munge service
+      service:
+        name: munge
+        state: started
+        enabled: true
+
+    - name: Apply customised SLURM configuration
+      template:
+        src: slurm.conf.j2
+        dest: /etc/slurm/slurm.conf
+        owner: root
+        group: root
+        mode: 0644
+      notify: Restart SLURM service
+      tags: slurm_config
+
+    # - name: Create the local accounts defined in the portal
+    #   import_role:
+    #     name: ansible-role-dcc-portal-accounts
+
+
+    - name: Configure slurm master and accounting daemon
+      block:
+
+          - name: install mariadb-server rpm
+            yum:
+              name: mariadb-server
+              state: installed
+
+          - name: Enable and start mariadb server
+            service:
+              name: mariadb
+              state: started
+              enabled: true
+
+          - name: install MySQL-python rpm (required by ansible)
+            yum:
+              name: MySQL-python
+              state: installed
+
+          - name: create mysql db for accounting
+            mysql_db:
+              name: "{{ bm_slurm_mysql_db }}"
+              state: present
+
+          - name: create mysql account for slurm accounting daemon
+            mysql_user:
+              name: "{{ bm_slurm_mysql_user }}"
+              password: "{{ bm_slurm_mysql_password }}"
+              priv: '{{ bm_slurm_mysql_db }}.*:ALL'
+              state: present
+
+          - name: install slurm accounting daemon from OpenHPC (slurm-slurmdbd-ohpc rpm)
+            yum:
+              name: slurm-slurmdbd-ohpc
+              state: installed
+
+          - name: deploy slurm accounting config file
+            template:
+              dest: /etc/slurm/slurmdbd.conf
+              src: slurmdbd.conf.j2
+              owner: root
+              group: root
+              mode: 0644
+            notify: Restart slurmdbd service
+            tags: slurm_config
+
+          - name: Enable and start slurmdbd
+            service:
+              name: slurmdbd
+              state: started
+              enabled: true
+
+          - name: Check if the cluster is registered in accounting db
+            shell: sacctmgr list cluster --noheader --parsable | wc -l
+            register: _sacctmgr_output
+            changed_when: false
+
+          # - debug:
+          #     var: _sacctmgr_output
+
+          # if previous command return 0 lines it's because no cluster is registered
+          # We assume that no other clusters are re
+          - name: Register the cluster in accounting db
+            command: sacctmgr add cluster {{ bm_slurm_cluster_name }} --immediate
+            when: _sacctmgr_output.stdout == "0"
+
+      when: "'slurm_master' in group_names"
+
+
+    - name: Configure slurm master daemon
+      block:
+
+        - name: Install slurm master rpms
+          yum:
+            name:
+              - "@ohpc-slurm-server"
+              - "slurm-slurmctld-ohpc"
+              - "slurm-example-configs-ohpc"
+            state: installed
+
+        - name: Deploy /etc/slurm/job_submit.lua
+          template:
+            dest: /etc/slurm/job_submit.lua
+            src: job_submit.lua.j2
+            owner: root
+            group: root
+            mode: 0755
+          tags: slurm_config
+
+        - name: Start and enable slurm master daemon
+          service:
+            name: slurmctld
+            state: started
+            enabled: true
+
+      when: "'slurm_master' in group_names"
+
+
+    - name: Configure slurm worker daemon
+      block:
+
+          - name: Install OpenHPC slurmd
+            yum:
+              name:
+                - "slurm-slurmd-ohpc"
+              state: present
+
+          - name: Install cgroups if this is a worker host
+            yum:
+              name:
+                - libcgroup
+                - libcgroup-tools
+              state: present
+
+          - name: deploy /etc/slurm/cgroup.conf
+            template:
+              dest: /etc/slurm/cgroup.conf
+              src: cgroup.conf.j2
+              owner: root
+              group: root
+              mode: 0644
+            notify: Restart SLURM service
+            tags: slurm_config
+
+          - name: enable and start cgroup services if this is a worker_node
+            service:
+              name: "{{ item }}"
+              enabled: true
+              state: started
+            with_items:
+              - cgred
+              - cgconfig
+
+          - name: Install slurm worker rpms
+            yum:
+              name:
+                - "@ohpc-base-compute"
+                - "@ohpc-slurm-client"
+                - "lmod-ohpc"
+              state: installed
+
+          - name: Start and enable slurm worker daemon
+            service:
+              name: slurmd
+              state: started
+              enabled: true
+
+          - name: Install software stack from compute canada
+            import_role:
+              name: ansible-cvmfs-client
+            tags: soft
+
+      when: "'slurm_workers' in group_names"
+
+
+
+  handlers:
+
+    - name: Restart Munge service
+      service:
+        name: munge
+        state: restarted
+
+    - name: Restart slurmctld service
+      listen: Restart SLURM service
+      service:
+        name: slurmctld
+        state: restarted
+      when: "'meta_group_slurm_master' in group_names"
+
+    - name: Restart slurmd service
+      listen: Restart SLURM service
+      service:
+        name: slurmd
+        state: restarted
+      when: "'meta_group_slurm_workers' in group_names"
+
+    - name: Restart slurmdbd service
+      service:
+        name: slurmdbd
+        state: restarted

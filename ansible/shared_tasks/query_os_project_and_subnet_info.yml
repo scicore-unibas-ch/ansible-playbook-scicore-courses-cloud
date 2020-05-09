@@ -1,0 +1,37 @@
+---
+
+# set "slurm_cluster_debug=True" to get verbose output
+
+- name: Query project info to find the subnet
+  os_project_info:
+    name: "{{ slurm_cluster_os_project }}"
+  register: _project_info
+
+- name: Print project info
+  debug:
+    var: _project_info
+  when: slurm_cluster_debug
+
+- name: Query subnet info for the project
+  os_subnets_info:
+    filters:
+      project_id: "{{ _project_info.openstack_projects[0].id }}"
+  register: _subnet_info
+
+- name: Show openstack networks
+  debug:
+    msg: "{{ _subnet_info }}"
+  when: slurm_cluster_debug
+
+- name: Set ansible variable with the project internal subnet cidr
+  set_fact:
+    _openstack_subnet_cidr: "{{ _subnet_info.openstack_subnets[0].cidr }}"
+
+- name: Set ansible variable with the project internal subnet
+  set_fact:
+    _openstack_network_id: "{{ _subnet_info.openstack_subnets[0].network_id }}"
+
+- name: Print subnet info
+  debug:
+    var: _openstack_subnet
+  when: slurm_cluster_debug
