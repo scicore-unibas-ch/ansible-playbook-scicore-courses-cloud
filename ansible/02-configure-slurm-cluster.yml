@@ -4,6 +4,7 @@
   hosts:
     - slurm_master_group
     - slurm_compute_group
+    - slurm_login_group
   gather_facts: true
   become: true
   remote_user: "{{ slurm_cluster_ssh_remote_user }}"
