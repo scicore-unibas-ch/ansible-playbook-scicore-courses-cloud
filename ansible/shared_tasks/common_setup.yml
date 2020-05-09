@@ -2,6 +2,10 @@
 
 ## these are the tasks we will run in every machine in the cluster
 
+- name: set hostname as defined in inventory
+  hostname:
+    name: "{{ hostvars[inventory_hostname].inventory_hostname }}"
+
 - name: Deploy a custom /etc/hosts
   template:
     dest: /etc/hosts

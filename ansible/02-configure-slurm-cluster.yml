@@ -20,7 +20,7 @@
 
     - name: Add OpenHPC repositories
       yum:
-        name: "{{ bm_ohpc_repos_url }}"
+        name: "{{ slurm_cluster_ohpc_repos_url }}"
         state: installed
 
     - name: Install OpenHPC runtime Slurm packages
@@ -111,14 +111,14 @@
 
           - name: create mysql db for accounting
             mysql_db:
-              name: "{{ bm_slurm_mysql_db }}"
+              name: "{{ slurm_cluster_slurmdbd_mysql_db }}"
               state: present
 
           - name: create mysql account for slurm accounting daemon
             mysql_user:
-              name: "{{ bm_slurm_mysql_user }}"
-              password: "{{ bm_slurm_mysql_password }}"
-              priv: '{{ bm_slurm_mysql_db }}.*:ALL'
+              name: "{{ slurm_cluster_slurmdbd_mysql_user }}"
+              password: "{{ slurm_cluster_slurmdbd_mysql_password }}"
+              priv: '{{ slurm_cluster_slurmdbd_mysql_db }}.*:ALL'
               state: present
 
           - name: install slurm accounting daemon from OpenHPC (slurm-slurmdbd-ohpc rpm)
@@ -153,10 +153,10 @@
           # if previous command return 0 lines it's because no cluster is registered
           # We assume that no other clusters are re
           - name: Register the cluster in accounting db
-            command: sacctmgr add cluster {{ bm_slurm_cluster_name }} --immediate
+            command: sacctmgr add cluster slurm_cluster --immediate
             when: _sacctmgr_output.stdout == "0"
 
-      when: "'slurm_master' in group_names"
+      when: "'slurm_master_group' in group_names"
 
 
     - name: Configure slurm master daemon
@@ -185,7 +185,7 @@
             state: started
             enabled: true
 
-      when: "'slurm_master' in group_names"
+      when: "'slurm_master_group' in group_names"
 
 
     - name: Configure slurm worker daemon
@@ -241,8 +241,9 @@
             import_role:
               name: ansible-cvmfs-client
             tags: soft
+            when: slurm_cluster_enable_compute_canada_software_stack
 
-      when: "'slurm_workers' in group_names"
+      when: "'slurm_compute_group' in group_names"
 
 
 
@@ -258,14 +259,14 @@
       service:
         name: slurmctld
         state: restarted
-      when: "'meta_group_slurm_master' in group_names"
+      when: "'slurm_master_group' in group_names"
 
     - name: Restart slurmd service
       listen: Restart SLURM service
       service:
         name: slurmd
         state: restarted
-      when: "'meta_group_slurm_workers' in group_names"
+      when: "'slurm_compute_group' in group_names"
 
     - name: Restart slurmdbd service
       service:

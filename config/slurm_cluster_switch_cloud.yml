@@ -78,4 +78,5 @@ slurm_cluster_packages_to_install:
   - htop
   - bash-completion
 
+slurm_cluster_enable_compute_canada_software_stack: false
 cvmfs_client_configure_storage: false

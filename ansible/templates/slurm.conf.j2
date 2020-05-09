@@ -4,7 +4,7 @@
 
 # Unique name for identifying this cluster entries in the DB
 ClusterName=slurm_cluster
-ControlMachine={% for node in groups.slurm_master_group %}{{ node | replace("_", "-") }}{% endfor %}
+ControlMachine={% for node in groups.slurm_master_group %}{{ node }}{% endfor %}
 
 ## scheduler settings
 #
@@ -54,7 +54,7 @@ PriorityFlags=FAIR_TREE
 AccountingStorageType=accounting_storage/slurmdbd
 AccountingStorageEnforce=associations,limits,qos
 #AccountingStoreJobComment=YES
-AccountingStorageHost={% for node in groups.slurm_master_group %}{{ node | replace("_", "-") }}{% endfor %}
+AccountingStorageHost={% for node in groups.slurm_master_group %}{{ node }}{% endfor %}
 
 #AccountingStoragePort=6819
 #AccountingStorageTRES=gres/gpu
@@ -188,8 +188,8 @@ DefMemPerCPU=1000
 ## Cluster nodes
 {% set first_worker_facts = hostvars[groups.slurm_compute_group | first] %}
 {% for node in groups.slurm_compute_group %}
-NodeName={{ node | replace("_", "-")}} RealMemory={{ first_worker_facts['ansible_memtotal_mb'] }} Sockets={{ first_worker_facts['ansible_processor_count'] }} CoresPerSocket={{ first_worker_facts['ansible_processor_cores'] }} ThreadsPerCore={{ first_worker_facts['ansible_processor_threads_per_core'] }}
+NodeName={{ node }} RealMemory={{ first_worker_facts['ansible_memtotal_mb'] }} Sockets={{ first_worker_facts['ansible_processor_count'] }} CoresPerSocket={{ first_worker_facts['ansible_processor_cores'] }} ThreadsPerCore={{ first_worker_facts['ansible_processor_threads_per_core'] }}
 {% endfor %}
-PartitionName=compute Nodes={% for node in groups.slurm_compute_group %}{{ node | replace("_", "-") }},{% endfor %} Default=YES State=UP
+PartitionName=compute Nodes={% for node in groups.slurm_compute_group %}{{ node }},{% endfor %} Default=YES State=UP
 
 # vim: syntax=sh
