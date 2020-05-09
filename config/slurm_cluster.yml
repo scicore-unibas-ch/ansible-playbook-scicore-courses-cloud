@@ -2,9 +2,9 @@
 
 ## UPDATE THESE VARS TO ADAPT THEM TO YOUR OPENSTACK CLOUD
 slurm_cluster_default_image: "CentOS7.8"
-slurm_cluster_ssh_remote_user: "centos"
 slurm_cluster_default_flavor: "m1.small"
 slurm_cluster_floating_ips_pool: "public_vlan"
+slurm_cluster_ssh_remote_user: "centos"
 ## UPDATE THESE VARS TO ADAPT THEM TO YOUR OPENSTACK CLOUD
 
 ## UPDATE VARS BELOW ACCORDING TO YOUR PREFERENCE BUT IT'S NOT MANDATORY FOR INITIAL TESTING ##
