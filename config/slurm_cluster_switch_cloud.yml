@@ -1,0 +1,77 @@
+---
+
+## UPDATE THESE VARS TO ADAPT THEM TO YOUR OPENSTACK CLOUD
+slurm_cluster_default_image: "CentOS 7 (SWITCHengines)"
+slurm_cluster_ssh_remote_user: "centos"
+slurm_cluster_default_flavor: "c1.medium"
+slurm_cluster_floating_ips_pool: "public"
+## UPDATE THESE VARS TO ADAPT THEM TO YOUR OPENSTACK CLOUD
+
+## UPDATE VARS BELOW ACCORDING TO YOUR PREFERENCE BUT IT'S NOT MANDATORY FOR INITIAL TESTING ##
+
+slurm_cluster_os_project: "{{ ansible_env.OS_PROJECT_NAME }}"
+
+slurm_cluster_ssh_key_path: "{{ ansible_env.HOME }}/.ssh/{{ slurm_cluster_os_project }}_slurm_cluster_id_rsa"
+slurm_cluster_ssh_key_name: "{{ slurm_cluster_os_project }}_slurm_cluster"  # name used to register the ssh key in openstack
+slurm_cluster_ssh_cfg_path: "{{ ansible_env.HOME }}/.ssh/{{ slurm_cluster_os_project }}_slurm_cluster.cfg"
+
+slurm_cluster_security_group_default: "slurm_cluster_default"
+slurm_cluster_security_group_login: "slurm_cluster_login"
+
+slurm_cluster_open_ports_in_login_node:
+  - 22
+  - 80
+  - 443
+
+slurm_cluster_login_image: "{{ slurm_cluster_default_image }}"
+slurm_cluster_login_flavor: "{{ slurm_cluster_default_flavor }}"
+
+slurm_cluster_compute_image: "{{ slurm_cluster_default_image }}"
+slurm_cluster_compute_flavor: "{{ slurm_cluster_default_flavor }}"
+slurm_cluster_num_workers: 2
+
+# Set this to true to boot a dedicated machine for NFS server
+# The default is that NFS server is hosted in the login node
+slurm_cluster_nfs_server_dedicated_machine: false
+slurm_cluster_nfs_server_image: "{{ slurm_cluster_default_image }}"
+slurm_cluster_nfs_server_flavor: "{{ slurm_cluster_default_flavor }}"
+
+# based on this we will create a volume, attach it to nfs server and export it
+# size is in GB
+slurm_cluster_nfs_server_disk_size: 50
+slurm_cluster_nfs_server_disk_device: /dev/vdb
+slurm_cluster_nfs_server_disk_mount_point: /shared
+slurm_cluster_nfs_server_disk_fstype: xfs
+
+nfs_exports:
+  - "{{ slurm_cluster_nfs_server_disk_mount_point }} *(rw,sync,no_root_squash)"
+
+# Set this to true to boot a dedicated machine for slurm master
+# The default is that slurm master is hosted in the login node
+slurm_cluster_slurm_master_dedicated_machine: false
+slurm_cluster_slurm_master_image: "{{ slurm_cluster_default_image }}"
+slurm_cluster_slurm_master_flavor: "{{ slurm_cluster_default_flavor }}"
+
+slurm_cluster_ohpc_repos_url: "https://github.com/openhpc/ohpc/releases/download/v1.3.GA/ohpc-release-1.3-1.el7.x86_64.rpm"
+
+# set slurm_cluster_debug=True to print more verbose info during the playbook execution
+slurm_cluster_debug: False
+
+chrony_timezone: Europe/Zurich
+chrony_ntp_servers:
+  - pool.ntp.org
+
+slurm_cluster_selinux_disabled: true
+selinux_reboot: true  # should we reboot the VM when selinux is disabled?
+
+slurm_cluster_upgrade_all_packages: true
+
+# list of packages we want in every machine
+slurm_cluster_packages_to_install:
+  - vim
+  - emacs-nox
+  - git
+  - htop
+  - bash-completion
+
+cvmfs_client_configure_storage: false
