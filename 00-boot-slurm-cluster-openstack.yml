@@ -15,8 +15,8 @@
         public_key_file: "{{ slurm_cluster_ssh_key_path }}.pub"
 
     # ansible module "os_subnets_info" crashes whith Switch Engines cloud but the network
-    # name and cidr is the same for every project so we hardcode it here
-    - name: Hardcode _os_project_subnet_cidr and _os_project_network_id for Switch cloud
+    # name and subnet cidr is the same for every project so we hardcode it here
+    - name: Hardcode _os_project_network_name and _os_project_subnet_cidr for Switch cloud
       set_fact:
         _os_project_network_name: "private"
         _os_project_subnet_cidr: "10.0.0.0/16"
@@ -46,13 +46,8 @@
             _os_project_subnet_cidr: "{{ _subnet_info.openstack_subnets[0].cidr }}"
           when:
 
-        - name: Set ansible variable with the os project internal network id
-          set_fact:
-            _os_project_network_id: "{{ _subnet_info.openstack_subnets[0].network_id }}"
-
-      when: (_os_project_subnet_cidr is not defined) or
-            (_os_project_network_name is not defined) or
-            (_os_project_network_id is not defined)
+      when: (_os_project_network_name is not defined) or
+            (_os_project_subnet_cidr is not defined)
 
 
     - name: Create default security group for the slurm cluster
@@ -87,7 +82,7 @@
         image: "{{ slurm_cluster_login_image }}"
         key_name: "{{ slurm_cluster_ssh_key_name }}"
         flavor: "{{ slurm_cluster_login_flavor }}"
-        network: "{{ _os_project_network_id }}"
+        network: "{{ _os_project_network_name }}"
         security_groups:
           - "{{ slurm_cluster_security_group_default }}"
           - "{{ slurm_cluster_security_group_login }}"
@@ -103,26 +98,47 @@
         var: _slurm_login_info
       when: slurm_cluster_debug
 
+    - debug:
+        var: _slurm_login_info.openstack.addresses
+
+    - name: LELELELELE
+      debug:
+        msg: "{{ item.value }}"
+      with_dict: "{{ _slurm_login_info.openstack.addresses }}"
+
+    - name: set fact list of ips
+      set_fact:
+        _list_of_ips: "{{ item.value }}"
+      with_dict: "{{ _slurm_login_info.openstack.addresses }}"
+
+    - debug:
+        var: _list_of_ips
+
     - name: Generate the required ssh config to use login node as bastion host
       block:
 
+        - name: Define a list of dicts with all the ips in the login node
+          set_fact:
+            _slurm_login_list_of_ips: "{{ item.value }}"
+          with_dict: "{{ _slurm_login_info.openstack.addresses }}"
+
         - name: Set variable with private (tenant) ip of login node
           set_fact:
-            _slurm_login_internal_ip: "{{  _slurm_login_info.openstack.addresses.private[0].addr | ipv4('private') }}"
+            _slurm_login_internal_ip: "{{  _slurm_login_list_of_ips[0].addr | ipaddr('private') }}"
 
         - name: DEBUG | Print login node internal ip
           debug:
             var: _slurm_login_internal_ip
-          when: slurm_cluster_debug
+          when: slurm_cluster_debug | bool
 
         - name: Set variable with public (floating) IPs of the login node (Switch Engines)
           set_fact:
-            _slurm_login_floating_ip: "{{ _slurm_login_info.openstack.addresses.private[2].addr | ipv4('public') }}"
+            _slurm_login_floating_ip: "{{ _slurm_login_list_of_ips[2].addr | ipaddr('public') }}"
           when: "'{{ lookup('env', 'OS_AUTH_URL') }}' == 'https://keystone.cloud.switch.ch:5000/v3'"
 
         - name: Set variables with public (floating) IPs of the login node (Default)
           set_fact:
-            _slurm_login_floating_ip: "{{ _slurm_login_info.openstack.addresses.private[1].addr | ipv4('public') }}"
+            _slurm_login_floating_ip: "{{ _slurm_login_list_of_ips[1].addr | ipaddr('public') }}"
           when: _slurm_login_floating_ip is not defined
 
         - name: DEBUG | Print public floating ip of login node
@@ -238,7 +254,7 @@
         flavor: "{{ slurm_cluster_compute_flavor }}"
         security_groups:
           - "{{ slurm_cluster_security_group_default }}"
-        network: "{{ _os_project_network_id }}"
+        network: "{{ _os_project_network_name }}"
         wait: no
         meta:
           hostname: "slurm_compute_{{ item }}"
@@ -283,7 +299,7 @@
             flavor: "{{ slurm_cluster_nfs_server_flavor }}"
             security_groups:
               - "{{ slurm_cluster_security_group_default }}"
-            network: "{{ _os_project_network_id }}"
+            network: "{{ _os_project_network_name }}"
             wait: no
             meta:
               hostname: "slurm_nfs_server"
@@ -324,7 +340,7 @@
             flavor: "{{ slurm_cluster_slurm_master_flavor }}"
             security_groups:
               - "{{ slurm_cluster_security_group_default }}"
-            network: "{{ _os_project_network_id }}"
+            network: "{{ _os_project_network_name }}"
             wait: no
             meta:
               hostname: "slurm_master"
