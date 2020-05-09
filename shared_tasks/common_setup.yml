@@ -1,0 +1,57 @@
+---
+
+## these are the tasks we will run in every machine in the cluster
+
+- name: Deploy a custom /etc/hosts
+  template:
+    dest: /etc/hosts
+    src: hosts.j2
+  tags: etc_hosts
+
+- name: Install epel repository
+  package:
+    name: epel-release
+    state: installed
+  tags: epel
+
+- name: Add OpenHPC repositories
+  yum:
+    name: "{{ slurm_cluster_ohpc_repos_url }}"
+    state: installed
+
+- name: Make sure that selinux is disabled
+  import_role:
+    name: pescobar.selinux_disable
+  when: slurm_cluster_selinux_disabled | bool
+  tags: selinux
+
+- name: Configure chrony for time sync
+  import_role:
+    name: frzk.chrony
+  tags: chrony
+
+- name: Upgrade all packages and reboot if a new kernel was installed
+  import_role:
+    name: pescobar.upgrade_all_packages
+  when: slurm_cluster_upgrade_all_packages
+  tags: upgrade
+
+- name: Install some basic packages
+  package:
+    name: "{{ slurm_cluster_packages_to_install }}"
+    state: installed
+  tags: upgrade
+
+- name: Install and then stop/disable firewalld
+  block:
+
+      - name: Install firewalld
+        package:
+          name: firewalld
+          state: installed
+
+      - name: Stop and disable and firewalld
+        service:
+          name: firewalld
+          state: stopped
+          enabled: no

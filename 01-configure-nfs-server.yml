@@ -1,0 +1,63 @@
+---
+
+- name: Configure NFS server
+  hosts: slurm_nfs_server_group
+  gather_facts: true
+  become: true
+  remote_user: "{{ slurm_cluster_ssh_remote_user }}"
+
+  tasks:
+
+    - name: Common setup
+      import_tasks: shared_tasks/common_setup.yml
+
+    - name: Format the volume that we will export over NFS
+      block:
+
+        - name: Create mount point
+          file:
+            path: "{{ slurm_cluster_nfs_server_disk_mount_point }}"
+            state: directory
+            mode: 0755
+            owner: root
+            group: root
+
+        - name: Create folders "home" and "data" and "scratch" inside the NFS volume
+          file:
+            path: "{{ slurm_cluster_nfs_server_disk_mount_point }}/{{ item }}"
+            state: directory
+            mode: 0755
+            owner: root
+            group: root
+          loop:
+            - "home"
+            - "data"
+            - "scratch"
+
+        - name: Create partition in the NFS data volume
+          parted:
+            device: "{{ slurm_cluster_nfs_server_disk_device }}"
+            number: 1
+            state: present
+
+        - name: Create filesystem on partition
+          filesystem:
+            fstype: "{{ slurm_cluster_nfs_server_disk_fstype }}"
+            dev: "{{ slurm_cluster_nfs_server_disk_device }}1"
+
+        - name: Mount filesystem
+          mount:
+            path: "{{ slurm_cluster_nfs_server_disk_mount_point }}"
+            src: "{{ slurm_cluster_nfs_server_disk_device }}1"
+            fstype: "{{ slurm_cluster_nfs_server_disk_fstype }}"
+            state: mounted
+
+        - name: Grow filesystem after mounting (xfs requires to be mounted)
+          filesystem:
+            fstype: "{{ slurm_cluster_nfs_server_disk_fstype }}"
+            dev: "{{ slurm_cluster_nfs_server_disk_device }}1"
+            resizefs: true
+
+    - name: Configure NFS server
+      import_role:
+        name: geerlingguy.nfs
