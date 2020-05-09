@@ -5,6 +5,9 @@ Host slurm_login
   User {{ slurm_cluster_ssh_remote_user }}
   IdentityFile {{ slurm_cluster_ssh_key_path }}
   StrictHostKeyChecking no
+  UserKnownHostsFile /dev/null
+  # last option workaround for
+  # https://serverfault.com/questions/840011/ssh-host-key-checking-cannot-disable-when-using-proxy-jump
 
 Host {{ _os_project_internal_ip_range }}
   User {{ slurm_cluster_ssh_remote_user }}
