@@ -5,14 +5,9 @@
 
   tasks:
 
-    - name: Set variable _switch_engines_cloud to False (by default we assume this is not SwitchEngines)
-      set_fact:
-        _switch_engines_cloud: False
-
     - name: Check if we are using Switch Engines cloud to apply required exceptions
       set_fact:
-        _switch_engines_cloud: True
-      when: lookup('env', 'OS_AUTH_URL') == 'https://keystone.cloud.switch.ch:5000/v3'
+        _switch_engines_cloud: "{% if ansible_env.OS_AUTH_URL | regex_search('(cloud.switch.ch)') %}' True {% else %} False {% endif %}"
 
     - name: Create a ssh keypair for the slurm cluster
       openssh_keypair:
