@@ -86,7 +86,7 @@
         image: "{{ slurm_cluster_login_image }}"
         key_name: "{{ slurm_cluster_ssh_key_name }}"
         flavor: "{{ slurm_cluster_login_flavor }}"
-        network: "{{ _os_project_network_name }}"
+        network: "{{ _os_project_network_id }}"
         security_groups:
           - "{{ slurm_cluster_security_group_default }}"
           - "{{ slurm_cluster_security_group_login }}"
@@ -243,7 +243,7 @@
         flavor: "{{ slurm_cluster_compute_flavor }}"
         security_groups:
           - "{{ slurm_cluster_security_group_default }}"
-        network: "{{ _os_project_network_name }}"
+        network: "{{ _os_project_network_id }}"
         auto_ip: no
         wait: no
         meta:
@@ -301,7 +301,7 @@
               flavor: "{{ slurm_cluster_nfs_server_flavor }}"
               security_groups:
                 - "{{ slurm_cluster_security_group_default }}"
-              network: "{{ _os_project_network_name }}"
+              network: "{{ _os_project_network_id }}"
               wait: no
               meta:
                 hostname: "slurm_nfs_server"
@@ -342,7 +342,7 @@
               flavor: "{{ slurm_cluster_slurm_master_flavor }}"
               security_groups:
                 - "{{ slurm_cluster_security_group_default }}"
-              network: "{{ _os_project_network_name }}"
+              network: "{{ _os_project_network_id }}"
               wait: no
               meta:
                 hostname: "slurm_master"
