@@ -150,6 +150,12 @@
               name: slurmdbd
               state: started
               enabled: true
+            register: _enable_start_slurmdbd
+
+          - name: Wait 15secs to let slurmdbd boot if this is the first time it boots
+            pause:
+              seconds: 15
+            when: _enable_start_slurmdbd.changed
 
           - name: Check if the cluster is registered in accounting db
             shell: sacctmgr list cluster --noheader --parsable | wc -l
