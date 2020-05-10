@@ -68,7 +68,7 @@ chrony_ntp_servers:
 slurm_cluster_selinux_disabled: true
 selinux_reboot: true  # should we reboot the VM when selinux is disabled?
 
-slurm_cluster_upgrade_all_packages: true
+slurm_cluster_upgrade_all_packages: false
 
 # list of packages we want in every machine
 slurm_cluster_packages_to_install:
