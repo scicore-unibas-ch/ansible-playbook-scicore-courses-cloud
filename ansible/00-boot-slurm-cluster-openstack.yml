@@ -18,49 +18,49 @@
         name: "{{ slurm_cluster_ssh_key_name }}"
         public_key_file: "{{ slurm_cluster_ssh_key_path }}.pub"
 
-    - name: Query subnet info (SwitchEngines)
+    - name: Query os project net info (SwitchEngines)
       block:
 
           # Switch engines cloud doesn't allow to filter by project.
           # We have to use "os_subnets_info" without any argument and we get the subnet info for current project
-          - name: Query subnet info for the project (SwitchEngines)
+          - name: Query os project net info | SwitchEngines
             os_subnets_info:
-            register: _subnet_info_switch_cloud
+            register: _net_info_switch_cloud
 
-          - name:
+          - name: Set var _os_net_info with the os project net details | SwitchEngines
             set_fact:
-              _subnet_info: "{{ _subnet_info_switch_cloud }}"
+              _os_net_info: "{{ _net_info_switch_cloud }}"
 
       when: _switch_engines_cloud | bool
 
 
-    - name: Query subnet info (filtering by project)
+    - name: Query os project net info | Default
       block:
 
-          - name: Query subnet info (filtering by project)
+          - name: Query os project net info (filtering by project) | Default
             os_subnets_info:
               filters:
                 project_id: "{{ ansible_env.OS_PROJECT_ID }}"
-            register: _subnet_info_others
+            register: _net_info_others
 
-          - name:
+          - name: Set var _os_net_info with the os project net details | Default
             set_fact:
-              _subnet_info: "{{ _subnet_info_others }}"
+              _os_net_info: "{{ _net_info_others }}"
 
-      when: _subnet_info is not defined
+      when: _os_net_info is not defined
 
 
     - name: Set ansible variable with the os project internal network name
       set_fact:
-        _os_project_network_name: "{{ _subnet_info.openstack_subnets[0].name }}"
+        _os_project_network_name: "{{ _os_net_info.openstack_subnets[0].name }}"
 
     - name: Set ansible variable with the os project internal network id
       set_fact:
-        _os_project_network_id: "{{ _subnet_info.openstack_subnets[0].network_id }}"
+        _os_project_network_id: "{{ _os_net_info.openstack_subnets[0].network_id }}"
 
     - name: Set ansible variable with the os project internal subnet cidr
       set_fact:
-        _os_project_subnet_cidr: "{{ _subnet_info.openstack_subnets[0].cidr }}"
+        _os_project_subnet_cidr: "{{ _os_net_info.openstack_subnets[0].cidr }}"
 
     - name: Create default security group for the slurm cluster
       os_security_group:
