@@ -64,9 +64,6 @@ slurm_cluster_slurmdbd_mysql_db: "slurm"
 
 slurm_cluster_ohpc_repos_url: "https://github.com/openhpc/ohpc/releases/download/v1.3.GA/ohpc-release-1.3-1.el7.x86_64.rpm"
 
-# set slurm_cluster_debug=True to print more verbose info during the playbook execution
-slurm_cluster_debug: False
-
 chrony_timezone: Europe/Zurich
 chrony_ntp_servers:
   - pool.ntp.org
@@ -84,5 +81,8 @@ slurm_cluster_packages_to_install:
   - htop
   - bash-completion
 
-slurm_cluster_enable_compute_canada_software_stack: false
+slurm_cluster_users_accounts: 32
+slurm_cluster_users_home_folder: "{{ slurm_cluster_nfs_server_disk_mount_point }}/home"
+slurm_cluster_users_default_password: "$6$ldwSs5IPrUFC$mTJprVShXmBCd.DMYGR0SP31BcUUiReQEErn2s4cN3o91V5du/FnurZF/RU/nPnfrWZ1Sxr1pdjtvH6uG37Ee."  # slurm_cluster
+
 cvmfs_client_configure_storage: false
