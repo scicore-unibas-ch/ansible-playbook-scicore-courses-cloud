@@ -386,6 +386,14 @@
     #     src: ansible_inventory.j2
 
 
+# Now that we have booted all the resources we run another play.
+# It's important that this play uses "hosts:all" so we run the facter
+# in every machine we have booted above (and added to the in-memory inventory).
+# Once we collect facts for all the machines we create an static ansible inventory
+# in "ansible/inventory/hosts" using the template in "ansible/templates/ansible_inventory.j2"
+# It's very important in which groups are the hosts in the in-memory inventory. Check
+# the template for details
+
 - name: Create the ansible inventory
   hosts: all
   become: yes
