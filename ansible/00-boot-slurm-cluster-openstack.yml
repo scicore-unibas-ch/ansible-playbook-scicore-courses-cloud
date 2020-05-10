@@ -196,7 +196,9 @@
     - debug:
         msg: "To connecto to login node try: ssh -F {{ slurm_cluster_ssh_cfg_path }} slurm_login"
 
-    - name: Launch the slurm compute nodes
+    # We need to wait for each machine to boot so we get the IP info. This is done secuencially. One machine at a time
+    # This means that this task can take some time depending on the amount of compute nodes and their size
+    - name: Launch the slurm compute nodes (CAN TAKE SOME TIME!)
       os_server:
         name: "slurm_compute_{{ item }}"
         image: "{{ slurm_cluster_compute_image }}"
@@ -206,7 +208,6 @@
           - "{{ slurm_cluster_security_group_default }}"
         network: "{{ _os_project_network_id }}"
         auto_ip: no
-        wait: no
         meta:
           hostname: "slurm_compute_{{ item }}"
           role: "slurm_compute"
@@ -258,7 +259,6 @@
               security_groups:
                 - "{{ slurm_cluster_security_group_default }}"
               network: "{{ _os_project_network_id }}"
-              wait: no
               meta:
                 hostname: "slurm_nfs_server"
                 role: "slurm_nfs_server"
@@ -294,7 +294,6 @@
               security_groups:
                 - "{{ slurm_cluster_security_group_default }}"
               network: "{{ _os_project_network_id }}"
-              wait: no
               meta:
                 hostname: "slurm_master"
                 role: "slurm_master"
