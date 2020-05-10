@@ -27,28 +27,13 @@
       os_subnets_info:
       register: _subnet_info
 
-    - name: DEBUG | Print os project subnet info
-      debug:
-        var: _subnet_info
-      when: slurm_cluster_debug | bool
-
     - name: Set ansible variable with the os project internal network name
       set_fact:
         _os_project_network_name: "{{ _subnet_info.openstack_subnets[0].name }}"
 
-    - name: DEBUG | Print _os_project_network_name
-      debug:
-        var: _os_project_network_name
-      when: slurm_cluster_debug | bool
-
     - name: Set ansible variable with the os project internal network id
       set_fact:
         _os_project_network_id: "{{ _subnet_info.openstack_subnets[0].network_id }}"
-
-    - name: DEBUG | Print _os_project_network_id
-      debug:
-        var: _os_project_network_id
-      when: slurm_cluster_debug | bool
 
     - name: Set ansible variable with the os project internal subnet cidr
       set_fact:
@@ -96,11 +81,6 @@
           role: "slurm_login"
       register: _slurm_login_info
 
-    - name: DEBUG | Print login node info
-      debug:
-        var: _slurm_login_info
-      when: slurm_cluster_debug
-
 
     - name: Generate the required ssh config to use login node as bastion host
       block:
@@ -114,11 +94,6 @@
           - name: Set variable with private (tenant) ip of login node
             set_fact:
               _slurm_login_internal_ip: "{{  _slurm_login_list_of_ips[0].addr | ipv4 }}"
-
-          - name: DEBUG | Print login node internal ip
-            debug:
-              var: _slurm_login_internal_ip
-            when: slurm_cluster_debug | bool
 
           # Switch engines uses ipv6 so _slurm_login_internal_ip has 3 elements
           # _slurm_login_list_of_ips[0] > internal private ip
@@ -135,11 +110,6 @@
               _slurm_login_floating_ip: "{{ _slurm_login_list_of_ips[1].addr | ipv4 }}"
             when: _slurm_login_floating_ip is not defined
 
-          - name: DEBUG | Print public floating ip of login node
-            debug:
-              var: _slurm_login_floating_ip
-            when: slurm_cluster_debug | bool
-
           - name: Set variable with the os project internal network range as required by ssh config e.g. 192.168.33.* (hardcoded for Switch Engines)
             set_fact:
               _os_project_internal_ip_range: "10.0.*.*"
@@ -149,11 +119,6 @@
             set_fact:
               _os_project_internal_ip_range: "{{ _slurm_login_internal_ip | regex_replace('([0-9]+)$','*') }}"
             when: _os_project_internal_ip_range is not defined
-
-          - name: DEBUG | Print _os_project_internal_ip_range to be used in the ssh config
-            debug:
-              var: _os_project_internal_ip_range
-            when: slurm_cluster_debug | bool
 
           - name: Create a ssh config to connect to any machine in the slurm cluster using login node as bastion host
             template:
@@ -252,11 +217,6 @@
       with_sequence: count={{ slurm_cluster_num_workers }} format=%02u
       register: _slurm_compute_nodes_info
 
-    - name: DEBUG | Print compute nodes info
-      debug:
-        var: _slurm_compute_nodes_info
-      when: slurm_cluster_debug | bool
-
     - name: Add compute nodes to in-memory ansible inventory (Switch Engines provides private ip in field private_v4)
       add_host:
         name: "{{ item.openstack.name }}"
@@ -308,11 +268,6 @@
                 role: "slurm_nfs_server"
             register: _slurm_nfs_server_info
 
-          - name: DEBUG | Print nfs server info
-            debug:
-              var: _slurm_nfs_server_info
-            when: slurm_cluster_debug | bool
-
           - name: Add slurm_nfs_server to in-memory ansible inventory
             add_host:
               name: "{{ _slurm_nfs_server_info.openstack.name }}"
@@ -348,11 +303,6 @@
                 hostname: "slurm_master"
                 role: "slurm_master"
             register: _slurm_master_info
-
-          - name: DEBUG | Print slurm master server info
-            debug:
-              var: _slurm_master_info
-            when: slurm_cluster_debug | bool
 
           - name: Add slurm master to in-memory ansible inventory
             add_host:
@@ -420,11 +370,6 @@
     #     OS_USERNAME: "{{ lookup('env','OS_USERNAME') }}"
     #     OS_INTERFACE: "{{ lookup('env','OS_INTERFACE') }}"
     #   register: _os_server_info
-
-    # - name: DEBUG | Print details about all the cluster machines
-    #   debug:
-    #     var: _os_server_info
-    #   when: slurm_cluster_debug | bool
 
     # - name: Create the ansible inventory
     #   template:
