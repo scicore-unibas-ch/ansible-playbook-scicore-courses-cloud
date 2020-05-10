@@ -1,22 +1,22 @@
 localhost ansible_connection=local ansible_python_interpreter="/usr/bin/env python"
 
 [slurm_cluster_all]
-slurm_login ansible_host=10.0.2.18 ansible_ssh_extra_args='-F /home/stackhpc/.ssh/SIB-Training_slurm_cluster.cfg'
-slurm_compute_01 ansible_host=10.0.0.250 ansible_ssh_extra_args='-F /home/stackhpc/.ssh/SIB-Training_slurm_cluster.cfg'
+slurm_login ansible_host=10.0.3.251 ansible_ssh_extra_args='-F /home/stackhpc/.ssh/SIB-Training_slurm_cluster.cfg'
+slurm_compute_01 ansible_host=10.0.3.252 ansible_ssh_extra_args='-F /home/stackhpc/.ssh/SIB-Training_slurm_cluster.cfg'
 slurm_compute_02 ansible_host=10.0.1.1 ansible_ssh_extra_args='-F /home/stackhpc/.ssh/SIB-Training_slurm_cluster.cfg'
 
 [slurm_login_group]
-slurm_login ansible_host=10.0.2.18 ansible_ssh_extra_args='-F /home/stackhpc/.ssh/SIB-Training_slurm_cluster.cfg'
+slurm_login ansible_host=10.0.3.251 ansible_ssh_extra_args='-F /home/stackhpc/.ssh/SIB-Training_slurm_cluster.cfg'
 
 [slurm_compute_group]
-slurm_compute_01 ansible_host=10.0.0.250 ansible_ssh_extra_args='-F /home/stackhpc/.ssh/SIB-Training_slurm_cluster.cfg'
+slurm_compute_01 ansible_host=10.0.3.252 ansible_ssh_extra_args='-F /home/stackhpc/.ssh/SIB-Training_slurm_cluster.cfg'
 slurm_compute_02 ansible_host=10.0.1.1 ansible_ssh_extra_args='-F /home/stackhpc/.ssh/SIB-Training_slurm_cluster.cfg'
 
 [slurm_nfs_server_group]
-slurm_login ansible_host=10.0.2.18 ansible_ssh_extra_args='-F /home/stackhpc/.ssh/SIB-Training_slurm_cluster.cfg'
+slurm_login ansible_host=10.0.3.251 ansible_ssh_extra_args='-F /home/stackhpc/.ssh/SIB-Training_slurm_cluster.cfg'
 
 [slurm_master_group]
-slurm_login ansible_host=10.0.2.18 ansible_ssh_extra_args='-F /home/stackhpc/.ssh/SIB-Training_slurm_cluster.cfg'
+slurm_login ansible_host=10.0.3.251 ansible_ssh_extra_args='-F /home/stackhpc/.ssh/SIB-Training_slurm_cluster.cfg'
 
 
 # We use "hostvars[host]['ansible_default_ipv4']['address']" instead of "hostvars[host]['ansible_host']"

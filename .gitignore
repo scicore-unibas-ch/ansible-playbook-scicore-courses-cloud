@@ -7,3 +7,4 @@ __pycache__
 roles/
 vault.pass
 collections/
+ansible/inventory/hosts
