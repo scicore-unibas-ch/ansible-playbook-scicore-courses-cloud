@@ -50,3 +50,19 @@
         user: "user{{ item.item }}"
         key: "{{ item.content | b64decode }}"
       loop: "{{ _all_users_ssh_public_keys.results }}"
+
+    # this requires that root can access home folders (root squash in nfs shares if login node is not the nfs server)
+    - name: Deploy custom ssh config for each user
+      delegate_to: slurm_login
+      blockinfile:
+        path: "{{ slurm_cluster_users_home_folder }}/user{{ item }}/.ssh/config"
+        create: yes
+        backup: yes
+        owner: "user{{ item }}"
+        mode: 0600
+        marker: "# {mark} ANSIBLE MANAGED SSH CONFIG"
+        block: |
+          Host *
+              StrictHostKeyChecking no
+              ServerAliveInterval 10
+      with_sequence: "count={{ slurm_cluster_users_accounts }} format=%02u"
