@@ -165,6 +165,7 @@
                 - slurm_cluster_all
                 - slurm_login_group
                 - slurm_master_group
+                - slurm_nfs_clients_group
               ansible_host: "{{ _slurm_login_floating_ip }}"
               ansible_user: "{{ slurm_cluster_ssh_remote_user }}"
               ansible_ssh_private_key_file: "{{ slurm_cluster_ssh_key_path }}"
@@ -180,6 +181,7 @@
               groups:
                 - slurm_cluster_all
                 - slurm_login_group
+                - slurm_nfs_clients_group
               ansible_host: "{{ _slurm_login_floating_ip }}"
               ansible_user: "{{ slurm_cluster_ssh_remote_user }}"
               ansible_ssh_private_key_file: "{{ slurm_cluster_ssh_key_path }}"
@@ -220,6 +222,7 @@
         groups:
           - slurm_cluster_all
           - slurm_compute_group
+          - slurm_nfs_clients_group
         ansible_host: "{{ item.openstack.private_v4 }}"
         ansible_user: "{{ slurm_cluster_ssh_remote_user }}"
         ansible_ssh_private_key_file: "{{ slurm_cluster_ssh_key_path }}"
@@ -234,6 +237,7 @@
         groups:
           - slurm_cluster_all
           - slurm_compute_group
+          - slurm_nfs_clients_group
         ansible_host: "{{ item.openstack.accessIPv4 }}"
         ansible_user: "{{ slurm_cluster_ssh_remote_user }}"
         ansible_ssh_private_key_file: "{{ slurm_cluster_ssh_key_path }}"

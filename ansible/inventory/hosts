@@ -15,6 +15,10 @@ slurm_compute_02 ansible_host=10.0.1.1 ansible_ssh_extra_args='-F /home/stackhpc
 [slurm_nfs_server_group]
 slurm_login ansible_host=10.0.3.251 ansible_ssh_extra_args='-F /home/stackhpc/.ssh/SIB-Training_slurm_cluster.cfg'
 
+[slurm_nfs_clients_group]
+slurm_compute_01 ansible_host=10.0.3.252 ansible_ssh_extra_args='-F /home/stackhpc/.ssh/SIB-Training_slurm_cluster.cfg'
+slurm_compute_02 ansible_host=10.0.1.1 ansible_ssh_extra_args='-F /home/stackhpc/.ssh/SIB-Training_slurm_cluster.cfg'
+
 [slurm_master_group]
 slurm_login ansible_host=10.0.3.251 ansible_ssh_extra_args='-F /home/stackhpc/.ssh/SIB-Training_slurm_cluster.cfg'
 

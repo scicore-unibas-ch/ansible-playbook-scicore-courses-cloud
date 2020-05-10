@@ -17,6 +17,7 @@
     - name: Configure NFS mounts
       import_role:
         name: ome.nfs_mount
+      when: "'slurm_nfs_clients_group' in group_names"
       tags: nfs
 
     - name: Add OpenHPC repositories
