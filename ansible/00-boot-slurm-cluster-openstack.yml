@@ -110,14 +110,10 @@
               _slurm_login_floating_ip: "{{ _slurm_login_list_of_ips[1].addr | ipv4 }}"
             when: _slurm_login_floating_ip is not defined
 
-          - name: Set variable with the os project internal network range as required by ssh config e.g. 192.168.33.* (hardcoded for Switch Engines)
+          # this regex replaces the internal ip like 192.168.22.33 to 192.168.*.*
+          - name: Set variable with the os project internal network range as required by ssh config e.g. 192.168.*.*
             set_fact:
-              _os_project_internal_ip_range: "10.0.*.*"
-            when: _switch_engines_cloud
-
-          - name: Set variable with the os project internal network range as required by ssh config e.g. 192.168.33.* (by default we assume a Class C)
-            set_fact:
-              _os_project_internal_ip_range: "{{ _slurm_login_internal_ip | regex_replace('([0-9]+)$','*') }}"
+              _os_project_internal_ip_range: "{{ _slurm_login_internal_ip | regex_replace('([0-9]+).([0-9]+)$','*.*') }}"
             when: _os_project_internal_ip_range is not defined
 
           - name: Create a ssh config to connect to any machine in the slurm cluster using login node as bastion host
