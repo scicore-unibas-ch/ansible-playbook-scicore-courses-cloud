@@ -239,8 +239,8 @@
       with_sequence: count={{ slurm_cluster_num_workers }} format=%02u
       register: _slurm_compute_nodes_info
 
-    # Switch Engines cloud returns the VM's private ip in field "private_v4" but returns empty value in "accessIPv4"
-    # sciCORE cloud returns the VM's private ip in field "accessIPv4" but empty value in "private_v4"
+    # Switch Engines cloud returns the VM's private ip in field "private_v4" and returns empty value in "accessIPv4"
+    # sciCORE cloud returns the VM's private ip in field "accessIPv4" and empty value in "private_v4"
     # That's why we use an "if" to choose the right value for argument "ansible_host" in this task
     - name: Add compute nodes to in-memory ansible inventory (Switch Engines provides private ip in field private_v4)
       add_host:
@@ -386,9 +386,9 @@
     #     src: ansible_inventory.j2
 
 
-# Now that we have booted all the resources we run another play.
+# Now that we have booted all the resources we run another playbook.
 # It's important that this play uses "hosts:all" so we run the facter
-# in every machine we have booted above (and added to the in-memory inventory).
+# in every machine we have booted above (which are in the in-memory inventory).
 # Once we collect facts for all the machines we create an static ansible inventory
 # in "ansible/inventory/hosts" using the template in "ansible/templates/ansible_inventory.j2"
 # It's very important in which groups are the hosts in the in-memory inventory. Check
@@ -402,7 +402,7 @@
 
   tasks:
 
-    - name: Create the ansible inventory
+    - name: Create the ansible static inventory
       become: no
       delegate_to: localhost
       template:
