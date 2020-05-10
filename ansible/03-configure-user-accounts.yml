@@ -1,0 +1,52 @@
+---
+
+- name: Configure the user accounts
+  hosts:
+    - slurm_nfs_server_group
+    - slurm_master_group
+    - slurm_compute_group
+    - slurm_login_group
+  gather_facts: true
+  become: true
+  remote_user: "{{ slurm_cluster_ssh_remote_user }}"
+
+  tasks:
+
+    - name: Create a default group "slurm_cluster" for every user
+      group:
+        name: "slurm_cluster"
+        gid: 2000
+        state: present
+
+    - name: Create the user accounts (starting with uid 2001)
+      user:
+        name: "user{{ item }}"
+        uid: "20{{ item }}"
+        group: "slurm_cluster"
+        home: "{{ slurm_cluster_users_home_folder }}/user{{ item }}"
+        create_home: yes
+        shell: /bin/bash
+        update_password: always
+        password: "{{ slurm_cluster_users_default_password }}"
+        generate_ssh_key: yes
+        ssh_key_comment: "user{{item}}_slurm_cluster@ansible-generated"
+        state: present
+        ssh_key_file: .ssh/id_rsa
+        ssh_key_type: rsa
+      with_sequence: "count={{ slurm_cluster_users_accounts }} format=%02u"
+
+    # this requires that root can access home folders (root squash in nfs shares if login node is not the nfs server)
+    - name: Get the ssh public keys for every user
+      delegate_to: slurm_login
+      slurp:
+        src: "{{ slurm_cluster_users_home_folder }}/user{{ item }}/.ssh/id_rsa.pub"
+      register: _all_users_ssh_public_keys
+      with_sequence: "count={{ slurm_cluster_users_accounts }} format=%02u"
+
+    # this requires that root can access home folders (root squash in nfs shares if login node is not the nfs server)
+    - name: Add the user ssh keys to their accounts
+      delegate_to: slurm_login
+      authorized_key:
+        user: "user{{ item.item }}"
+        key: "{{ item.content | b64decode }}"
+      loop: "{{ _all_users_ssh_public_keys.results }}"
