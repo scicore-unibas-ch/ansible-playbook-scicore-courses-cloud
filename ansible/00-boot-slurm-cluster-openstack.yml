@@ -1,6 +1,6 @@
 ---
 
-- name: Create security groups and ssh key
+- name: Boot all the cloud resources for the Slurm cluster
   hosts: localhost
 
   tasks:
@@ -18,49 +18,43 @@
         name: "{{ slurm_cluster_ssh_key_name }}"
         public_key_file: "{{ slurm_cluster_ssh_key_path }}.pub"
 
-    - name: Query os project net info (SwitchEngines)
+    - name: Query os project subnet info (filtering by project) | Default
+      os_subnets_info:
+        filters:
+          project_id: "{{ ansible_env.OS_PROJECT_ID }}"
+      register: _output
+
+    # this task is only executed if openstack_subnets[] is NOT an empty list
+    - name: Set var _os_project_net_info with the os project net details | Default
+      set_fact:
+        _os_project_subnet_info: "{{ _output.openstack_subnets[0] }}"
+      when: _output.openstack_subnets | length > 0
+
+    # if filtering by project didn't work we try without any filter
+    - name: Query os project net info (without filtering by project)
       block:
 
-          # Switch engines cloud doesn't allow to filter by project.
-          # We have to use "os_subnets_info" without any argument and we get the subnet info for current project
-          - name: Query os project net info | SwitchEngines
+          - name: Query os project net info (without any filter)
             os_subnets_info:
-            register: _net_info_switch_cloud
+            register: _output
 
-          - name: Set var _os_net_info with the os project net details | SwitchEngines
+          - name: Set var _os_net_info with the os project net details
             set_fact:
-              _os_net_info: "{{ _net_info_switch_cloud }}"
+              _os_project_subnet_info: "{{ _output.openstack_subnets[0] }}"
 
-      when: _switch_engines_cloud | bool
-
-
-    - name: Query os project net info | Default
-      block:
-
-          - name: Query os project net info (filtering by project) | Default
-            os_subnets_info:
-              filters:
-                project_id: "{{ ansible_env.OS_PROJECT_ID }}"
-            register: _net_info_others
-
-          - name: Set var _os_net_info with the os project net details | Default
-            set_fact:
-              _os_net_info: "{{ _net_info_others }}"
-
-      when: _os_net_info is not defined
-
+      when: _os_project_subnet_info is not defined
 
     - name: Set ansible variable with the os project internal network name
       set_fact:
-        _os_project_network_name: "{{ _os_net_info.openstack_subnets[0].name }}"
+        _os_project_network_name: "{{ _os_project_subnet_info.name }}"
 
     - name: Set ansible variable with the os project internal network id
       set_fact:
-        _os_project_network_id: "{{ _os_net_info.openstack_subnets[0].network_id }}"
+        _os_project_network_id: "{{ _os_project_subnet_info.network_id }}"
 
     - name: Set ansible variable with the os project internal subnet cidr
       set_fact:
-        _os_project_subnet_cidr: "{{ _os_net_info.openstack_subnets[0].cidr }}"
+        _os_project_subnet_cidr: "{{ _os_project_subnet_info.cidr }}"
 
     - name: Create default security group for the slurm cluster
       os_security_group:
