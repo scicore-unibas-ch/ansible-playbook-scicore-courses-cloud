@@ -107,25 +107,20 @@
               _slurm_login_list_of_ips: "{{ item.value }}"
             with_dict: "{{ _slurm_login_info.openstack.addresses }}"
 
-          # _slurm_login_list_of_ips[0] is always the project/tenant private ip
+          # We assume _slurm_login_list_of_ips[0] is always the project/tenant private ip
           - name: Set variable with private (tenant) ip of login node
             set_fact:
               _slurm_login_internal_ip: "{{  _slurm_login_list_of_ips[0].addr | ipv4 }}"
 
-          # Switch engines uses ipv6 so _slurm_login_internal_ip has 3 elements
+          # We assume that last element in _slurm_login_list_of_ips[] is the public/floating ip
+          # sciCORE cloud only provide 2 ips by VM in _slurm_login_list_of_ips[]
+          # Switch engines cloud uses ipv6 so _slurm_login_internal_ip[] has 3 elements
           # _slurm_login_list_of_ips[0] > internal private ip
           # _slurm_login_list_of_ips[1] > ipv6 address
           # _slurm_login_list_of_ips[2] > floating ip
-          - name: Set variable with public (floating) IPs of the login node (Switch Engines)
+          - name: Set variable with public (floating) IPs of the login node
             set_fact:
-              _slurm_login_floating_ip: "{{ _slurm_login_list_of_ips[2].addr | ipv4 }}"
-            when: _switch_engines_cloud
-
-          # by default we assume _slurm_login_list_of_ips[1] is the public floating ip
-          - name: Set variables with public (floating) IPs of the login node (Default)
-            set_fact:
-              _slurm_login_floating_ip: "{{ _slurm_login_list_of_ips[1].addr | ipv4 }}"
-            when: _slurm_login_floating_ip is not defined
+              _slurm_login_floating_ip: "{{ _slurm_login_list_of_ips[-1].addr | ipv4 }}"
 
           # this regex replaces the internal ip like 192.168.22.33 to 192.168.*.*
           - name: Set variable with the os project internal network range as required by ssh config e.g. 192.168.*.*
