@@ -28,3 +28,9 @@ roles:
 
   - name: geerlingguy.nfs
     version: 1.5.0
+
+  - name: pescobar.cgroups_mem_limit
+    version: v1.0.0
+
+  - name: robertdebock.fail2ban
+    version: 3.0.5
