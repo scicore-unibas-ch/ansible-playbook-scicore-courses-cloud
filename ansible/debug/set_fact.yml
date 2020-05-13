@@ -1,0 +1,15 @@
+---
+
+- name: Testing module os_subnets_info
+  hosts: localhost
+
+
+  tasks:
+
+      - name: check if we use Switch
+        set_fact:
+          _switch_engines_cloud: "{% if ansible_env.OS_AUTH_URL == 'https://keystone.cloud.switch.ch:5000/v3' %}' True {% else %} False {% endif %}"
+
+      - name: check if we use Switch
+        set_fact:
+          _switch_engines_cloud: "{% if ansible_env.OS_AUTH_URL | regex_search('(cloud.switch.ch)') %}' True {% else %} False {% endif %}"

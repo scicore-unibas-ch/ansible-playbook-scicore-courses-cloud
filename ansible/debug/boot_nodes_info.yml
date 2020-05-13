@@ -1,0 +1,58 @@
+---
+
+- name: Testing info we get when booting compute nodes
+  hosts: localhost
+
+  vars:
+
+    slurm_cluster_os_project: "{{ ansible_env.OS_PROJECT_NAME }}"
+    slurm_cluster_ssh_key_name: "{{ slurm_cluster_os_project }}_slurm_cluster"  # name used to register the ssh key in openstack
+    slurm_cluster_num_workers: 2
+    slurm_cluster_security_group_default: "default"
+
+    slurm_cluster_compute_image: "CentOS7.8"
+    slurm_cluster_compute_flavor: "m1.small"
+    _os_project_network_id: "b7f77f33-add0-415a-8d5f-1ad2f7e8bea5"
+
+    # slurm_cluster_compute_image: "CentOS 7 (SWITCHengines)"
+    # slurm_cluster_compute_flavor: "c1.small"
+    # _os_project_network_id: "private"
+
+
+  tasks:
+
+    - name: Launch the slurm compute nodes
+      os_server:
+        name: "slurm_compute_{{ item }}"
+        image: "{{ slurm_cluster_compute_image }}"
+        key_name: "{{ slurm_cluster_ssh_key_name }}"
+        flavor: "{{ slurm_cluster_compute_flavor }}"
+        security_groups:
+          - "{{ slurm_cluster_security_group_default }}"
+        network: "{{ _os_project_network_id }}"
+        auto_ip: no
+        wait: yes
+        meta:
+          hostname: "slurm_compute_{{ item }}"
+          role: "slurm_compute"
+      with_sequence: count={{ slurm_cluster_num_workers }} format=%02u
+      register: _slurm_compute_nodes_info
+
+    - debug:
+        var: _slurm_compute_nodes_info
+
+    - name: Add compute nodes to in-memory ansible inventory (Switch Engines provides private ip in field private_v4)
+      add_host:
+        name: "{{ item.openstack.name }}"
+        groups:
+          - slurm_cluster_all
+          - slurm_compute_group
+          - slurm_nfs_clients_group
+        # ansible_host: "{{ item.openstack.private_v4 }}"
+        # ansible_host: "{% if item.openstack.private_v4 | ipaddr %} item.openstack.private_v4 {% else %} False {% endif %}"
+        ansible_host: "{% if item.openstack.private_v4 | ipaddr %}{{ item.openstack.private_v4 }}{% else %}{{ item.openstack.accessIPv4 }}{% endif %}"
+        # ansible_user: "{{ slurm_cluster_ssh_remote_user }}"
+        # ansible_ssh_private_key_file: "{{ slurm_cluster_ssh_key_path }}"
+        # ansible_ssh_extra_args: "-F {{ slurm_cluster_ssh_cfg_path }}"
+      loop: "{{ _slurm_compute_nodes_info.results }}"
+      changed_when: false
