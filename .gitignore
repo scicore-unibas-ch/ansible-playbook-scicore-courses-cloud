@@ -8,3 +8,4 @@ roles/
 vault.pass
 collections/
 ansible/inventory/hosts
+*.rc
