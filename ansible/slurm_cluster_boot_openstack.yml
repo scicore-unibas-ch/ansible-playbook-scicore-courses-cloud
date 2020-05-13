@@ -1,6 +1,6 @@
 ---
 
-- name: Boot all the cloud resources for the Slurm cluster in an OpenStack cloud
+- name: Boot all the resources for the Slurm cluster in an OpenStack cloud
   hosts: localhost
 
   tasks:
