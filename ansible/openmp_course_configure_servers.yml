@@ -1,0 +1,175 @@
+
+---
+
+- name: Configure machines for the OpenMP course
+  hosts: all
+  become: yes
+  gather_facts: yes
+  remote_user: centos
+
+  vars:
+
+    cvmfs_cache_size: "30000"  # cache size in megabytes. adjust to your disk size
+    cvmfs_http_proxy: "DIRECT"
+    cvmfs_client_configure_storage: False
+
+    default_group_name: "course"  # this is the default group for all the user accounts
+    number_of_user_accounts: 32   # how many user accounts to create
+    users_password: "$6$29fv0g331u6g9aa$KYp.nKpLn6GwSroJ6UfjGzud0AMn1fu4PdnH3ModV.801e1rPqwXG2qP069h0veTwfFlsMX6zyDZxsv7cAd.01"  # openmp_course
+
+    openhpc_repos_url: "https://github.com/openhpc/ohpc/releases/download/v1.3.GA/ohpc-release-1.3-1.el7.x86_64.rpm"
+
+    cgroup_memory_limit: "4G"
+    cgroup_to_whom_the_limit_applies: "@{{ default_group_name }}"
+
+    fail2ban_jail_configuration:
+      - section: sshd
+        option: enabled
+        value: "true"
+      - section: DEFAULT
+        option: ignoreip
+        value: "127.0.0.1/8 ::1 131.152.0.0/16"
+
+  tasks:
+
+    - name: Waiting for the machine to be online
+      wait_for_connection:
+
+    # - name: set hostname as defined in inventory
+    #   hostname:
+    #     name: "{{ hostvars[inventory_hostname].inventory_hostname }}"
+
+    - name: Install epel repository
+      package:
+        name: epel-release
+        state: installed
+      tags: epel
+
+    - name: Add OpenHPC repositories
+      yum:
+        name: "{{ openhpc_repos_url }}"
+        state: installed
+
+    - name: Make sure that selinux is disabled
+      import_role:
+        name: pescobar.selinux_disable
+      vars:
+        selinux_reboot: true
+      tags: selinux
+
+    - name: Configure chrony for time sync
+      import_role:
+        name: frzk.chrony
+      tags: chrony
+
+    - name: Install some basic packages
+      package:
+        name:
+          - vim
+          - emacs-nox
+          - git
+          - htop
+          - bash-completion
+        state: installed
+      tags: upgrade
+
+    # we are going to configure fail2ban so we want a firewall
+    - name: Install and then start/enable firewalld
+      block:
+
+          - name: Install firewalld
+            package:
+              name: firewalld
+              state: installed
+
+          - name: Start and enable and firewalld
+            service:
+              name: firewalld
+              state: started
+              enabled: yes
+
+    - name: Install software stack from compute canada
+      import_role:
+        name: ansible-cvmfs-client
+
+    - name: Create a default group {{ default_group_name }} for every user
+      group:
+        name: "{{ default_group_name }}"
+        gid: 2000
+        state: present
+
+    - name: Create the user accounts (starting with uid 2001)
+      user:
+        name: "user{{ item }}"
+        uid: "20{{ item }}"
+        group: "{{ default_group_name }}"
+        home: "/home/user{{ item }}"
+        create_home: yes
+        shell: /bin/bash
+        update_password: always
+        password: "{{ users_password }}"
+        state: present
+        #generate_ssh_key: no
+        #ssh_key_comment: "user{{item}}_slurm_cluster@ansible-generated"
+        #ssh_key_file: .ssh/id_rsa
+        #ssh_key_type: rsa
+      with_sequence: "count={{ number_of_user_accounts }} format=%02u"
+
+    - name: Create profile file to enable the ComputeCanada software stack on login
+      blockinfile:
+        dest: /etc/profile.d/compute_canada.sh
+        create: yes
+        owner: root
+        group: root
+        mode: 0644
+        marker: "# {mark} CREATED WITH ANSIBLE"
+        content: |
+          source /cvmfs/soft.computecanada.ca/config/profile/bash.sh &> /dev/null
+          module load gcc/9.1.0 python/3.8.2 &> /dev/null
+
+    - name: Create profile file to define OMP_NUM_THREADS on login
+      blockinfile:
+        dest: /etc/profile.d/openmp.sh
+        create: yes
+        owner: root
+        group: root
+        mode: 0644
+        marker: "# {mark} CREATED WITH ANSIBLE"
+        content: |
+          export OMP_NUM_THREADS=4
+
+    - name: Add Ruben's key
+      authorized_key:
+        user: centos
+        key: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICUyMx1EKuStJsIEx0NEkTU99zfVxbNU+XirAYImpLar ruben@jarvis"
+
+    - name: Add Aurelien's key
+      authorized_key:
+        user: centos
+        key: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDqfN8KwR77NW1/+wym7s12nwXBae8if0JKJ4K+HwOU96It8lg79cFPyph7HoPF1vWUNaEGMAWVeh7mVfWSXsMtFKmpe7PDYZF5fc+6aSwtEe7qelEyGeXygyIrdf8tSDC7QWdCBjrX6IbZ5JFc1fo2djONz8//84YvFNq5bqyHS80/+WZFYIc9BTL7M7yBSRK8zwwnzqxT+gWFP3iCNodG4zD8BffyqnrTWwSyV6xSUMb4aZ6PHoXvCj7VYuzhZ2/iJha+eDvGMYV2w0+FfZxwCB7JgYwiM3FS81fj3XshlEBOBZVMuz6y6C+UdCLFDLBeNQBr4zJl1bc580wrqf1h acavelan@acavelan"
+
+    - name: Enable password login for ssh
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: "^PasswordAuthentication no$"
+        line: "PasswordAuthentication yes"
+        backrefs: yes
+      notify: restart sshd
+
+    - name: Limit memory by user to 4GB
+      import_role:
+        name: pescobar.cgroups_mem_limit
+      tags: cgroups
+
+    - name: Install and enable fail2ban
+      import_role:
+        name: robertdebock.fail2ban
+      tags: fail2ban
+
+
+  handlers:
+
+    - name: restart sshd
+      service:
+        name: sshd
+        state: restarted

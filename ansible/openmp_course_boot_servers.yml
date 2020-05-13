@@ -1,0 +1,93 @@
+
+---
+
+- name: Boot only a server (or servers) with floating ips for a course
+  hosts: localhost
+
+  vars:
+
+    vm_name: "openmp_course"  # we will later append _01 _02 ... etc
+    #vm_image: "CentOS 7 (SWITCHengines)"
+    vm_image: "CentOS7.8"
+    #vm_flavor: "c1.medium"
+    vm_flavor: "m1.xxxlarge"
+    #vm_floating_ip_pool: "public"
+    vm_floating_ip_pool: "public_vlan"
+    #vm_network: "private"
+    vm_network: "scicore_devel-vlan"
+    vm_disk_size_gb: 200
+    vm_remote_user: "centos"
+    vm_ssh_key_path: "{{ ansible_env.HOME }}/.ssh/{{ vm_name }}"
+    vm_ssh_key_name: "{{ vm_name }}"
+    number_of_servers_to_boot: 2
+
+
+  tasks:
+
+    - name: Create a ssh keypair
+      openssh_keypair:
+        path: "{{ vm_ssh_key_path }}"
+
+    - name: Register ssh key pair
+      os_keypair:
+        name: "{{ vm_ssh_key_name }}"
+        public_key_file: "{{ vm_ssh_key_path }}.pub"
+
+    - name: Create security group (firewall)
+      os_security_group:
+        name: "{{ vm_name }}"
+        description: "Security group for VM {{ vm_name }}"
+
+    - name: Add fw rules (allowed access from the internet)
+      os_security_group_rule:
+        security_group: "{{ vm_name }}"
+        direction: ingress
+        protocol: tcp
+        port_range_min: "{{ item }}"
+        port_range_max: "{{ item }}"
+        remote_ip_prefix: 0.0.0.0/0
+      loop:
+        - 22
+        - 80
+        - 443
+
+    - name: Create cinder volume(s) to use as root disk(s)
+      os_volume:
+        display_name: "{{ vm_name }}_{{ item }}_root_disk"
+        image: "{{ vm_image }}"
+        size: "{{ vm_disk_size_gb }}"
+      register: _root_disk_volume_info
+      with_sequence: "count={{ number_of_servers_to_boot }} format=%02u"
+
+    - name: Launch server(s) (with a floating ip)
+      os_server:
+        name: "{{ vm_name }}_{{ item.item }}"
+        boot_volume: "{{ item.volume.id }}"
+        key_name: "{{ vm_ssh_key_name }}"
+        flavor: "{{ vm_flavor }}"
+        network: "{{ vm_network }}"
+        floating_ip_pools: "{{ vm_floating_ip_pool }}"
+        security_groups:
+          - "{{ vm_name }}"
+        wait: yes
+        state: present
+        meta:
+          hostname: "{{ vm_name }}_{{ item.item }}"
+      loop: "{{ _root_disk_volume_info.results }}"
+      register: _machine_info
+
+    - name: Add machine(s) to ansible in-memory inventory
+      add_host:
+        name: "{{ vm_name }}_{{ item.item }}"
+        ansible_host: "{{ item.server.interface_ip }}"
+        ansible_user: "{{ vm_remote_user }}"
+        ansible_ssh_private_key_file: "{{ vm_ssh_key_path }}"
+      changed_when: false
+      loop: "{{ _machine_info.results }}"
+
+
+# now that the machines are booted add added to the ansible in-memory
+# inventory we can proceed to configure them using another playbook
+
+- name: Configure servers for the OpenMP course
+  import_playbook: configure-openmp-course-servers.yml
