@@ -5,15 +5,11 @@
 
   tasks:
 
-    - name: Check if we are using Switch Engines cloud to apply required exceptions
-      set_fact:
-        _switch_engines_cloud: "{% if ansible_env.OS_AUTH_URL | regex_search('(cloud.switch.ch)') %}True{% else %}False{% endif %}"
-
-    - name: Create a ssh keypair for the slurm cluster
+    - name: Create a ssh keypair
       openssh_keypair:
         path: "{{ slurm_cluster_ssh_key_path }}"
 
-    - name: Register ssh key in openstack
+    - name: Register ssh key in the cloud
       os_keypair:
         name: "{{ slurm_cluster_ssh_key_name }}"
         public_key_file: "{{ slurm_cluster_ssh_key_path }}.pub"
