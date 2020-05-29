@@ -112,6 +112,14 @@
         name: gitlab-runner
         groups: docker
         append: yes
+      register: _gitlab_runner_added_docker_group
+
+    - name: Restart the gitlab-runner daemon if it was added to the docker group
+      service:
+        name: gitlab-runner
+        state: restarted
+      when: _gitlab_runner_added_docker_group.changed
+
 
   handlers:
 
