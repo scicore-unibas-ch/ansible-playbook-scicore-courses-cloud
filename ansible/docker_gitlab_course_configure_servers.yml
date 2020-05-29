@@ -1,0 +1,105 @@
+
+---
+
+- name: Configure machines for the Docker/Gitlab course
+  hosts: all
+  become: yes
+  gather_facts: yes
+  remote_user: centos
+
+  vars:
+
+    users_default_group: "course"  # this is the default group for all the user accounts
+    users_accounts_to_create: 4   # how many user accounts to create
+    users_password: "$6$cCYAsI/C$sPnN7MXy2WM5v8l.xDrYnggHgky2LqkDzOAPCpmSZnx80cVwJnSQVzba91wUjAMpbqAFVELpIME/n3jmrjV1q/"
+
+
+  tasks:
+
+    - name: Waiting for the machine to be online
+      wait_for_connection:
+
+    # - name: set hostname as defined in inventory
+    #   hostname:
+    #     name: "{{ hostvars[inventory_hostname].inventory_hostname }}"
+
+    - name: Install epel repository
+      package:
+        name: epel-release
+        state: installed
+      tags: epel
+
+    - name: Make sure that selinux is disabled
+      import_role:
+        name: pescobar.selinux_disable
+      vars:
+        selinux_reboot: true
+      tags: selinux
+
+    - name: Configure chrony for time sync
+      import_role:
+        name: frzk.chrony
+      tags: chrony
+
+    - name: Install some basic packages
+      package:
+        name:
+          - vim
+          - emacs-nox
+          - git
+          - htop
+          - bash-completion
+        state: installed
+      tags: upgrade
+
+    - name: Create a default group {{ users_default_group }} for every user
+      group:
+        name: "{{ users_default_group }}"
+        gid: 2000
+        state: present
+
+    - name: Create the user accounts (starting with uid 2001)
+      user:
+        name: "user{{ item }}"
+        uid: "20{{ item }}"
+        group: "{{ users_default_group }}"
+        home: "/home/user{{ item }}"
+        create_home: yes
+        shell: /bin/bash
+        update_password: always
+        password: "{{ users_password }}"
+        state: present
+        #generate_ssh_key: no
+        #ssh_key_comment: "user{{item}}_slurm_cluster@ansible-generated"
+        #ssh_key_file: .ssh/id_rsa
+        #ssh_key_type: rsa
+      with_sequence: "count={{ users_accounts_to_create }} format=%02u"
+
+    - name: Add Jarek's key
+      authorized_key:
+        user: centos
+        key: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIC7iFrhplBHPXG5wxEYAliB6J3yT3gUdna04UMk3NQem jsurkont"
+
+    - name: Enable password login for ssh
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: "^PasswordAuthentication no$"
+        line: "PasswordAuthentication yes"
+        backrefs: yes
+      notify: restart sshd
+
+    - name: Install docker
+      import_role:
+        name: geerlingguy.docker
+
+    - name: Install gitlab-runner
+      import_role:
+        name: riemers.gitlab-runner
+
+
+  handlers:
+
+    - name: restart sshd
+      service:
+        name: sshd
+        state: restarted
