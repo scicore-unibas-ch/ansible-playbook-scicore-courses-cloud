@@ -164,20 +164,33 @@
       become: yes
       become_user: user01
 
-    - name: user01 | Clone the client git repo
-      git:
-        repo: https://git.scicore.unibas.ch/bienert/cathsm-server-sibdays2020ed.git
-        dest: /tmp//cathsm-server-sibdays2020ed
+    - name: Download example seqs to folder ~/example_seqs
+      get_url:
+        url: "https://git.scicore.unibas.ch/bienert/cathsm-server-sibdays2020ed/-/raw/master/example_data/{{ item }}"
+        dest:  ~/example_seqs/
+      loop:
+        - P09904.fas
+        - P61851.fas
+        - P09905.fas
+        - P0DTC7.fas
+        - sample.fas
       become: yes
       become_user: user01
 
-    - name: user01 | Copy example seqs to home folder
-      copy:
-        src: /tmp/cathsm-server-sibdays2020ed/example_data/
-        dest: ~/example_seqs/
-        remote_src: yes
-      become: yes
-      become_user: user01
+    # - name: user01 | Clone the client git repo
+    #   git:
+    #     repo: https://git.scicore.unibas.ch/bienert/cathsm-server-sibdays2020ed.git
+    #     dest: /tmp//cathsm-server-sibdays2020ed
+    #   become: yes
+    #   become_user: user01
+
+    # - name: user01 | Copy example seqs to home folder
+    #   copy:
+    #     src: /tmp/cathsm-server-sibdays2020ed/example_data/*.fas
+    #     dest: ~/example_seqs/
+    #     remote_src: yes
+    #   become: yes
+    #   become_user: user01
 
     # - name: Copy config.ini to ~/.config/cath-swissmodel-api/
     #   copy:
