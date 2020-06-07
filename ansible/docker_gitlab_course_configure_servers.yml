@@ -13,6 +13,7 @@
     users_accounts_to_create: 1   # how many user accounts to create
     users_password: "$6$cCYAsI/C$sPnN7MXy2WM5v8l.xDrYnggHgky2LqkDzOAPCpmSZnx80cVwJnSQVzba91wUjAMpbqAFVELpIME/n3jmrjV1q/"
 
+    git_repo_local_path: /home/user01/cathsm-client
 
   tasks:
 
@@ -100,6 +101,7 @@
         key: "{{ item }}"
       loop:
         - "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIC7iFrhplBHPXG5wxEYAliB6J3yT3gUdna04UMk3NQem jsurkont"
+        - "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIALrjUYG1lxgGo9BbsUPmLu23ldompQJYmqLEnv4hXLT"
 
     - name: Add centos user to docker group
       user:
@@ -120,6 +122,72 @@
         state: restarted
       when: _gitlab_runner_added_docker_group.changed
 
+    - name: Install python36-virtualenv
+      yum:
+        name: python36-virtualenv
+        state: installed
+
+    - name: user01 | Clone the client git repo
+      git:
+        repo: https://github.com/CATH-SWISSMODEL/cathsm-client.git
+        dest: "{{ git_repo_local_path }}"
+      become: yes
+      become_user: user01
+
+    - name: Create the venv for the client
+      pip:
+        name: git+https://github.com/CATH-SWISSMODEL/cathsm-client.git
+        virtualenv: "{{ git_repo_local_path }}/venv"
+        virtualenv_command: virtualenv-3
+        #requirements: "{{ git_repo_local_path }}/venv"
+      become: yes
+      become_user: user01
+
+    - name: Create config folder ~/.config/cath-swissmodel-api/
+      file:
+        path: ~/.config/cath-swissmodel-api/
+        state: directory
+      become: yes
+      become_user: user01
+
+    - name: Download ~/.config/cath-swissmodel-api/config.ini
+      get_url:
+        url: https://git.scicore.unibas.ch/bienert/cathsm-server-sibdays2020ed/-/raw/master/example_data/config.ini
+        dest: ~/.config/cath-swissmodel-api/config.ini
+      become: yes
+      become_user: user01
+
+    - name: Create folder ~/example_seqs
+      file:
+        path: ~/example_seqs
+        state: directory
+      become: yes
+      become_user: user01
+
+    - name: user01 | Clone the client git repo
+      git:
+        repo: https://git.scicore.unibas.ch/bienert/cathsm-server-sibdays2020ed.git
+        dest: /tmp//cathsm-server-sibdays2020ed
+      become: yes
+      become_user: user01
+
+    - name: user01 | Copy example seqs to home folder
+      copy:
+        src: /tmp/cathsm-server-sibdays2020ed/example_data/
+        dest: ~/example_seqs/
+        remote_src: yes
+      become: yes
+      become_user: user01
+
+    # - name: Copy config.ini to ~/.config/cath-swissmodel-api/
+    #   copy:
+    #     src:
+    #     dest: /etc/sudoers.edit
+    #     remote_src: yes
+    #     path: ~/.config/cath-swissmodel-api/
+    #     state: directory
+    #   become: yes
+    #   become_user: user01
 
   handlers:
 
