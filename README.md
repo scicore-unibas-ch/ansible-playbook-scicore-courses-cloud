@@ -49,9 +49,10 @@ you config file:
 Now edit `config/slurm_cluster_switch_cloud.yml` and adapt it to your needs based on the output from previous commands. Most variables are self-descriptive.
 TO-DO: Improve the config docs
 
-## Boot the cluster
+## Boot the Slurm cluster
 ```
-ansible-playbook -e @config/slurm_cluster_switch_cloud.yml ansible/00-boot-slurm-cluster-openstack.yml
-ansible-playbook -i ansible/inventory/hosts -e @config/slurm_cluster_switch_cloud.yml ansible/01-configure-nfs-server.yml
-ansible-playbook -i ansible/inventory/hosts -e @config/config/slurm_cluster_switch_cloud.yml ansible/02-configure-slurm-cluster.yml
+ansible-playbook -e @config/slurm_cluster_switch_cloud.yml ansible-playbook ansible/slurm_cluster_boot_openstack.yml
+ansible-playbook -i ansible/inventory/hosts -e @config/slurm_cluster_switch_cloud.yml ansible/slurm_cluster_configure_nfs_server.yml
+ansible-playbook -i ansible/inventory/hosts -e @config/slurm_cluster_switch_cloud.yml ansible/slurm_cluster_configure_slurm_daemons.yml
+ansible-playbook -i ansible/inventory/hosts -e @config/slurm_cluster_switch_cloud.yml ansible/slurm_cluster_configure_user_accounts.yml
 ```
