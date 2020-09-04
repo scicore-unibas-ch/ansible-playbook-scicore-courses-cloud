@@ -2,6 +2,14 @@
 
 ## these are the tasks we will run in every machine in the cluster
 
+- name: Prepare the machine to be managed with ansible
+  import_role:
+    name: robertdebock.bootstrap
+
+- name: Install core deps
+  import_role:
+    name: robertdebock.core_dependencies
+
 - name: set hostname as defined in inventory
   hostname:
     name: "{{ hostvars[inventory_hostname].inventory_hostname }}"
@@ -29,10 +37,9 @@
   when: slurm_cluster_selinux_disabled | bool
   tags: selinux
 
-- name: Configure chrony for time sync
+- name: Configure NTP time
   import_role:
-    name: frzk.chrony
-  tags: chrony
+    name: robertdebock.ntp
 
 - name: Upgrade all packages and reboot if a new kernel was installed
   import_role:
