@@ -80,7 +80,7 @@
 
     - name: Launch the login node and attach a floating ip to it
       os_server:
-        name: "slurm_login"
+        name: "slurm-login"
         image: "{{ slurm_cluster_login_image }}"
         key_name: "{{ slurm_cluster_ssh_key_name }}"
         flavor: "{{ slurm_cluster_login_flavor }}"
@@ -90,8 +90,7 @@
           - "{{ slurm_cluster_security_group_login }}"
         floating_ip_pools: "{{ slurm_cluster_floating_ips_pool | default('public') }}"
         meta:
-          hostname: "slurm_login"
-          role: "slurm_login"
+          hostname: "slurm-login"
       register: _slurm_login_info
 
 
@@ -135,7 +134,7 @@
 
           - name: Add login machine to in-memory ansible inventory. NFS and slurm master run in login node
             add_host:
-              name: slurm_login
+              name: slurm-login
               groups:
                 - slurm_cluster_all
                 - slurm_login_group
@@ -152,7 +151,7 @@
 
           - name: Add login machine to in-memory ansible inventory. NFS runs in login node. Slurm master not
             add_host:
-              name: slurm_login
+              name: slurm-login
               groups:
                 - slurm_cluster_all
                 - slurm_login_group
@@ -168,7 +167,7 @@
 
           - name: Add login machine to in-memory ansible inventory. Slurm master runs in login. NFS not
             add_host:
-              name: slurm_login
+              name: slurm-login
               groups:
                 - slurm_cluster_all
                 - slurm_login_group
@@ -185,7 +184,7 @@
 
           - name: Add login machine to in-memory ansible inventory. Neither NFS or slurm master run in login
             add_host:
-              name: slurm_login
+              name: slurm-login
               groups:
                 - slurm_cluster_all
                 - slurm_login_group
@@ -200,17 +199,17 @@
               - slurm_cluster_slurm_master_dedicated_machine
 
     - name: Waiting for the login machine to be online
-      delegate_to: slurm_login
+      delegate_to: slurm-login
       wait_for_connection:
 
     - debug:
-        msg: "To connecto to login node try: ssh -F {{ slurm_cluster_ssh_cfg_path }} slurm_login"
+        msg: "To connec to to login node try: ssh -F {{ slurm_cluster_ssh_cfg_path }} slurm-login"
 
     # We need to wait for each machine to boot so we get the IP info. This is done secuencially. One machine at a time
     # This means that this task can take some time depending on the amount of compute nodes and their size
     - name: Launch the slurm compute nodes (CAN TAKE SOME TIME!)
       os_server:
-        name: "slurm_compute_{{ item }}"
+        name: "slurm-compute-{{ item }}"
         image: "{{ slurm_cluster_compute_image }}"
         key_name: "{{ slurm_cluster_ssh_key_name }}"
         flavor: "{{ slurm_cluster_compute_flavor }}"
@@ -219,8 +218,7 @@
         network: "{{ _os_project_network_id }}"
         auto_ip: no
         meta:
-          hostname: "slurm_compute_{{ item }}"
-          role: "slurm_compute"
+          hostname: "slurm-compute-{{ item }}"
       with_sequence: count={{ slurm_cluster_num_workers }} format=%02u
       register: _slurm_compute_nodes_info
 
@@ -251,7 +249,7 @@
 
           - name: Launch the NFS server machine
             os_server:
-              name: "slurm_nfs_server"
+              name: "slurm-nfs-server"
               image: "{{ slurm_cluster_nfs_server_image }}"
               key_name: "{{ slurm_cluster_ssh_key_name }}"
               flavor: "{{ slurm_cluster_nfs_server_flavor }}"
@@ -259,11 +257,10 @@
                 - "{{ slurm_cluster_security_group_default }}"
               network: "{{ _os_project_network_id }}"
               meta:
-                hostname: "slurm_nfs_server"
-                role: "slurm_nfs_server"
+                hostname: "slurm-nfs-server"
             register: _slurm_nfs_server_info
 
-          - name: Add slurm_nfs_server to in-memory ansible inventory
+          - name: Add slurm-nfs-server to in-memory ansible inventory
             add_host:
               name: "{{ _slurm_nfs_server_info.openstack.name }}"
               groups:
@@ -286,7 +283,7 @@
 
           - name: Launch the slurm master machine
             os_server:
-              name: "slurm_master"
+              name: "slurm-master"
               image: "{{ slurm_cluster_slurm_master_image }}"
               key_name: "{{ slurm_cluster_ssh_key_name }}"
               flavor: "{{ slurm_cluster_slurm_master_flavor }}"
@@ -294,8 +291,7 @@
                 - "{{ slurm_cluster_security_group_default }}"
               network: "{{ _os_project_network_id }}"
               meta:
-                hostname: "slurm_master"
-                role: "slurm_master"
+                hostname: "slurm-master"
             register: _slurm_master_info
 
           - name: Add slurm master to in-memory ansible inventory
@@ -327,14 +323,14 @@
 
           - name: Attach NFS volume to login (if NFS server runs in login)
             os_server_volume:
-              server: "slurm_login"
+              server: "slurm-login"
               volume: "slurm_cluster_nfs_data"
               device: /dev/vdb
             when: not slurm_cluster_nfs_server_dedicated_machine
 
           - name: Attach NFS volume to dedicated NFS server
             os_server_volume:
-              server: "slurm_nfs_server"
+              server: "slurm-nfs-server"
               volume: "slurm_cluster_nfs_data"
               device: "{{ slurm_cluster_nfs_server_disk_device }}"
             when: slurm_cluster_nfs_server_dedicated_machine

@@ -48,7 +48,7 @@ nfs_exports:
 # config for the NFS clients
 nfs_share_mounts:
   - path: "{{ slurm_cluster_nfs_server_disk_mount_point }}"
-    location: "slurm_nfs_server:{{ slurm_cluster_nfs_server_disk_mount_point }}"
+    location: "slurm-nfs-server:{{ slurm_cluster_nfs_server_disk_mount_point }}"
 
 # Set this to true to boot a dedicated machine for slurm master
 # The default is that slurm master is hosted in the login node

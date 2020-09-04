@@ -8,9 +8,9 @@
 {% endfor %}
 
 {% for host in groups['slurm_nfs_server_group'] %}
-{{ hostvars[host]['ansible_host'] }} slurm_nfs_server
+{{ hostvars[host]['ansible_host'] }} slurm-nfs-server
 {% endfor %}
 
 {% for host in groups['slurm_master_group'] %}
-{{ hostvars[host]['ansible_host'] }} slurm_master
+{{ hostvars[host]['ansible_host'] }} slurm-master
 {% endfor %}
