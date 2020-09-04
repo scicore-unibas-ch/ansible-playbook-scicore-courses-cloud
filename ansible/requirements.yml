@@ -12,6 +12,9 @@ roles:
   - name: robertdebock.ntp
     version: 2.6.1
 
+  - name: robertdebock.cron
+    version: 1.6.1
+
   - name: robertdebock.users
     version: 4.3.3
 

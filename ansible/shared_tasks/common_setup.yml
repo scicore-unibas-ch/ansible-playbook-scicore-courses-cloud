@@ -37,6 +37,10 @@
   when: slurm_cluster_selinux_disabled | bool
   tags: selinux
 
+- name: Make sure that cron is installed and enabled
+  import_role:
+    name: robertdebock.cron
+
 - name: Configure NTP time
   import_role:
     name: robertdebock.ntp
