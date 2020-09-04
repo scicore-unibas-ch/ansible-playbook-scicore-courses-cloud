@@ -387,6 +387,13 @@
 
   tasks:
 
+    - name: Create the inventory folder
+      become: no
+      delegate_to: localhost
+      file:
+        path: "{{ playbook_dir }}/inventory/"
+        state: directory
+
     - name: Create the ansible static inventory
       become: no
       delegate_to: localhost
