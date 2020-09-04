@@ -9,3 +9,4 @@ vault.pass
 collections/
 ansible/inventory/hosts
 *.rc
+*venv*
