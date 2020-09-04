@@ -62,10 +62,6 @@ slurm_cluster_slurmdbd_mysql_db: "slurm"
 
 slurm_cluster_ohpc_repos_url: "https://github.com/openhpc/ohpc/releases/download/v1.3.GA/ohpc-release-1.3-1.el7.x86_64.rpm"
 
-chrony_timezone: Europe/Zurich
-chrony_ntp_servers:
-  - pool.ntp.org
-
 slurm_cluster_selinux_disabled: true
 selinux_reboot: true  # should we reboot the VM when selinux is disabled?
 
