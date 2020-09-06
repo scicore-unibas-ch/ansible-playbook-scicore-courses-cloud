@@ -66,3 +66,16 @@
               StrictHostKeyChecking no
               ServerAliveInterval 10
       with_sequence: "count={{ slurm_cluster_users_accounts }} format=%02u"
+
+    - name: Check how many users are already registered in the slurm db
+      delegate_to: slurm-login
+      shell: sacctmgr show users --noheader --parsable | wc -l
+      register: _sacctmgr_users_list_output
+      changed_when: false
+
+    # Only execute this task if previous command returns less lines than the number of students in the course
+    - name: Register all the users in default slurm account named root
+      delegate_to: slurm-login
+      command: "sacctmgr create user name=user{{ item }} DefaultAccount=root --immediate"
+      when: _sacctmgr_users_list_output.stdout|int < slurm_cluster_users_accounts|int
+      with_sequence: "count={{ slurm_cluster_users_accounts }} format=%02u"
