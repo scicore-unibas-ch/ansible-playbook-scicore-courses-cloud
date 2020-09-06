@@ -325,7 +325,7 @@
             os_server_volume:
               server: "slurm-login"
               volume: "slurm_cluster_nfs_data"
-              device: /dev/vdb
+              device: "{{ slurm_cluster_nfs_server_disk_device }}"
             when: not slurm_cluster_nfs_server_dedicated_machine
 
           - name: Attach NFS volume to dedicated NFS server
