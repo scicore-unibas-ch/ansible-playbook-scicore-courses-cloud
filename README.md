@@ -29,8 +29,8 @@ The first playbook which includes `boot` in the playbook name is the first one t
 ### Download this git repo
 
 ```
-$> git clone https://github.com/scicore-unibas-ch/ansible-playbook-slurm-cluster-cloud.git
-$> cd ansible-playbook-slurm-cluster-cloud
+$> git clone https://github.com/scicore-unibas-ch/ansible-playbook-scicore-courses-cloud.git
+$> cd ansible-playbook-scicore-courses-cloud
 ```
 
 ### Install the required software
