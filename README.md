@@ -74,9 +74,19 @@ Now edit `config/slurm_cluster_switch_cloud.yml` and adapt it to your needs base
 TO-DO: Improve the config docs
 
 ## Booting a Slurm cluster
+
+Check the wrapper `boot_and_configure_slurm_cluster.sh` which executes these ansible playbooks:
+
 ```
 ansible-playbook -e @config/slurm_cluster_switch_cloud.yml ansible/slurm_cluster_boot_openstack.yml
 ansible-playbook -i ansible/inventory/hosts -e @config/slurm_cluster_switch_cloud.yml ansible/slurm_cluster_configure_nfs_server.yml
 ansible-playbook -i ansible/inventory/hosts -e @config/slurm_cluster_switch_cloud.yml ansible/slurm_cluster_configure_slurm_daemons.yml
 ansible-playbook -i ansible/inventory/hosts -e @config/slurm_cluster_switch_cloud.yml ansible/slurm_cluster_configure_user_accounts.yml
+```
+
+
+## Connecting to the slurm cluster
+
+```
+$> ssh -F ~/.ssh/slurm_cluster_cloud.cfg slurm-login
 ```
