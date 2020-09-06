@@ -37,23 +37,22 @@
 
     # this requires that root can access home folders (root squash in nfs shares if login node is not the nfs server)
     - name: Get the ssh public keys for every user
-      delegate_to: slurm-login
       slurp:
         src: "{{ slurm_cluster_users_home_folder }}/user{{ item }}/.ssh/id_rsa.pub"
       register: _all_users_ssh_public_keys
       with_sequence: "count={{ slurm_cluster_users_accounts }} format=%02u"
+      when: "'slurm_login_group' in group_names"
 
     # this requires that root can access home folders (root squash in nfs shares if login node is not the nfs server)
     - name: Add the user ssh keys to their accounts
-      delegate_to: slurm-login
       authorized_key:
         user: "user{{ item.item }}"
         key: "{{ item.content | b64decode }}"
       loop: "{{ _all_users_ssh_public_keys.results }}"
+      when: "'slurm_login_group' in group_names"
 
     # this requires that root can access home folders (root squash in nfs shares if login node is not the nfs server)
     - name: Deploy custom ssh config for each user
-      delegate_to: slurm-login
       blockinfile:
         path: "{{ slurm_cluster_users_home_folder }}/user{{ item }}/.ssh/config"
         create: yes
@@ -66,16 +65,18 @@
               StrictHostKeyChecking no
               ServerAliveInterval 10
       with_sequence: "count={{ slurm_cluster_users_accounts }} format=%02u"
+      when: "'slurm_login_group' in group_names"
 
-    - name: Check how many users are already registered in the slurm db
-      delegate_to: slurm-login
+    - name: Check how many users are already registered in the Slurm DB
       shell: sacctmgr show users --noheader --parsable | wc -l
       register: _sacctmgr_users_list_output
       changed_when: false
+      when: "'slurm_login_group' in group_names"
 
     # Only execute this task if previous command returns less lines than the number of students in the course
-    - name: Register all the users in default slurm account named root
-      delegate_to: slurm-login
+    - name: Register all the users in the Slurm DB
       command: "sacctmgr create user name=user{{ item }} DefaultAccount=root --immediate"
-      when: _sacctmgr_users_list_output.stdout|int < slurm_cluster_users_accounts|int
       with_sequence: "count={{ slurm_cluster_users_accounts }} format=%02u"
+      when:
+        - "'slurm_login_group' in group_names"
+        - "_sacctmgr_users_list_output.stdout|int <= slurm_cluster_users_accounts|int"
