@@ -43,13 +43,13 @@
       with_sequence: "count={{ slurm_cluster_users_accounts }} format=%02u"
       when: "'slurm_login_group' in group_names"
 
-    # this requires that root can access home folders (root squash in nfs shares if login node is not the nfs server)
+    # We do this in the NFS server to make sure that root can access the home folders (just in case root squash is enabled)
     - name: Add the user ssh keys to their accounts
       authorized_key:
         user: "user{{ item.item }}"
         key: "{{ item.content | b64decode }}"
       loop: "{{ _all_users_ssh_public_keys.results }}"
-      when: "'slurm_login_group' in group_names"
+      when: "'slurm_nfs_server_group' in group_names"
 
     # this requires that root can access home folders (root squash in nfs shares if login node is not the nfs server)
     - name: Deploy custom ssh config for each user
