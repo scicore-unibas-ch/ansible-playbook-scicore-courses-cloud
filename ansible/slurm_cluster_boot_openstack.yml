@@ -222,7 +222,7 @@
 
     # first element of the list is the last booted server so once first one is ACTIVE we
     # assume that the other compute nodes which were booted before are also active
-    - name: Waiting for the slurm compute nodes to be online ( status = ACTIVE )
+    - name: Waiting for the slurm compute nodes to be spawned so we get the ip info (status = ACTIVE)
       os_server_info:
         server: "slurm-compute*"
       register: _os_slurm_compute_nodes_info
