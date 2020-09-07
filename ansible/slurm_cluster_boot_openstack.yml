@@ -198,15 +198,13 @@
               - slurm_cluster_nfs_server_dedicated_machine
               - slurm_cluster_slurm_master_dedicated_machine
 
-    - name: Waiting for the login machine to be online
+    - name: Make sure we can ssh to the login node
       delegate_to: slurm-login
       wait_for_connection:
 
     - debug:
-        msg: "To connec to to login node try: ssh -F {{ slurm_cluster_ssh_cfg_path }} slurm-login"
+        msg: "To connect to to login node try: ssh -F {{ slurm_cluster_ssh_cfg_path }} slurm-login"
 
-    # We need to wait for each machine to boot so we get the IP info. This is done secuencially. One machine at a time
-    # This means that this task can take some time depending on the amount of compute nodes and their size
     - name: Launch the slurm compute nodes (CAN TAKE SOME TIME!)
       os_server:
         name: "slurm-compute-{{ item }}"
@@ -216,33 +214,43 @@
         security_groups:
           - "{{ slurm_cluster_security_group_default }}"
         network: "{{ _os_project_network_id }}"
-        auto_ip: no
+        auto_ip: no  # we don't need a public ip in the compute nodes. We will use the login node as ssh bastion host
+        wait: no  # we don't wait until instance is active so we can boot more servers in parallel
         meta:
           hostname: "slurm-compute-{{ item }}"
       with_sequence: count={{ slurm_cluster_num_workers }} format=%02u
-      register: _slurm_compute_nodes_info
+
+    # first element of the list is the last booted server so once first one is ACTIVE we
+    # assume that the other compute nodes which were booted before are also active
+    - name: Waiting for the slurm compute nodes to be online ( status = ACTIVE )
+      os_server_info:
+        server: "slurm-compute*"
+      register: _os_slurm_compute_nodes_info
+      until: "_os_slurm_compute_nodes_info.openstack_servers[0].status == 'ACTIVE'"
+      retries: 40
+      delay: 15
 
     # Switch Engines cloud returns the VM's private ip in field "private_v4" and returns empty value in "accessIPv4"
     # sciCORE cloud returns the VM's private ip in field "accessIPv4" and empty value in "private_v4"
     # That's why we use an "if" to choose the right value for argument "ansible_host" in this task
     - name: Add compute nodes to in-memory ansible inventory (Switch Engines provides private ip in field private_v4)
       add_host:
-        name: "{{ item.openstack.name }}"
+        name: "{{ item.name }}"
         groups:
           - slurm_cluster_all
           - slurm_compute_group
           - slurm_nfs_clients_group
-        ansible_host: "{% if item.openstack.private_v4 | ipaddr %}{{ item.openstack.private_v4 }}{% else %}{{ item.openstack.accessIPv4 | ipaddr }}{% endif %}"
+        ansible_host: "{% if item.private_v4 | ipaddr %}{{ item.private_v4 }}{% else %}{{ item.accessIPv4 | ipaddr }}{% endif %}"
         ansible_user: "{{ slurm_cluster_ssh_remote_user }}"
         ansible_ssh_private_key_file: "{{ slurm_cluster_ssh_key_path }}"
         ansible_ssh_extra_args: "-F {{ slurm_cluster_ssh_cfg_path }}"
-      loop: "{{ _slurm_compute_nodes_info.results }}"
+      loop: "{{ _os_slurm_compute_nodes_info.openstack_servers }}"
       changed_when: false
 
-    - name: Waiting for the slurm compute nodes to be online
-      delegate_to: "{{ item.openstack.name }}"
+    - name: Make sure we can ssh to the compute nodes
+      delegate_to: "{{ item.name }}"
       wait_for_connection:
-      loop: "{{ _slurm_compute_nodes_info.results }}"
+      loop: "{{ _os_slurm_compute_nodes_info.openstack_servers }}"
 
     - name: Launch dedicated machine for NFS server if slurm_cluster_nfs_server_dedicated_machine=true
       block:
