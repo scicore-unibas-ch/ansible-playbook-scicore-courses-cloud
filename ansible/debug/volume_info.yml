@@ -1,0 +1,17 @@
+---
+
+- name: Printing volume info
+  hosts: localhost
+
+
+  tasks:
+
+    - name: Create a cinder volume to export by nfs
+      os_volume:
+        display_name: "test_volume_to_delete"
+        size: 20
+        state: present
+      register: _volume_info
+
+    - debug:
+        var: _volume_info

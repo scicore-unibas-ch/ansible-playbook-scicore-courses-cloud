@@ -1,0 +1,14 @@
+---
+
+- name: Get info for every server
+  hosts: localhost
+
+
+  tasks:
+
+    - name: Query info for every server
+      os_server_info:
+      register: _servers_info
+
+    - debug:
+        var: _servers_info
