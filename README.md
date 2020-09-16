@@ -63,7 +63,10 @@ you config file:
 (venv_cloud)$> openstack image list
 (venv_cloud)$> openstack flavor list
 (venv_cloud)$> openstack network list
+(venv_cloud)$> openstack server list
 ```
+
+If these commands don't work double check that your openstack login info is correct and try to execute `openstack image list -v` to get a more verbose output.
 
 ### Prepare you config file
 ```
@@ -72,6 +75,8 @@ you config file:
 
 Now edit `config/slurm_cluster_switch_cloud.yml` and adapt it to your needs based on the output from previous commands. Most variables are self-descriptive.
 TO-DO: Improve the config docs
+
+**when defining the number of nodes to boot or the disk size double check in the webui if your cloud quota is big enough**
 
 ## Booting a Slurm cluster
 
