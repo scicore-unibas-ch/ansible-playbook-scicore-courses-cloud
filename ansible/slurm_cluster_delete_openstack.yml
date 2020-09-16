@@ -1,0 +1,59 @@
+---
+
+- name: Delete the slurm cluster from the cloud
+  hosts: localhost
+
+  tasks:
+
+    - pause:
+        prompt: Please confirm you want to DELETE THE SLURM CLUSTER. Press return to continue. Press Ctrl+c and then "a" to abort
+
+    - name: Delete login node
+      os_server:
+        name: "slurm-login"
+        delete_fip: yes  # also delete the floating ip if exists
+        wait: no
+        state: absent
+
+    - name: Delete dedicated NFS server
+      os_server:
+        name: "slurm-nfs-server"
+        delete_fip: yes  # also delete the floating ip if exists
+        wait: no
+        state: absent
+
+    - name: Delete dedicated slurm master
+      os_server:
+        name: "slurm-master"
+        delete_fip: yes  # also delete the floating ip if exists
+        wait: no
+        state: absent
+
+    - name: Delete the slurm compute nodes (CAN TAKE SOME TIME!)
+      os_server:
+        name: "slurm-compute-{{ item }}"
+        delete_fip: yes  # also delete the floating ip if exists
+        wait: yes
+        state: absent
+      with_sequence: count={{ slurm_cluster_num_workers }} format=%02u
+
+    - name: Delete cinder volume exported by nfs
+      os_volume:
+        display_name: "slurm_cluster_nfs_data"
+        state: absent
+
+    - name: Delete default security group for the slurm cluster
+      os_security_group:
+        name: "{{ slurm_cluster_security_group_default }}"
+        state: absent
+
+    - name: Delete security group for the login node
+      os_security_group:
+        name: "{{ slurm_cluster_security_group_login }}"
+        state: absent
+
+    - name: Unregister ssh key from the cloud
+      os_keypair:
+        name: "{{ slurm_cluster_ssh_key_name }}"
+        public_key_file: "{{ slurm_cluster_ssh_key_path }}.pub"
+        state: absent
