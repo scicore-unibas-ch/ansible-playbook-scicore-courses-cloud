@@ -99,3 +99,11 @@ ansible-playbook -i ansible/inventory/hosts -e @config/slurm_cluster_switch_clou
 ```
 $> ssh -F ~/.ssh/slurm_cluster_cloud.cfg slurm-login
 ```
+
+## Delete the Slurm cluster 
+
+**RUNNING THIS COMMAND WILL DELETE ALL THE MACHINES AND DATA FROM THE CLOUD!**
+
+```
+(venv_cloud)$> ansible-playbook -e @config/slurm_cluster_switch_cloud.yml ansible/slurm_cluster_delete_openstack.yml
+```
