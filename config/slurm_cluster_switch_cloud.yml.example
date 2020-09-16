@@ -107,3 +107,5 @@ rstudio_server_extra_r_packages:
   # - DESeq2
   # - edgeR
   # - QuasR
+
+cgroup_memory_limit: '4G'

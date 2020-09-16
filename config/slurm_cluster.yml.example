@@ -81,3 +81,15 @@ slurm_cluster_users_default_password: "$6$ldwSs5IPrUFC$mTJprVShXmBCd.DMYGR0SP31B
 
 slurm_cluster_enable_compute_canada_software_stack: false
 cvmfs_client_configure_storage: false
+
+# Define the list of R packages you want to install the login node (to be used in Rstudio)
+rstudio_server_extra_r_packages:
+  - cluster
+  # - ggplot2
+  # - gplots
+  # - dplyr
+  # - DESeq2
+  # - edgeR
+  # - QuasR
+
+cgroup_memory_limit: '4G'
