@@ -8,10 +8,12 @@ Inside the [ansible](ansible) folder you will find different playbooks for the d
 Playbooks with same name prefix belong to the same course. e.g. these are the playbooks to boot a slurm cluster
 
 ```
-slurm_cluster_boot_openstack.yml
-slurm_cluster_configure_nfs_server.yml
-slurm_cluster_configure_slurm_daemons.yml
-slurm_cluster_configure_user_accounts.yml
+ansible/slurm_cluster_boot_openstack.yml
+ansible/slurm_cluster_configure_nfs_server.yml
+ansible/slurm_cluster_configure_slurm_daemons.yml
+ansible/slurm_cluster_configure_user_accounts.yml
+ansible/slurm_cluster_install_rstudio_login_node.yml
+ansible/slurm_cluster_extras.yml
 ```
 
 The first playbook which includes `boot` in the playbook name is the first one to execute. This playbook does:
@@ -66,7 +68,7 @@ you config file:
 (venv_cloud)$> openstack server list
 ```
 
-If these commands don't work double check that your openstack login info is correct and try to execute `openstack image list -v` to get a more verbose output.
+If these commands don't work double check that your openstack login info is correct and try to execute `openstack image list -v` to get a more verbose output
 
 ### Prepare you config file
 ```
@@ -87,6 +89,8 @@ ansible-playbook -e @config/slurm_cluster_switch_cloud.yml ansible/slurm_cluster
 ansible-playbook -i ansible/inventory/hosts -e @config/slurm_cluster_switch_cloud.yml ansible/slurm_cluster_configure_nfs_server.yml
 ansible-playbook -i ansible/inventory/hosts -e @config/slurm_cluster_switch_cloud.yml ansible/slurm_cluster_configure_slurm_daemons.yml
 ansible-playbook -i ansible/inventory/hosts -e @config/slurm_cluster_switch_cloud.yml ansible/slurm_cluster_configure_user_accounts.yml
+ansible-playbook -i ansible/inventory/hosts -e @config/slurm_cluster_switch_cloud.yml ansible/slurm_cluster_install_rstudio_login_node.yml
+ansible-playbook -i ansible/inventory/hosts -e @config/slurm_cluster_switch_cloud.yml ansible/slurm_cluster_extras.yml
 ```
 
 
