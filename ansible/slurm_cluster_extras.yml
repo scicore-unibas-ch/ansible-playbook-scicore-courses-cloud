@@ -16,3 +16,12 @@
       when: (slurm_cluster_enable_compute_canada_software_stack) and
             (('slurm_compute_group' in group_names) or ('slurm_login_group' in group_names))
       tags: soft
+
+    - name: Configure a cgroups memory limit in login node
+      import_role:
+        name: pescobar.cgroups_mem_limit
+      vars:
+        # this is the user group we created in previous playbook
+        cgroup_to_whom_the_limit_applies: '@slurm_cluster'
+      when: "'slurm_login_group' in group_names"
+      tags: cgroups
