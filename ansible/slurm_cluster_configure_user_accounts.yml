@@ -99,3 +99,10 @@
       when:
         - "'slurm_login_group' in group_names"
         - "_sacctmgr_users_list_output.stdout|int <= slurm_cluster_users_accounts|int"
+
+    - name: Configure a cgroups memory limit in login node
+      import_role:
+        name: pescobar.cgroups_mem_limit
+      vars:
+        cgroup_to_whom_the_limit_applies: '@slurm_cluster'
+      when: "'slurm_login_group' in group_names"
