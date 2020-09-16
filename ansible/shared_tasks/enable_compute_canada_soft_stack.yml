@@ -1,0 +1,39 @@
+---
+
+- name: Query the size of the root partition in MB
+  shell: df -m / | awk {'print $2'} |tail -1
+  register: _root_partition_disk_size
+  changed_when: false
+
+- name: Set a variable in MB with the disk size we will use for CVMFS cache (30% of root partition)
+  set_fact:
+    cvmfs_cache_size: "{{ ( _root_partition_disk_size.stdout|int * 0.3) | int }}"
+    #cvmfs_cache_size: "{{ ( _root_partition_disk_size.stdout|int * 0.3) | round }}"
+
+- debug:
+    var: cvmfs_cache_size
+    verbosity: 2
+
+- name: Configure the CVMFS client to access the ComputeCanada soft stack
+  import_role:
+    name: ansible-cvmfs-client
+  vars:
+    cvmfs_http_proxy: "DIRECT"
+
+- name: Create profile file to enable the ComputeCanada software stack on login
+  blockinfile:
+    dest: /etc/profile.d/compute_canada.sh
+    create: yes
+    owner: root
+    group: root
+    mode: 0644
+    marker: "# {mark} CREATED WITH ANSIBLE"
+    content: |
+      # we create all students accounts with uid>2000
+      # and we only enable the software stack by default for them
+      if [ "$UID" -ge 2000 ]; then
+          if [ -f /cvmfs/soft.computecanada.ca/config/profile/bash.sh ]; then
+              source /cvmfs/soft.computecanada.ca/config/profile/bash.sh &> /dev/null
+              #module load gcc/9.1.0 python/3.8.2 &> /dev/null
+          fi
+      fi

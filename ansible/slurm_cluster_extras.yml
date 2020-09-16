@@ -1,0 +1,18 @@
+---
+
+- name: Extra customization in the slurm cluster
+  hosts:
+    - slurm_master_group
+    - slurm_compute_group
+    - slurm_login_group
+  gather_facts: true
+  become: true
+  remote_user: "{{ slurm_cluster_ssh_remote_user }}"
+
+  tasks:
+
+    - name: Install software stack from compute canada
+      import_tasks: shared_tasks/enable_compute_canada_soft_stack.yml
+      when: (slurm_cluster_enable_compute_canada_software_stack) and
+            (('slurm_compute_group' in group_names) or ('slurm_login_group' in group_names))
+      tags: soft

@@ -5,3 +5,4 @@ ansible-playbook -i ansible/inventory/hosts -e @config/slurm_cluster_switch_clou
 ansible-playbook -i ansible/inventory/hosts -e @config/slurm_cluster_switch_cloud.yml ansible/slurm_cluster_configure_slurm_daemons.yml
 ansible-playbook -i ansible/inventory/hosts -e @config/slurm_cluster_switch_cloud.yml ansible/slurm_cluster_configure_user_accounts.yml
 ansible-playbook -i ansible/inventory/hosts -e @config/slurm_cluster_switch_cloud.yml ansible/slurm_cluster_install_rstudio_login_node.yml
+ansible-playbook -i ansible/inventory/hosts -e @config/slurm_cluster_switch_cloud.yml ansible/slurm_cluster_extras.yml
