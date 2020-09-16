@@ -100,7 +100,7 @@
     #     name: ansible-role-dcc-portal-accounts
 
 
-    - name: Configure slurm master and accounting daemon
+    - name: Install and configure slurm accounting daemon
       block:
 
           - name: install mariadb-server rpm
@@ -175,7 +175,7 @@
       when: "'slurm_master_group' in group_names"
 
 
-    - name: Configure slurm master daemon
+    - name: Install and configure slurm master daemon
       block:
 
         - name: Install slurm master rpms
@@ -204,7 +204,7 @@
       when: "'slurm_master_group' in group_names"
 
 
-    - name: Configure slurm worker daemon
+    - name: Configure slurm worker daemons
       block:
 
           - name: Install OpenHPC slurmd
