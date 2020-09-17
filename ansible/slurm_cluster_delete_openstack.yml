@@ -33,9 +33,16 @@
       os_server:
         name: "slurm-compute-{{ item }}"
         delete_fip: yes  # also delete the floating ip if exists
-        wait: yes
+        wait: no
         state: absent
       with_sequence: count={{ slurm_cluster_num_workers }} format=%02u
+
+    - name: Waiting for all the servers to shutdown
+      os_server_info:
+      register: _os_servers_info
+      until: "{{ _os_servers_info.openstack_servers | length == 0 }}"
+      retries: 40
+      delay: 15
 
     - name: Delete cinder volume exported by nfs
       os_volume:
