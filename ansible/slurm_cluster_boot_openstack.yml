@@ -265,6 +265,7 @@
             security_groups:
               - "{{ slurm_cluster_security_group_default }}"
             network: "{{ _os_project_network_id }}"
+            auto_ip: no  # we don't need a public ip
             wait: yes
             meta:
               hostname: "slurm-nfs-server"
@@ -300,6 +301,7 @@
             security_groups:
               - "{{ slurm_cluster_security_group_default }}"
             network: "{{ _os_project_network_id }}"
+            auto_ip: no  # we don't need a public ip
             wait: yes
             meta:
               hostname: "slurm-master"
