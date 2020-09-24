@@ -1,5 +1,6 @@
 ![Ansible Lint](https://github.com/scicore-unibas-ch/ansible-playbook-scicore-courses-cloud/workflows/Ansible%20Lint/badge.svg)
 ![yamllint](https://github.com/scicore-unibas-ch/ansible-playbook-scicore-courses-cloud/workflows/yamllint/badge.svg)
+[![yamllint](https://github.com/scicore-unibas-ch/ansible-playbook-scicore-courses-cloud/workflows/yamllint/badge.svg)](https://github.com/scicore-unibas-ch/ansible-playbook-scicore-courses-cloud/actions?query=workflow%3Ayamllint)
 
 # Cloud playbooks
 
