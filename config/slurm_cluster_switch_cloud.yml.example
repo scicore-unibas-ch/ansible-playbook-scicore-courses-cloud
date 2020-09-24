@@ -90,6 +90,8 @@ slurm_cluster_packages_to_install:
   - htop
   - bash-completion
   - singularity
+  - screen
+  - tmux
 
 # Details for the local accounts to create in every machine
 slurm_cluster_users_accounts: 4
