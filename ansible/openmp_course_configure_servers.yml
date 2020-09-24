@@ -146,7 +146,7 @@
     - name: Add Aurelien's key
       authorized_key:
         user: centos
-        key: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDqfN8KwR77NW1/+wym7s12nwXBae8if0JKJ4K+HwOU96It8lg79cFPyph7HoPF1vWUNaEGMAWVeh7mVfWSXsMtFKmpe7PDYZF5fc+6aSwtEe7qelEyGeXygyIrdf8tSDC7QWdCBjrX6IbZ5JFc1fo2djONz8//84YvFNq5bqyHS80/+WZFYIc9BTL7M7yBSRK8zwwnzqxT+gWFP3iCNodG4zD8BffyqnrTWwSyV6xSUMb4aZ6PHoXvCj7VYuzhZ2/iJha+eDvGMYV2w0+FfZxwCB7JgYwiM3FS81fj3XshlEBOBZVMuz6y6C+UdCLFDLBeNQBr4zJl1bc580wrqf1h acavelan@acavelan"
+        key: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDqfN8KwR77NW1/+wym7s12nwXBae8if0JKJ4K+HwOU96It8lg79cFPyph7HoPF1vWUNaEGMAWVeh7mVfWSXsMtFKmpe7PDYZF5fc+6aSwtEe7qelEyGeXygyIrdf8tSDC7QWdCBjrX6IbZ5JFc1fo2djONz8//84YvFNq5bqyHS80/+WZFYIc9BTL7M7yBSRK8zwwnzqxT+gWFP3iCNodG4zD8BffyqnrTWwSyV6xSUMb4aZ6PHoXvCj7VYuzhZ2/iJha+eDvGMYV2w0+FfZxwCB7JgYwiM3FS81fj3XshlEBOBZVMuz6y6C+UdCLFDLBeNQBr4zJl1bc580wrqf1h acavelan@acavelan" # noqa 204
 
     - name: Enable password login for ssh
       lineinfile:

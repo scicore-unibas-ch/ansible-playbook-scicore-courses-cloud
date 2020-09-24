@@ -61,6 +61,7 @@
       template:
         dest: /etc/hosts
         src: hosts.j2
+        mode: 0644
       tags: etc_hosts
 
     - name: SLURM | Add OpenHPC repositories
