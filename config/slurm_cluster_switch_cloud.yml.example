@@ -100,6 +100,8 @@ slurm_cluster_users_default_password: "$6$ldwSs5IPrUFC$mTJprVShXmBCd.DMYGR0SP31B
 
 # Set this var to "True" to configure the ComputeCanada software stack in every machine
 slurm_cluster_enable_compute_canada_software_stack: false
+# should we launch a process in background to do initial sync of the software stack to local disk?
+slurm_cluster_prewarm_compute_canada_software_stack_cache: false
 cvmfs_client_configure_storage: false  # never modify this option. It should be always False
 
 # Define the list of R packages you want to install the login node (to be used in Rstudio)
