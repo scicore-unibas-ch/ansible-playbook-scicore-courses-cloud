@@ -6,7 +6,10 @@
   tasks:
 
     - pause:
-        prompt: Please confirm you want to DELETE THE SLURM CLUSTER. Press return to continue. Press Ctrl+c and then "a" to abort  # noqa 502
+        prompt: |
+
+          PLEASE CONFIRM THAT YOU WANT TO DELETE THE SLURM CLUSTER
+          Press return to continue. Press Ctrl+c and then "a" to abort
 
     - name: Delete login node
       os_server:
