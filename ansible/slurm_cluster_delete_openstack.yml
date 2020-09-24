@@ -7,9 +7,9 @@
 
     - pause:
         prompt: |
-
           PLEASE CONFIRM THAT YOU WANT TO DELETE THE SLURM CLUSTER
           Press return to continue. Press Ctrl+c and then "a" to abort
+      tags: skip_ansible_lint
 
     - name: Delete login node
       os_server:
