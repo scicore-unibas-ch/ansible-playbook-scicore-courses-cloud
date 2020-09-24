@@ -103,6 +103,16 @@ ansible-playbook -i ansible/inventory/hosts -e @config/slurm_cluster_switch_clou
 $> ssh -F ~/.ssh/slurm_cluster_cloud.cfg slurm-login
 ```
 
+## Running an interactive command in every machine in the slurm cluster
+
+From you ansible control host:
+
+```
+$> ansible slurm_cluster_all -i ansible/inventory/hosts -m shell -a 'uname -r'
+
+$> ansible slurm_cluster_all -i ansible/inventory/hosts -m shell -a 'yum -y install htop'
+```
+
 ## Delete the Slurm cluster
 
 **RUNNING THIS COMMAND WILL DELETE ALL THE MACHINES AND DATA FROM THE CLOUD!**
