@@ -6,21 +6,21 @@
 
   tasks:
 
-      - name: Query subnet info for the project
-        os_subnets_info:
-          filters:
-            #tenant_id: "{{ lookup('env', 'OS_PROJECT_ID') }}"
-            #project_id: ""
-        register: _subnet_info
+    - name: Query subnet info for the project
+      os_subnets_info:
+        filters:
+          #tenant_id: "{{ lookup('env', 'OS_PROJECT_ID') }}"
+          #project_id: ""
+      register: _subnet_info
 
-      # - name: Query subnet info for the project
-      #   os_subnets_info:
-      #   register: _subnet_info
+    # - name: Query subnet info for the project
+    #   os_subnets_info:
+    #   register: _subnet_info
 
-      - name: Set ansible variable with the os project internal network name
-        set_fact:
-          _os_project_network_name: "{{ _subnet_info.openstack_subnets[0].name }}"
+    - name: Set ansible variable with the os project internal network name
+      set_fact:
+        _os_project_network_name: "{{ _subnet_info.openstack_subnets[0].name }}"
 
-      - name: Set ansible variable with the os project internal subnet cidr
-        set_fact:
-          _os_project_subnet_cidr: "{{ _subnet_info.openstack_subnets[0].cidr }}"
+    - name: Set ansible variable with the os project internal subnet cidr
+      set_fact:
+        _os_project_subnet_cidr: "{{ _subnet_info.openstack_subnets[0].cidr }}"

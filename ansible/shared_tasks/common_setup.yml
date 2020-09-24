@@ -41,16 +41,16 @@
     - name: RedHat | Install and then stop/disable firewalld
       block:
 
-          - name: RedHat | Install firewalld
-            package:
-              name: firewalld
-              state: installed
+        - name: RedHat | Install firewalld
+          package:
+            name: firewalld
+            state: installed
 
-          - name: RedHat | Stop and disable and firewalld
-            service:
-              name: firewalld
-              state: stopped
-              enabled: no
+        - name: RedHat | Stop and disable and firewalld
+          service:
+            name: firewalld
+            state: stopped
+            enabled: no
 
   when: ansible_os_family == 'RedHat'
 
@@ -81,4 +81,3 @@
       tags: upgrade
 
   when: "'slurm_cluster_all' in group_names"
-
