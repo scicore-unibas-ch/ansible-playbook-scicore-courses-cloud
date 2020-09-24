@@ -1,4 +1,3 @@
-
 ---
 
 - name: Configure machines for the OpenMP course
@@ -77,16 +76,16 @@
     - name: Install and then start/enable firewalld
       block:
 
-          - name: Install firewalld
-            package:
-              name: firewalld
-              state: installed
+        - name: Install firewalld
+          package:
+            name: firewalld
+            state: installed
 
-          - name: Start and enable and firewalld
-            service:
-              name: firewalld
-              state: started
-              enabled: yes
+        - name: Start and enable and firewalld
+          service:
+            name: firewalld
+            state: started
+            enabled: yes
 
     - name: Install software stack from compute canada
       import_role:
@@ -109,10 +108,10 @@
         update_password: always
         password: "{{ users_password }}"
         state: present
-        #generate_ssh_key: no
-        #ssh_key_comment: "user{{item}}_slurm_cluster@ansible-generated"
-        #ssh_key_file: .ssh/id_rsa
-        #ssh_key_type: rsa
+        # generate_ssh_key: no
+        # ssh_key_comment: "user{{item}}_slurm_cluster@ansible-generated"
+        # ssh_key_file: .ssh/id_rsa
+        # ssh_key_type: rsa
       with_sequence: "count={{ users_accounts_to_create }} format=%02u"
 
     - name: Create profile file to enable the ComputeCanada software stack on login
@@ -146,7 +145,7 @@
     - name: Add Aurelien's key
       authorized_key:
         user: centos
-        key: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDqfN8KwR77NW1/+wym7s12nwXBae8if0JKJ4K+HwOU96It8lg79cFPyph7HoPF1vWUNaEGMAWVeh7mVfWSXsMtFKmpe7PDYZF5fc+6aSwtEe7qelEyGeXygyIrdf8tSDC7QWdCBjrX6IbZ5JFc1fo2djONz8//84YvFNq5bqyHS80/+WZFYIc9BTL7M7yBSRK8zwwnzqxT+gWFP3iCNodG4zD8BffyqnrTWwSyV6xSUMb4aZ6PHoXvCj7VYuzhZ2/iJha+eDvGMYV2w0+FfZxwCB7JgYwiM3FS81fj3XshlEBOBZVMuz6y6C+UdCLFDLBeNQBr4zJl1bc580wrqf1h acavelan@acavelan" # noqa 204
+        key: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDqfN8KwR77NW1/+wym7s12nwXBae8if0JKJ4K+HwOU96It8lg79cFPyph7HoPF1vWUNaEGMAWVeh7mVfWSXsMtFKmpe7PDYZF5fc+6aSwtEe7qelEyGeXygyIrdf8tSDC7QWdCBjrX6IbZ5JFc1fo2djONz8//84YvFNq5bqyHS80/+WZFYIc9BTL7M7yBSRK8zwwnzqxT+gWFP3iCNodG4zD8BffyqnrTWwSyV6xSUMb4aZ6PHoXvCj7VYuzhZ2/iJha+eDvGMYV2w0+FfZxwCB7JgYwiM3FS81fj3XshlEBOBZVMuz6y6C+UdCLFDLBeNQBr4zJl1bc580wrqf1h acavelan@acavelan"  # noqa 204
 
     - name: Enable password login for ssh
       lineinfile:

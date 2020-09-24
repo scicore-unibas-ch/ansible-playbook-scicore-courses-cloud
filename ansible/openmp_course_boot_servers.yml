@@ -1,4 +1,3 @@
-
 ---
 
 - name: Boot only a server (or servers) with floating ips for a course
@@ -7,13 +6,13 @@
   vars:
 
     vm_name: "openmp_course"  # we will later append _01 _02 ... etc
-    #vm_image: "CentOS 7 (SWITCHengines)"
+    # vm_image: "CentOS 7 (SWITCHengines)"
     vm_image: "CentOS7.8"
-    #vm_flavor: "c1.medium"
+    # vm_flavor: "c1.medium"
     vm_flavor: "m1.xxxlarge"
-    #vm_floating_ip_pool: "public"
+    # vm_floating_ip_pool: "public"
     vm_floating_ip_pool: "public_vlan"
-    #vm_network: "private"
+    # vm_network: "private"
     vm_network: "scicore_devel-vlan"
     vm_disk_size_gb: 200
     vm_remote_user: "centos"

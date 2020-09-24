@@ -1,4 +1,3 @@
-
 ---
 
 - name: Configure machines for the Docker/Gitlab course
@@ -81,10 +80,10 @@
         update_password: always
         password: "{{ users_password }}"
         state: present
-        #generate_ssh_key: no
-        #ssh_key_comment: "user{{item}}_slurm_cluster@ansible-generated"
-        #ssh_key_file: .ssh/id_rsa
-        #ssh_key_type: rsa
+        # generate_ssh_key: no
+        # ssh_key_comment: "user{{item}}_slurm_cluster@ansible-generated"
+        # ssh_key_file: .ssh/id_rsa
+        # ssh_key_type: rsa
       with_sequence: "count={{ users_accounts_to_create }} format=%02u"
 
     - name: Enable password login for ssh
@@ -134,7 +133,7 @@
         name: git+https://github.com/CATH-SWISSMODEL/cathsm-client.git
         virtualenv: "{{ git_repo_local_path }}/venv"
         virtualenv_command: virtualenv-3
-        #requirements: "{{ git_repo_local_path }}/venv"
+        # requirements: "{{ git_repo_local_path }}/venv"
       become: yes
       become_user: user01
 
@@ -164,7 +163,7 @@
     - name: Download example seqs to folder ~/example_seqs
       get_url:
         url: "https://git.scicore.unibas.ch/bienert/cathsm-server-sibdays2020ed/-/raw/master/example_data/{{ item }}"
-        dest:  ~/example_seqs/
+        dest: ~/example_seqs/
       loop:
         - P09904.fas
         - P61851.fas

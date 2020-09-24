@@ -103,74 +103,74 @@
     - name: Install and configure slurm accounting daemon
       block:
 
-          - name: install mariadb-server rpm
-            yum:
-              name: mariadb-server
-              state: installed
+        - name: install mariadb-server rpm
+          yum:
+            name: mariadb-server
+            state: installed
 
-          - name: Enable and start mariadb server
-            service:
-              name: mariadb
-              state: started
-              enabled: true
+        - name: Enable and start mariadb server
+          service:
+            name: mariadb
+            state: started
+            enabled: true
 
-          - name: install MySQL-python rpm (required by ansible)
-            yum:
-              name: MySQL-python
-              state: installed
+        - name: install MySQL-python rpm (required by ansible)
+          yum:
+            name: MySQL-python
+            state: installed
 
-          - name: create mysql db for accounting
-            mysql_db:
-              name: "{{ slurm_cluster_slurmdbd_mysql_db }}"
-              state: present
+        - name: create mysql db for accounting
+          mysql_db:
+            name: "{{ slurm_cluster_slurmdbd_mysql_db }}"
+            state: present
 
-          - name: create mysql account for slurm accounting daemon
-            mysql_user:
-              name: "{{ slurm_cluster_slurmdbd_mysql_user }}"
-              password: "{{ slurm_cluster_slurmdbd_mysql_password }}"
-              priv: '{{ slurm_cluster_slurmdbd_mysql_db }}.*:ALL'
-              state: present
+        - name: create mysql account for slurm accounting daemon
+          mysql_user:
+            name: "{{ slurm_cluster_slurmdbd_mysql_user }}"
+            password: "{{ slurm_cluster_slurmdbd_mysql_password }}"
+            priv: '{{ slurm_cluster_slurmdbd_mysql_db }}.*:ALL'
+            state: present
 
-          - name: install slurm accounting daemon from OpenHPC (slurm-slurmdbd-ohpc rpm)
-            yum:
-              name: slurm-slurmdbd-ohpc
-              state: installed
+        - name: install slurm accounting daemon from OpenHPC (slurm-slurmdbd-ohpc rpm)
+          yum:
+            name: slurm-slurmdbd-ohpc
+            state: installed
 
-          - name: deploy slurm accounting config file
-            template:
-              dest: /etc/slurm/slurmdbd.conf
-              src: slurmdbd.conf.j2
-              owner: root
-              group: root
-              mode: 0644
-            notify: Restart slurmdbd service
-            tags: slurm_config
+        - name: deploy slurm accounting config file
+          template:
+            dest: /etc/slurm/slurmdbd.conf
+            src: slurmdbd.conf.j2
+            owner: root
+            group: root
+            mode: 0644
+          notify: Restart slurmdbd service
+          tags: slurm_config
 
-          - name: Enable and start slurmdbd
-            service:
-              name: slurmdbd
-              state: started
-              enabled: true
-            register: _enable_start_slurmdbd
+        - name: Enable and start slurmdbd
+          service:
+            name: slurmdbd
+            state: started
+            enabled: true
+          register: _enable_start_slurmdbd
 
-          - name: Wait 15secs to let slurmdbd boot if this is the first time it boots
-            pause:
-              seconds: 15
-            when: _enable_start_slurmdbd.changed
+        - name: Wait 15secs to let slurmdbd boot if this is the first time it boots
+          pause:
+            seconds: 15
+          when: _enable_start_slurmdbd.changed
 
-          - name: Check if the cluster is registered in accounting db
-            shell: sacctmgr list cluster --noheader --parsable | wc -l
-            register: _sacctmgr_output
-            changed_when: false
+        - name: Check if the cluster is registered in accounting db
+          shell: sacctmgr list cluster --noheader --parsable | wc -l
+          register: _sacctmgr_output
+          changed_when: false
 
-          # - debug:
-          #     var: _sacctmgr_output
+        # - debug:
+        #     var: _sacctmgr_output
 
-          # if previous command return 0 lines it's because no cluster is registered
-          # We assume that no other clusters are re
-          - name: Register the cluster in accounting db
-            command: sacctmgr add cluster slurm_cluster --immediate
-            when: _sacctmgr_output.stdout == "0"
+        # if previous command return 0 lines it's because no cluster is registered
+        # We assume that no other clusters are re
+        - name: Register the cluster in accounting db
+          command: sacctmgr add cluster slurm_cluster --immediate
+          when: _sacctmgr_output.stdout == "0"
 
       when: "'slurm_master_group' in group_names"
 
@@ -207,51 +207,51 @@
     - name: Configure slurm worker daemons
       block:
 
-          - name: Install OpenHPC slurmd
-            yum:
-              name:
-                - "slurm-slurmd-ohpc"
-              state: present
+        - name: Install OpenHPC slurmd
+          yum:
+            name:
+              - "slurm-slurmd-ohpc"
+            state: present
 
-          - name: Install cgroups if this is a worker host
-            yum:
-              name:
-                - libcgroup
-                - libcgroup-tools
-              state: present
+        - name: Install cgroups if this is a worker host
+          yum:
+            name:
+              - libcgroup
+              - libcgroup-tools
+            state: present
 
-          - name: deploy /etc/slurm/cgroup.conf
-            template:
-              dest: /etc/slurm/cgroup.conf
-              src: cgroup.conf.j2
-              owner: root
-              group: root
-              mode: 0644
-            notify: Restart SLURM service
-            tags: slurm_config
+        - name: deploy /etc/slurm/cgroup.conf
+          template:
+            dest: /etc/slurm/cgroup.conf
+            src: cgroup.conf.j2
+            owner: root
+            group: root
+            mode: 0644
+          notify: Restart SLURM service
+          tags: slurm_config
 
-          - name: enable and start cgroup services if this is a worker_node
-            service:
-              name: "{{ item }}"
-              enabled: true
-              state: started
-            with_items:
-              - cgred
-              - cgconfig
+        - name: enable and start cgroup services if this is a worker_node
+          service:
+            name: "{{ item }}"
+            enabled: true
+            state: started
+          with_items:
+            - cgred
+            - cgconfig
 
-          - name: Install slurm worker rpms
-            yum:
-              name:
-                - "@ohpc-base-compute"
-                - "@ohpc-slurm-client"
-                - "lmod-ohpc"
-              state: installed
+        - name: Install slurm worker rpms
+          yum:
+            name:
+              - "@ohpc-base-compute"
+              - "@ohpc-slurm-client"
+              - "lmod-ohpc"
+            state: installed
 
-          - name: Start and enable slurm worker daemon
-            service:
-              name: slurmd
-              state: started
-              enabled: true
+        - name: Start and enable slurm worker daemon
+          service:
+            name: slurmd
+            state: started
+            enabled: true
 
       when: "'slurm_compute_group' in group_names"
 
