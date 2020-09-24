@@ -85,9 +85,11 @@ slurm_cluster_upgrade_all_packages: false
 slurm_cluster_packages_to_install:
   - vim
   - emacs-nox
+  - nano
   - git
   - htop
   - bash-completion
+  - singularity
 
 # Details for the local accounts to create in every machine
 slurm_cluster_users_accounts: 4
