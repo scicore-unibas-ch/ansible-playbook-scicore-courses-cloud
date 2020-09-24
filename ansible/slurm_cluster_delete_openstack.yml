@@ -29,18 +29,24 @@
         wait: no
         state: absent
 
+    - name: Query the names for all the compute nodes
+      os_server_info:
+        server: slurm-compute*
+      register: _os_slurm_compute_info
+
     - name: Delete the slurm compute nodes (CAN TAKE SOME TIME!)
       os_server:
-        name: "slurm-compute-{{ item }}"
+        name: "{{ item.name }}"
         delete_fip: yes  # also delete the floating ip if exists
-        wait: no
         state: absent
-      with_sequence: count={{ slurm_cluster_num_workers }} format=%02u
+        wait: no
+      loop: "{{ _os_slurm_compute_info.openstack_servers }}"
 
-    - name: Waiting for all the servers to shutdown
+    - name: Waiting for all the compute nodes to shutdown
       os_server_info:
-      register: _os_servers_info
-      until: "{{ _os_servers_info.openstack_servers | length == 0 }}"
+        server: slurm-compute*
+      register: _os_slurm_compute_info
+      until: _os_slurm_compute_info.openstack_servers | length == 0
       retries: 40
       delay: 15
 
