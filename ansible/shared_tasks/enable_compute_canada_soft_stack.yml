@@ -1,8 +1,12 @@
 ---
 
 - name: Query the size of the root partition in MB
-  shell: df -m / | awk {'print $2'} |tail -1
+  shell: |
+    set -o pipefail
+    df -m / | awk {'print $2'} |tail -1
   register: _root_partition_disk_size
+  args:
+    executable: /bin/bash
   changed_when: false
 
 - name: Set a variable in MB with the disk size we will use for CVMFS cache (30% of root partition)
