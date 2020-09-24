@@ -1,3 +1,5 @@
+![Ansible Lint](https://github.com/scicore-unibas-ch/ansible-playbook-scicore-courses-cloud/workflows/Ansible%20Lint/badge.svg)
+
 # Cloud playbooks
 
 Ansible playbooks to boot resources in the cloud for the sciCORE courses
@@ -100,7 +102,7 @@ ansible-playbook -i ansible/inventory/hosts -e @config/slurm_cluster_switch_clou
 $> ssh -F ~/.ssh/slurm_cluster_cloud.cfg slurm-login
 ```
 
-## Delete the Slurm cluster 
+## Delete the Slurm cluster
 
 **RUNNING THIS COMMAND WILL DELETE ALL THE MACHINES AND DATA FROM THE CLOUD!**
 
