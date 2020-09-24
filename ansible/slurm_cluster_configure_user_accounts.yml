@@ -30,7 +30,7 @@
         update_password: always
         password: "{{ slurm_cluster_users_default_password }}"
         generate_ssh_key: yes
-        ssh_key_comment: "user{{item}}_slurm_cluster@ansible-generated"
+        ssh_key_comment: "user{{ item }}_slurm_cluster@ansible-generated"
         state: present
         ssh_key_file: .ssh/id_rsa
         ssh_key_type: rsa
@@ -48,7 +48,7 @@
         update_password: always
         password: "{{ slurm_cluster_users_default_password }}"
         generate_ssh_key: yes
-        ssh_key_comment: "user{{item}}_slurm_cluster@ansible-generated"
+        ssh_key_comment: "user{{ item }}_slurm_cluster@ansible-generated"
         state: present
         ssh_key_file: .ssh/id_rsa
         ssh_key_type: rsa
@@ -87,8 +87,12 @@
       when: "'slurm_nfs_server_group' in group_names"
 
     - name: Check how many users are already registered in the Slurm DB
-      shell: sacctmgr show users --noheader --parsable | wc -l
+      shell: |
+        set -o pipefail
+        sacctmgr show users --noheader --parsable | wc -l
       register: _sacctmgr_users_list_output
+      args:
+        executable: /bin/bash
       changed_when: false
       when: "'slurm_login_group' in group_names"
 
