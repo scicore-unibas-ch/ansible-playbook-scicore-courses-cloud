@@ -90,4 +90,4 @@
 # inventory we can proceed to configure them using another playbook
 
 - name: Configure servers for the OpenMP course
-  import_playbook: configure-openmp-course-servers.yml
+  import_playbook: openmp_course_configure_servers.yml
