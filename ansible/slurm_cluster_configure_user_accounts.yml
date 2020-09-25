@@ -111,6 +111,13 @@
         line: 'PasswordAuthentication yes'
       notify: restart sshd
 
+    - name: Add the teacher's ssh keys to the centos account
+      authorized_key:
+        user: "centos"
+        key: "{{ item }}"
+      loop: "{{ slurm_cluster_teachers_ssh_keys }}"
+      tags: ssh_keys_teachers
+
 
   handlers:
 
