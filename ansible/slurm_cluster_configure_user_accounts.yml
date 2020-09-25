@@ -126,7 +126,7 @@
       when: "'slurm_login_group' in group_names"
       tags: ssh_keys_teachers
 
-    - name: Fetch the centos user public ssh key from login
+    - name: Fetch the centos user public ssh key from login node to ansible control host
       fetch:
         src: "~centos/.ssh/id_rsa.pub"
         dest: "/tmp/id_rsa_centos_login_node.pub"
