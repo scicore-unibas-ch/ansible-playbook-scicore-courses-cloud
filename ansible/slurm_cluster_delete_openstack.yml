@@ -58,10 +58,10 @@
         display_name: "slurm_cluster_nfs_data"
         state: absent
 
-    # - name: Delete default security group for the slurm cluster
-    #   os_security_group:
-    #     name: "{{ slurm_cluster_security_group_default }}"
-    #     state: absent
+    - name: Delete default security group for the slurm cluster
+      os_security_group:
+        name: "{{ slurm_cluster_security_group_default }}"
+        state: absent
 
     - name: Delete security group for the login node
       os_security_group:
