@@ -103,3 +103,18 @@
       when:
         - "'slurm_login_group' in group_names"
         - "_sacctmgr_users_list_output.stdout|int <= slurm_cluster_users_accounts|int"
+
+    - name: Configure sshd to allow password login
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: '^PasswordAuthentication no'
+        line: 'PasswordAuthentication yes'
+      notify: restart sshd
+
+
+  handlers:
+
+    - name: restart sshd
+      service:
+        name: sshd
+        state: restarted
