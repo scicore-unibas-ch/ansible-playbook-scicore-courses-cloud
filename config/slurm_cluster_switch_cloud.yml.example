@@ -120,7 +120,7 @@ rstudio_server_extra_r_packages:
 
 # memory limit by user in the login node
 cgroup_memory_limit: '4G'
-      
+
 slurm_cluster_teachers_ssh_keys:
   - "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEFya9i7rLPXOEtdG"
   - "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQCzghWVPGdgvHrtI"
