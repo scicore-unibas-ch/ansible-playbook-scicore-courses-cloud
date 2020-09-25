@@ -329,6 +329,7 @@
       os_volume:
         display_name: "slurm_cluster_nfs_data"
         size: "{{ slurm_cluster_nfs_server_disk_size }}"
+        volume_type: "{{ slurm_cluster_nfs_server_disk_volume_type | default(omit) }}"
         state: present
 
     - name: Attach NFS data volume to NFS server

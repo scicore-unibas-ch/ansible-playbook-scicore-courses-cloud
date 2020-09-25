@@ -48,6 +48,9 @@ slurm_cluster_nfs_server_disk_size: 50
 slurm_cluster_nfs_server_disk_device: /dev/vdb
 slurm_cluster_nfs_server_disk_mount_point: /shared
 slurm_cluster_nfs_server_disk_fstype: xfs
+# only define this variable if you want to specify the volume type to use for NFS export
+# you can get the list of volume types with "openstack volume type list"
+#slurm_cluster_nfs_server_disk_volume_type: "ceph-ssd"
 
 # config for the NFS server
 nfs_exports:
