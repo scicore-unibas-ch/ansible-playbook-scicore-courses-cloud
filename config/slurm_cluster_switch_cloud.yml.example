@@ -99,6 +99,7 @@ slurm_cluster_packages_to_install:
 # Details for the local accounts to create in every machine
 slurm_cluster_users_accounts: 4
 slurm_cluster_users_home_folder: "{{ slurm_cluster_nfs_server_disk_mount_point }}/home"
+# https://docs.ansible.com/ansible/latest/reference_appendices/faq.html#how-do-i-generate-encrypted-passwords-for-the-user-module
 slurm_cluster_users_default_password: "$6$ldwSs5IPrUFC$mTJprVShXmBCd.DMYGR0SP31BcUUiReQEErn2s4cN3o91V5du/FnurZF/RU/nPnfrWZ1Sxr1pdjtvH6uG37Ee."  # slurm_cluster
 
 # Set this var to "True" to configure the ComputeCanada software stack in every machine

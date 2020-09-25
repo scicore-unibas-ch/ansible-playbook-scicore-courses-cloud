@@ -277,7 +277,9 @@
             groups:
               - slurm_cluster_all
               - slurm_nfs_server_group
-            ansible_host: "{% if _slurm_nfs_server_info.openstack.private_v4 | ipaddr %}{{ _slurm_nfs_server_info.openstack.private_v4 }}{% else %}{{ _slurm_nfs_server_info.openstack.accessIPv4 | ipaddr }}{% endif %}"  # noqa 204
+            ansible_host: "{% if _slurm_nfs_server_info.openstack.private_v4 | ipaddr %}{{ _slurm_nfs_server_info.openstack.private_v4 }}\
+                           {% else %}\
+                           {{ _slurm_nfs_server_info.openstack.accessIPv4 | ipaddr }}{% endif %}"
             ansible_user: "{{ slurm_cluster_ssh_remote_user }}"
             ansible_ssh_private_key_file: "{{ slurm_cluster_ssh_key_path }}"
             ansible_ssh_extra_args: "-F {{ slurm_cluster_ssh_cfg_path }}"
@@ -313,7 +315,9 @@
             groups:
               - slurm_cluster_all
               - slurm_master_group
-            ansible_host: "{% if _slurm_master_info.openstack.private_v4 | ipaddr %}{{ _slurm_master_info.openstack.private_v4 }}{% else %}{{ _slurm_master_info.openstack.accessIPv4 | ipaddr }}{% endif %}"  # noqa 204
+            ansible_host: "{% if _slurm_master_info.openstack.private_v4 | ipaddr %}{{ _slurm_master_info.openstack.private_v4 }}\
+                           {% else %}\
+                           {{ _slurm_master_info.openstack.accessIPv4 | ipaddr }}{% endif %}"
             ansible_user: "{{ slurm_cluster_ssh_remote_user }}"
             ansible_ssh_private_key_file: "{{ slurm_cluster_ssh_key_path }}"
             ansible_ssh_extra_args: "-F {{ slurm_cluster_ssh_cfg_path }}"
