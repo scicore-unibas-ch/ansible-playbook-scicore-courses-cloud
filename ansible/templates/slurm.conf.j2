@@ -11,7 +11,7 @@ ControlMachine={% for node in groups.slurm_master_group %}{{ node }}{% endfor %}
 SchedulerType=sched/backfill
 SchedulerPort=7321
 SelectType=select/cons_res
-SelectTypeParameters=CR_Core_Memory
+SelectTypeParameters=CR_LLN,CR_Core_Memory
 FastSchedule=1
 
 #Jobsubmit plugin that sets all the partitions for a job
@@ -190,6 +190,6 @@ DefMemPerCPU=1000
 {% for node in groups.slurm_compute_group %}
 NodeName={{ node }} RealMemory={{ first_worker_facts['ansible_memtotal_mb'] }} Sockets={{ first_worker_facts['ansible_processor_count'] }} CoresPerSocket={{ first_worker_facts['ansible_processor_cores'] }} ThreadsPerCore={{ first_worker_facts['ansible_processor_threads_per_core'] }}
 {% endfor %}
-PartitionName=compute Nodes={% for node in groups.slurm_compute_group %}{{ node }},{% endfor %} Default=YES State=UP
+PartitionName=compute LLN=YES Nodes={% for node in groups.slurm_compute_group %}{{ node }},{% endfor %} Default=YES State=UP
 
 # vim: syntax=sh
