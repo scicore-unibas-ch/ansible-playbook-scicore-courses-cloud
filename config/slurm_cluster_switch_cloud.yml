@@ -1,0 +1,133 @@
+---
+
+## UPDATE THESE VARS TO ADAPT THEM TO YOUR OPENSTACK CLOUD
+slurm_cluster_default_image: "CentOS 7 (SWITCHengines)"
+slurm_cluster_default_flavor: "x1.xxlarge"
+#slurm_cluster_default_flavor: "m1.medium"
+slurm_cluster_floating_ips_pool: "public"
+slurm_cluster_ssh_remote_user: "centos"
+## UPDATE THESE VARS TO ADAPT THEM TO YOUR OPENSTACK CLOUD
+
+## UPDATE VARS BELOW ACCORDING TO YOUR PREFERENCE BUT IT'S NOT MANDATORY FOR INITIAL TESTING ##
+
+# Details for the ssh key we will create in the local machine to access the cloud machines
+# We will also create a ssh config file to use the login node as ssh bastion host
+slurm_cluster_ssh_key_path: "{{ ansible_env.HOME }}/.ssh/slurm_cluster_cloud_id_rsa"
+slurm_cluster_ssh_key_name: "slurm_cluster_cloud"  # name used to register the ssh key in openstack
+slurm_cluster_ssh_cfg_path: "{{ ansible_env.HOME }}/.ssh/slurm_cluster_cloud.cfg"
+
+# Details for the openstack security groups we will create (openstack firewall rules)
+slurm_cluster_security_group_default: "slurm_cluster_default"
+slurm_cluster_security_group_login: "slurm_cluster_login"
+
+slurm_cluster_open_ports_in_login_node:
+  - 22
+  - 80
+  - 443
+
+# OpenStack image and flavor to use for the LOGIN NODE
+# Use "openstack image list" and "openstack flavor list" to list those available in your cloud
+slurm_cluster_login_image: "{{ slurm_cluster_default_image }}"
+slurm_cluster_login_flavor: "{{ slurm_cluster_default_flavor }}"
+
+# OpenStack image and flavor to use for the COMPUTE NODES
+slurm_cluster_compute_image: "{{ slurm_cluster_default_image }}"
+slurm_cluster_compute_flavor: "{{ slurm_cluster_default_flavor }}"
+
+# how many slurm workers nodes to boot
+# slurm_cluster_num_workers: 24
+slurm_cluster_num_workers: 24
+
+# Set this to true to boot a dedicated machine for NFS server
+# The default is that NFS server runs in the login node
+slurm_cluster_nfs_server_dedicated_machine: true
+slurm_cluster_nfs_server_image: "{{ slurm_cluster_default_image }}"
+slurm_cluster_nfs_server_flavor: "c1.xlarge"  # 8 cores and 8GB
+
+# based on this we will create a volume, attach it to nfs server and export it
+# size is in GB
+slurm_cluster_nfs_server_disk_size: 512
+slurm_cluster_nfs_server_disk_device: /dev/vdb
+slurm_cluster_nfs_server_disk_mount_point: /shared
+slurm_cluster_nfs_server_disk_fstype: xfs
+# only define this variable if you want to specify the volume type to use for NFS export
+# you can get the list of volume types with "openstack volume type list"
+slurm_cluster_nfs_server_disk_volume_type: "ceph-ssd"
+
+# config for the NFS server
+nfs_exports:
+  - "{{ slurm_cluster_nfs_server_disk_mount_point }} *(rw,sync,no_root_squash)"
+
+# config for the NFS clients
+# hostname "slurm-nfs-server" is defined in /etc/hosts for every node in the cluster
+nfs_share_mounts:
+  - path: "{{ slurm_cluster_nfs_server_disk_mount_point }}"
+    location: "slurm-nfs-server:{{ slurm_cluster_nfs_server_disk_mount_point }}"
+
+# Set this to true to boot a dedicated machine for slurm master
+# The default is that slurm master runs in the login node
+slurm_cluster_slurm_master_dedicated_machine: true
+slurm_cluster_slurm_master_image: "{{ slurm_cluster_default_image }}"
+slurm_cluster_slurm_master_flavor: "m1.large"  # 4 cores 8GB
+
+# How to configure the mysql database for the slurm accounting daemon
+slurm_cluster_slurmdbd_mysql_password: "Guan1iineN6yaxec"
+slurm_cluster_slurmdbd_mysql_user: "slurmdbuser"
+slurm_cluster_slurmdbd_mysql_db: "slurm"
+
+# This RPM will be installed to provide the OpenHPC repositories. We will install slurm packages from this repo
+# Check latest releases in https://openhpc.community/downloads/
+slurm_cluster_ohpc_repos_url: "https://github.com/openhpc/ohpc/releases/download/v1.3.GA/ohpc-release-1.3-1.el7.x86_64.rpm"
+
+# By default selinux is disabled in every machine using role https://galaxy.ansible.com/pescobar/selinux_disable
+slurm_cluster_selinux_disabled: true
+selinux_reboot: true  # should we reboot the VM when selinux is disabled?
+
+# Set this variable to "True" in case you want to do a "yum -y update" in every machine
+slurm_cluster_upgrade_all_packages: false
+
+# list of packages we want in every machine
+slurm_cluster_packages_to_install:
+  - vim
+  - emacs-nox
+  - nano
+  - git
+  - htop
+  - bash-completion
+  - singularity
+  - screen
+  - tmux
+
+# Details for the local accounts to create in every machine
+slurm_cluster_users_accounts: 30
+slurm_cluster_users_home_folder: "{{ slurm_cluster_nfs_server_disk_mount_point }}/home"
+# https://docs.ansible.com/ansible/latest/reference_appendices/faq.html#how-do-i-generate-encrypted-passwords-for-the-user-module
+slurm_cluster_users_default_password: "$6$ldwSs5IPrUFC$mTJprVShXmBCd.DMYGR0SP31BcUUiReQEErn2s4cN3o91V5du/FnurZF/RU/nPnfrWZ1Sxr1pdjtvH6uG37Ee."  # slurm_cluster
+
+# Set this var to "True" to configure the ComputeCanada software stack in every machine
+slurm_cluster_enable_compute_canada_software_stack: true
+# should we launch a process in background to do initial sync of the software stack to local disk?
+slurm_cluster_prewarm_compute_canada_software_stack_cache: true
+cvmfs_client_configure_storage: false  # never modify this option. It should be always False
+
+# Define the list of R packages you want to install the login node (to be used in Rstudio)
+rstudio_server_extra_r_packages:
+  - cluster
+  - DESeq2
+  - edgeR
+  - pheatmap
+  - AnnotationHub
+  - AnnotationDbi
+  - clusterProfiler
+  - ReactomePA
+  - org.Mm.eg.db
+  # - ggplot2
+  # - gplots
+  # - dplyr
+  # - edgeR
+  # - QuasR
+
+cgroup_memory_limit: '4G'
+
+slurm_cluster_teachers_ssh_keys:
+  - "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQCzghWVPGdgvHrtIFv+9xoCDQD4N1ljhV5G0Ga2gyeigqo6ihoXKKUNtmecSaUsZYAPg+wUqCNhBb1oY0pC/MA/bCT4DAN/p+nt7wKc8okOWO5DRX9Asq00JmU9sDo8joKeUyGDl6+FmF6YBzfzwR7mEOyoq3cxim1jaBvuC/JaCE+e1Jdn++Vjz5fHQFuUPKMyXIXlaXLs6D7n2Zq9IfK1eMfCv22d3wm1MOEZSlkYHeyLdfNWVPpMroCyPkImI0gODde3yIaoDu/ETXQxFUHyvFZ7gOnm3/O6rpswB+DYRUlrpNQMZm5Koq7dG9HW4zhN6MMt8c2ZV3TlXxHgCMfJ6G6SNVZ8GaowxW3cGA0Hu55qgP8Vg+0U/o3VFqYJeh60mGILPhJqK+m/GwYWr4Mmi69/ehBX18KTVo7HrKNfUTwPhXg3hRa2KoLvhZrvtrm7gh3bj2Rao+E/WBwH3f9HAxtA8ebFy9Akre+BeF9+VrRbM7ZU1AX34bDfrHIwWx0Klr9MldZRzKvD1S3CUBkhDpy5FUKObVU3Vuz3ZkOqy+JKy8K5u/Q8WraFh5jiE2cmjSmsSGlVbQyHaLY5kS+yzMGWdlZ6mErGCOEfUk9xTd6i9A4Parsxctl0ybaySVn932x3Sc93pq1s7FPWwhA9wk8PqknKl+28ckf0tE3SQw=="
