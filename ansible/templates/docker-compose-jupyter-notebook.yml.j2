@@ -1,0 +1,66 @@
+version: '3'
+services:
+
+    nginx-proxy:
+      image: jwilder/nginx-proxy:alpine
+      container_name: nginx-proxy
+      labels:
+        # this label is needed so that the letsencrypt container knows which nginx proxy container to use
+        # https://github.com/JrCs/docker-letsencrypt-nginx-proxy-companion/wiki/Getting-containers-IDs
+        com.github.jrcs.letsencrypt_nginx_proxy_companion.nginx_proxy: "true"
+      ports:
+        - "80:80"
+        - "443:443"
+      volumes:
+        - conf:/etc/nginx/conf.d
+        - vhost:/etc/nginx/vhost.d
+        - html:/usr/share/nginx/html
+        - dhparam:/etc/nginx/dhparam
+        - certs:/etc/nginx/certs:ro
+        - /var/run/docker.sock:/tmp/docker.sock:ro
+      restart: unless-stopped
+      logging:
+        driver: json-file
+        options:
+          max-size: '10m'
+          max-file: '10'
+
+    letsencrypt:
+      image: jrcs/letsencrypt-nginx-proxy-companion:latest
+      container_name: nginx-proxy-le
+      volumes:
+        - conf:/etc/nginx/conf.d
+        - vhost:/etc/nginx/vhost.d
+        - html:/usr/share/nginx/html
+        - dhparam:/etc/nginx/dhparam
+        - certs:/etc/nginx/certs:rw
+        - /var/run/docker.sock:/var/run/docker.sock:ro
+      restart: unless-stopped
+      logging:
+        driver: json-file
+        options:
+          max-size: '10m'
+          max-file: '10'
+
+    jupyter:
+      image: jupyter/datascience-notebook
+      expose:
+        - 8888
+      environment:
+        VIRTUAL_HOST: "{{ _jupyter_public_domain }}"
+        LETSENCRYPT_HOST: "{{ _jupyter_public_domain }}"
+        LETSENCRYPT_EMAIL: "no_reply_asdfadsf@gmail.com"
+      restart: unless-stopped
+      command: "start-notebook.sh --NotebookApp.password='sha1:3a9c67efea8a:422045ecc9ac088edf909e1aad8475be01a66fe1'"  # password is "course-sib"
+      logging:
+        driver: json-file
+        options:
+          max-size: '10m'
+          max-file: '10'
+
+volumes:
+  conf:
+  vhost:
+  html:
+  dhparam:
+  certs:
