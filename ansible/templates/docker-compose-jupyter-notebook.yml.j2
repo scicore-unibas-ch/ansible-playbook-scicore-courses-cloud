@@ -50,6 +50,8 @@ services:
         VIRTUAL_HOST: "{{ _jupyter_public_domain }}"
         LETSENCRYPT_HOST: "{{ _jupyter_public_domain }}"
         LETSENCRYPT_EMAIL: "no_reply_asdfadsf@gmail.com"
+        JUPYTER_ENABLE_LAB: "yes"
+        #GRANT_SUDO: "yes"
       restart: unless-stopped
       command: "start-notebook.sh --NotebookApp.password='sha1:3a9c67efea8a:422045ecc9ac088edf909e1aad8475be01a66fe1'"  # password is "course-sib"
       logging:
