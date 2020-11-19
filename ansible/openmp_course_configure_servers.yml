@@ -8,7 +8,7 @@
 
   vars:
 
-    cvmfs_cache_size: "30000"  # cache size in megabytes. adjust to your disk size
+    cvmfs_cache_size: "10000"  # cache size in megabytes. adjust to your disk size
     cvmfs_http_proxy: "DIRECT"
     cvmfs_client_configure_storage: False
 
@@ -56,10 +56,15 @@
         selinux_reboot: true
       tags: selinux
 
-    - name: Configure chrony for time sync
+    - name: Make sure cron is installed and enabled
       import_role:
-        name: frzk.chrony
-      tags: chrony
+        name: robertdebock.cron
+      tags: cron
+
+    - name: Configure NTP for time sync
+      import_role:
+        name: robertdebock.ntp
+      tags: ntp
 
     - name: Install some basic packages
       package:
@@ -69,6 +74,9 @@
           - git
           - htop
           - bash-completion
+          - gnuplot
+          - nano
+          - wget
         state: installed
       tags: upgrade
 
@@ -123,8 +131,14 @@
         mode: 0644
         marker: "# {mark} CREATED WITH ANSIBLE"
         content: |
-          source /cvmfs/soft.computecanada.ca/config/profile/bash.sh &> /dev/null
-          module load gcc/9.1.0 python/3.8.2 &> /dev/null
+          # we create all students accounts with uid>2000
+          # and we only enable the software stack by default for them
+          if [ "$UID" -ge 2000 ]; then
+              if [ -f /cvmfs/soft.computecanada.ca/config/profile/bash.sh ]; then
+                  source /cvmfs/soft.computecanada.ca/config/profile/bash.sh &> /dev/null
+                  module load gcc/9.1.0 python/3.8.2 &> /dev/null
+              fi
+          fi
 
     - name: Create profile file to define OMP_NUM_THREADS on login
       blockinfile:
@@ -140,7 +154,7 @@
     - name: Add Ruben's key
       authorized_key:
         user: centos
-        key: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICUyMx1EKuStJsIEx0NEkTU99zfVxbNU+XirAYImpLar ruben@jarvis"
+        key: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKUjYnSO/40LjhM/YC18Gxd5Vc5Uo8LOJaDoQiUo0tFM ruben@jarvis"
 
     - name: Add Aurelien's key
       authorized_key:
