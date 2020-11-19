@@ -85,6 +85,11 @@
       changed_when: false
       loop: "{{ _machine_info.results }}"
 
+    - name: Make sure we can ssh to the machines
+      delegate_to: "{{ vm_name }}_{{ item.item }}"
+      wait_for_connection:
+      loop: "{{ _machine_info.results }}"
+
 
 # now that the machines are booted add added to the ansible in-memory
 # inventory we can proceed to configure them using another playbook
