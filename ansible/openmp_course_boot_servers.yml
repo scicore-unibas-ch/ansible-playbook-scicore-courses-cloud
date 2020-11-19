@@ -6,19 +6,20 @@
   vars:
 
     vm_name: "openmp_course"  # we will later append _01 _02 ... etc
-    # vm_image: "CentOS 7 (SWITCHengines)"
-    vm_image: "CentOS7.8"
-    # vm_flavor: "c1.medium"
-    vm_flavor: "m1.xxxlarge"
-    # vm_floating_ip_pool: "public"
-    vm_floating_ip_pool: "public_vlan"
-    # vm_network: "private"
-    vm_network: "scicore_devel-vlan"
-    vm_disk_size_gb: 200
+    vm_image: "CentOS 7 (SWITCHengines)"
+    #vm_image: "CentOS7.8"
+    #vm_flavor: "c1.medium"
+    vm_flavor: "c1.xxlarge"
+    #vm_flavor: "m1.xxxlarge"
+    vm_floating_ip_pool: "public"
+    #vm_floating_ip_pool: "public_vlan"
+    vm_network: "private"
+    #vm_network: "scicore_devel-vlan"
+    vm_disk_size_gb: 20
     vm_remote_user: "centos"
     vm_ssh_key_path: "{{ ansible_env.HOME }}/.ssh/{{ vm_name }}"
     vm_ssh_key_name: "{{ vm_name }}"
-    number_of_servers_to_boot: 2
+    number_of_servers_to_boot: 1
 
 
   tasks:
