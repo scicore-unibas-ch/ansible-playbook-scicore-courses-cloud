@@ -21,13 +21,11 @@
     cgroup_memory_limit: "4G"
     cgroup_to_whom_the_limit_applies: "@{{ users_default_group }}"
 
+    fail2ban_ignoreips: "127.0.0.1/8 ::1 131.152.0.0/16"
     fail2ban_jail_configuration:
       - section: sshd
         option: enabled
         value: "true"
-      - section: DEFAULT
-        option: ignoreip
-        value: "127.0.0.1/8 ::1 131.152.0.0/16"
 
   tasks:
 
