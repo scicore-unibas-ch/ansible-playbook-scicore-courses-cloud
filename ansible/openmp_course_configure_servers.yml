@@ -76,6 +76,8 @@
           - nano
           - wget
           - xauth
+          - tmux
+          - screen
         state: installed
       tags: upgrade
 
