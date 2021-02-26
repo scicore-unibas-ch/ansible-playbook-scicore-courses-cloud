@@ -69,4 +69,3 @@
         src: jupyterhub_config.py
         dest: "{{ jupyterhub_venv_path }}/etc/jupyterhub/jupyterhub_config.py"
         mode: 0755
-
