@@ -1,0 +1,71 @@
+---
+
+- name: Configure jupyterhub in the login node
+  hosts:
+    - slurm_login_group
+    # - slurm_compute_group
+    # - slurm_master_group
+  gather_facts: true
+  become: true
+  remote_user: "{{ slurm_cluster_ssh_remote_user }}"
+
+  vars:
+
+    jupyterhub_venv_path: /shared/jupyterhub
+
+  tasks:
+
+    - name: Install python virtualenv and some extra deps
+      yum:
+        name:
+          - python36-virtualenv
+          - "@Development Tools"
+        state: present
+
+    - name: Install NodeJS
+      import_role:
+        name: geerlingguy.nodejs
+      vars:
+        nodejs_version: "14.x"
+        nodejs_npm_global_packages:
+          - name: configurable-http-proxy
+      tags: nodejs
+
+    - name: Create the jupyterhub venv with latest pip
+      pip:
+        name: pip
+        state: latest  # noqa 403
+        virtualenv: "{{ jupyterhub_venv_path }}"
+        virtualenv_command: virtualenv-3
+
+    - name: First install wheel in the venv as described in the docs
+      pip:
+        name: wheel
+        virtualenv: "{{ jupyterhub_venv_path }}"
+        virtualenv_command: virtualenv-3
+
+    - name: Install jupyterhub and jupyterlab in the venv
+      pip:
+        name:
+          - jupyterhub
+          - jupyterlab
+        virtualenv: "{{ jupyterhub_venv_path }}"
+        virtualenv_command: virtualenv-3
+
+    - name: Install batchspawner the venv
+      pip:
+        name: batchspawner
+        virtualenv: "{{ jupyterhub_venv_path }}"
+        virtualenv_command: virtualenv-3
+
+    - name: Create the folder to store jupyterhub config file
+      file:
+        path: "{{ jupyterhub_venv_path }}/etc/jupyterhub"
+        state: directory
+        mode: 0755
+
+    - name: Deploy the config file for jupyterhub
+      template:
+        src: jupyterhub_config.py
+        dest: "{{ jupyterhub_venv_path }}/etc/jupyterhub/jupyterhub_config.py"
+        mode: 0755
