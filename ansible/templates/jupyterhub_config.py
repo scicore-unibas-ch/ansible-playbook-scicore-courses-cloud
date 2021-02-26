@@ -31,7 +31,7 @@ c.BatchSpawnerBase.req_srun=''
 c.BatchSpawnerBase.req_cluster = 'slurm_cluster' # probably only necessary for federated clusters
 
 
-
+{% raw %}
 c.BatchSpawnerBase.batch_script = """#!/bin/bash -l
 #SBATCH --output=jupyterhub_slurmspawner_%j.log
 #SBATCH --job-name=spawner-jupyterhub
@@ -73,6 +73,7 @@ which jupyterhub-singleuser
 {% if srun %}{{srun}} {% endif %}{{cmd}}
 echo "jupyterhub-singleuser ended gracefully"
 """
+{% endraw %}
 
 #c.JupyterHub.template_paths = ['/opt/rh/rh-python36/root/usr/share/jupyterhub/templates/cscs/'] #where much of the web front end is defined
 
