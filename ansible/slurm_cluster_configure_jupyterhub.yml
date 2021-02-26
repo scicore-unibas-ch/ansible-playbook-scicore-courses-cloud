@@ -3,7 +3,7 @@
 - name: Configure jupyterhub in the login node
   hosts:
     - slurm_login_group
-    # - slurm_compute_group
+    - slurm_compute_group
     # - slurm_master_group
   gather_facts: true
   become: true
@@ -11,61 +11,111 @@
 
   vars:
 
+    # these two paths must be a shared folder in the cluster
     jupyterhub_venv_path: /shared/jupyterhub
+    conda_install_path: /shared/conda
 
   tasks:
 
-    - name: Install python virtualenv and some extra deps
+
+    - name: Install python virtualenv and extra deps in all the nodes
       yum:
         name:
           - python36-virtualenv
           - "@Development Tools"
         state: present
 
-    - name: Install NodeJS
-      import_role:
-        name: geerlingguy.nodejs
-      vars:
-        nodejs_version: "14.x"
-        nodejs_npm_global_packages:
-          - name: configurable-http-proxy
-      tags: nodejs
 
-    - name: Create the jupyterhub venv with latest pip
-      pip:
-        name: pip
-        state: latest  # noqa 403
-        virtualenv: "{{ jupyterhub_venv_path }}"
-        virtualenv_command: virtualenv-3
+    - name: Install jupyterlab in login node. Install path is a shared folder
+      block:
 
-    - name: First install wheel in the venv as described in the docs
-      pip:
-        name: wheel
-        virtualenv: "{{ jupyterhub_venv_path }}"
-        virtualenv_command: virtualenv-3
+        - name: Install NodeJS
+          import_role:
+            name: geerlingguy.nodejs
+          vars:
+            nodejs_version: "14.x"
+            nodejs_npm_global_packages:
+              - name: configurable-http-proxy
+          tags: nodejs
 
-    - name: Install jupyterhub and jupyterlab in the venv
-      pip:
-        name:
-          - jupyterhub
-          - jupyterlab
-        virtualenv: "{{ jupyterhub_venv_path }}"
-        virtualenv_command: virtualenv-3
+        - name: Create the jupyterhub venv with latest pip
+          pip:
+            name: pip
+            state: latest  # noqa 403
+            virtualenv: "{{ jupyterhub_venv_path }}"
+            virtualenv_command: virtualenv-3
 
-    - name: Install batchspawner the venv
-      pip:
-        name: batchspawner
-        virtualenv: "{{ jupyterhub_venv_path }}"
-        virtualenv_command: virtualenv-3
+        - name: First install wheel in the venv as described in the docs
+          pip:
+            name: wheel
+            virtualenv: "{{ jupyterhub_venv_path }}"
+            virtualenv_command: virtualenv-3
 
-    - name: Create the folder to store jupyterhub config file
-      file:
-        path: "{{ jupyterhub_venv_path }}/etc/jupyterhub"
-        state: directory
-        mode: 0755
+        - name: Install jupyterhub and jupyterlab in the venv
+          pip:
+            name:
+              - jupyterhub
+              - jupyterlab
+              - ipywidgets
+            virtualenv: "{{ jupyterhub_venv_path }}"
+            virtualenv_command: virtualenv-3
 
-    - name: Deploy the config file for jupyterhub
-      template:
-        src: jupyterhub_config.py
-        dest: "{{ jupyterhub_venv_path }}/etc/jupyterhub/jupyterhub_config.py"
-        mode: 0755
+        - name: Install batchspawner the venv
+          pip:
+            name: batchspawner
+            virtualenv: "{{ jupyterhub_venv_path }}"
+            virtualenv_command: virtualenv-3
+
+        - name: Create the folder to store jupyterhub config file
+          file:
+            path: "{{ jupyterhub_venv_path }}/etc/jupyterhub"
+            state: directory
+            mode: 0755
+
+        - name: Deploy the config file for jupyterhub
+          template:
+            src: jupyterhub_config.py
+            dest: "{{ jupyterhub_venv_path }}/etc/jupyterhub/jupyterhub_config.py"
+            mode: 0755
+
+      when: "'slurm_login_group' in group_names"
+
+
+    - name: Install latest conda in the login node. Install path is a shared folder
+      block:
+
+        - name: install package dependencies for miniconda installation
+          package:
+            name: bzip2
+            state: present
+
+        - name: download miniconda installer
+          get_url:
+            url: "https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh"
+            dest: "/tmp/Miniconda3-latest-Linux-x86_64.sh"
+            mode: 0755
+
+        - name: install miniconda
+          command: "/tmp/Miniconda3-latest-Linux-x86_64.sh -b -p {{ conda_install_path }}"
+          args:
+            creates: "{{ conda_install_path }}/bin"
+
+      when: "'slurm_login_group' in group_names"
+      tags: conda
+
+    - name: Load conda profile on login on every node
+      blockinfile:
+        dest: /etc/profile.d/conda.sh
+        create: yes
+        owner: root
+        group: root
+        mode: 0644
+        marker: "# {mark} CREATED WITH ANSIBLE"
+        content: |
+          # we create all students accounts with uid>2000
+          # and we only enable conda by default for them
+          if [ "$UID" -ge 2000 ]; then
+              if [ {{ conda_install_path }}/etc/profile.d/conda.sh ]; then
+                  source {{ conda_install_path }}/etc/profile.d/conda.sh
+              fi
+          fi
