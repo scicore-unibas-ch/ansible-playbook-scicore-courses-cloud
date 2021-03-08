@@ -282,7 +282,7 @@
                   User: 'root'
                   Group: 'root'
                   Environment: 'PATH=/usr/local/lib/npm/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin'
-                  ExecStart: '{{ jupyterhub_venv_path }}/bin/jupyterhub -f {{ jupyterhub_venv_path }}/etc/jupyterhub/jupyterhub_config.py --log-file /var/log/jupyterhub.log'
+                  ExecStart: '{{ jupyterhub_venv_path }}/bin/jupyterhub -f {{ jupyterhub_venv_path }}/etc/jupyterhub/jupyterhub_config.py --log-file /var/log/jupyterhub.log'  # noqa 204
                 Install:
                   WantedBy: 'multi-user.target'
           tags: systemd
