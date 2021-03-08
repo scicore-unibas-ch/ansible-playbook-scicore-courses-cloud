@@ -48,7 +48,7 @@ Tested with Python-3.6.6:
 ```
 $> virtualenv venv_cloud
 $> source venv_cloud/bin/activate
-(venv_cloud)$> pip install ansible==2.9.13 python-openstackclient openstacksdk==0.52.0
+(venv_cloud)$> pip install ansible==2.10.6 python-openstackclient openstacksdk==0.52.0
 (venv_cloud)$> ansible-galaxy role install -r ansible/requirements.yml -p ansible/roles/
 ```
 
