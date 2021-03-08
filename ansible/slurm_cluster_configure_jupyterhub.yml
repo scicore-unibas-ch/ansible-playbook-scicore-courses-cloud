@@ -208,25 +208,31 @@
           import_role:
             name: wcm_io_devops.apache
 
-        - name: Print the public url
-          debug:
-            msg: "You can access in https://{{ local_public_domain }}"
-
         - name: Configure systemd service for jupyterhub
           import_role:
             name: 0x0i.systemd
           vars:
             unit_config:
-            - name: "jupyterhub"
-              Unit:
-                After: network-online.target
-              Service:
-                User: 'root'
-                Group: 'root'
-                Environment: 'PATH=/usr/local/lib/npm/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin'
-                ExecStart: '{{ jupyterhub_venv_path }}/bin/jupyterhub -f {{ jupyterhub_venv_path }}/etc/jupyterhub/jupyterhub_config.py --log-file /var/log/jupyterhub.log'
-              Install:
-                WantedBy: 'multi-user.target'
+              - name: "jupyterhub"
+                Unit:
+                  After: network-online.target
+                Service:
+                  User: 'root'
+                  Group: 'root'
+                  Environment: 'PATH=/usr/local/lib/npm/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin'
+                  ExecStart: '{{ jupyterhub_venv_path }}/bin/jupyterhub -f {{ jupyterhub_venv_path }}/etc/jupyterhub/jupyterhub_config.py --log-file /var/log/jupyterhub.log'
+                Install:
+                  WantedBy: 'multi-user.target'
           tags: systemd
+
+        - name: Start and enable the jupyterhub service
+          ansible.builtin.service:
+            name: jupyterhub
+            state: started
+            enabled: true
+
+        - name: Print the public url
+          debug:
+            msg: "You can access jupyterhub in https://{{ local_public_domain }} . You can check the logs in /var/log/jupyterhub.log in the login node"
 
       when: "'slurm_login_group' in group_names"
