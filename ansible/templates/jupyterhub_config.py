@@ -11,6 +11,8 @@ c = get_config()
 c.JupyterHub.bind_url = 'http://127.0.0.1:8000'
 #c.JupyterHub.bind_url = 'http://0.0.0.0'
 
+c.JupyterHub.db_url = 'postgresql://jupyterhub:{{ jupyterhub_postgresdb_password }}@127.0.0.1/jupyterhub'
+
 c.JupyterHub.hub_ip = 'slurm-login'
 
 c.PAMAuthenticator.open_sessions = False
