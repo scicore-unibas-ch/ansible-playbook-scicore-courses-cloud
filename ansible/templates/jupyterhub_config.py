@@ -8,8 +8,8 @@ c = get_config()
 #c.JupyterHub.cookie_secret_file = '/shared/srv/jupyterhub/jupyterhub_cookie_secret'
 #c.ConfigurableHTTPProxy.auth_token = '/shared/srv/jupyterhub/proxy_auth_token'
 
-#c.JupyterHub.bind_url = 'http://127.0.0.1:8000'
-c.JupyterHub.bind_url = 'http://0.0.0.0'
+c.JupyterHub.bind_url = 'http://127.0.0.1:8000'
+#c.JupyterHub.bind_url = 'http://0.0.0.0'
 
 c.JupyterHub.hub_ip = 'slurm-login'
 
