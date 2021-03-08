@@ -15,6 +15,60 @@
     jupyterhub_venv_path: /shared/jupyterhub
     conda_install_path: /shared/conda
 
+    apache_remove_default_vhost: true
+    apache_remove_default_vhost_ssl: true
+    apache_ignore_missing_ssl_certificate: false
+    dehydrated_contact_email: scicore-admin@unibas.ch
+
+    apache_global_vhost_settings: |
+
+      Alias /.well-known/acme-challenge/ {{ dehydrated_wellknown_dir }}
+
+      <Directory {{ dehydrated_wellknown_dir }} >
+      Require all granted
+      </Directory>
+
+      ServerTokens Prod
+
+    apache_vhosts:
+      - servername: "{{ local_public_domain }}"
+        extra_parameters: |
+          # redirect all traffic to https
+          RewriteEngine On
+          RewriteCond %{HTTPS} off
+          RewriteCond %{REQUEST_URI} !^/.well-known/
+          RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [R,L]
+
+    apache_vhosts_ssl:
+      - servername: "{{ local_public_domain }}"
+        certificate_file: "{{ dehydrated_certs_dir }}/{{ local_public_domain }}/fullchain.pem"
+        certificate_key_file: "{{ dehydrated_certs_dir }}/{{ local_public_domain }}/privkey.pem"
+        certificate_chain_file: "{{ dehydrated_certs_dir }}/{{ local_public_domain }}/fullchain.pem"
+        extra_parameters: |
+
+          ProxyRequests Off
+          ProxyPreserveHost On
+
+          <Proxy *>
+              Order deny,allow
+              Allow from all
+          </Proxy>
+
+          # Use RewriteEngine to handle websocket connection upgrades
+          RewriteEngine On
+          RewriteCond %{HTTP:Connection} Upgrade [NC]
+          RewriteCond %{HTTP:Upgrade} websocket [NC]
+          RewriteRule /(.*) ws://127.0.0.1:8000/$1 [P,L]
+
+          <Location "/">
+            # preserve Host header to avoid cross-origin problems
+            ProxyPreserveHost on
+            # proxy to JupyterHub
+            ProxyPass         http://127.0.0.1:8000/ retry=1
+            ProxyPassReverse  http://127.0.0.1:8000/
+          </Location>
+
+
   tasks:
 
 
@@ -120,3 +174,42 @@
               fi
           fi
       tags: conda
+
+    - name: Configure apache as reverse proxy for jupyterhub
+      block:
+
+        - name: Query the public ip info for the login node
+          uri:
+            url: https://ipinfo.io/json
+          register: _public_ip_info
+
+        - name: Set a variable with the public domain of the login node
+          set_fact:
+            local_public_domain: "{{ _public_ip_info.json.hostname }}"
+
+        - name: Set a variable with the letsencrypt domains
+          set_fact:
+            dehydrated_domains:
+              - "{{ local_public_domain }}"
+
+        - name: Install and configure apache webserver (no ssl yet)
+          import_role:
+            name: wcm_io_devops.apache
+
+        - name: Install dehydrated letsencrypt/acme client
+          import_role:
+            name: pescobar.dehydrated
+
+        # execute handlers so apache enables the .well-known folder and
+        # dehydrated requests the ssl certificates
+        - meta: flush_handlers
+
+        - name: Install and configure apache webserver again (configure ssl vhosts)
+          import_role:
+            name: wcm_io_devops.apache
+
+        - name: Print the public url
+          debug:
+            msg: "You can access in https://{{ local_public_domain }}"
+
+      when: "'slurm_login_group' in group_names"
