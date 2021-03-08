@@ -14,6 +14,7 @@
     # these two paths must be a shared folder in the cluster
     jupyterhub_venv_path: /shared/jupyterhub
     conda_install_path: /shared/conda
+    jupyterhub_postgresdb_password: "juuGh9le5Azoor7x"
 
     apache_remove_default_vhost: true
     apache_remove_default_vhost_ssl: true
@@ -174,6 +175,67 @@
               fi
           fi
       tags: conda
+
+    - name: Configure a postgres db in the login node
+      block:
+
+        - name: Add upstream postgres yum repos for Centos7
+          yum:
+            name: https://download.postgresql.org/pub/repos/yum/9.6/redhat/rhel-7-x86_64/pgdg-redhat-repo-latest.noarch.rpm
+            state: present
+          when:
+            - ansible_os_family == "RedHat"
+            - ansible_distribution_major_version == '7'
+          tags: postgres
+
+        - name: Disable extra postgres yum repos. We only want the repo for postgres 9.6
+          yum_repository:
+            name: "{{ item }}"
+            description: "reinstall rpm pgdg-redhat-repo-latest.noarch.rpm to get this repo back"
+            baseurl: http://this.repo.is.disabled.com
+            file: pgdg-redhat-all
+            enabled: false
+          loop:
+            - "pgdg12"
+            - "pgdg11"
+            - "pgdg10"
+            - "pgdg95"
+          when: ansible_os_family == "RedHat"
+          tags: postgres
+
+          # this role requires ansible 2.10.6
+        - name: Configure postgres DBs and users
+          import_role:
+            name: geerlingguy.postgresql
+          vars:
+            postgresql_enablerepo: "pgdg96"
+            postgresql_python_library: python-psycopg2
+            postgresql_version: "9.6"
+            postgresql_data_dir: "/var/lib/pgsql/{{ postgresql_version }}/data"
+            postgresql_bin_path: "/usr/pgsql-{{ postgresql_version }}/bin"
+            postgresql_config_path: "/var/lib/pgsql/{{ postgresql_version }}/data"
+            postgresql_daemon: "postgresql-{{ postgresql_version }}"
+            postgresql_packages:
+              - postgresql96
+              - postgresql96-server
+              - postgresql96-contrib
+              - postgresql96-libs
+            postgresql_databases:
+              - name: jupyterhub
+            postgresql_users:
+              - name: jupyterhub
+                password: "{{ jupyterhub_postgresdb_password }}"
+                db: jupyterhub
+                priv: ALL
+          tags: postgres
+
+        - name: Install python-postgresql library in the venv
+          pip:
+            name: psycopg2
+            virtualenv: "{{ jupyterhub_venv_path }}"
+            virtualenv_command: virtualenv-3
+
+      when: "'slurm_login_group' in group_names"
 
     - name: Configure apache as reverse proxy for jupyterhub
       block:
