@@ -21,10 +21,13 @@
       register: _output
 
     # this task is only executed if openstack_subnets[] is NOT an empty list
-    - name: Set var _os_project_net_info with the os project net details | Default
+    - name: Set var _os_project_net_info with the os project IPV4 net details | Default
       set_fact:
-        _os_project_subnet_info: "{{ _output.openstack_subnets[0] }}"
-      when: _output.openstack_subnets | length > 0
+        _os_project_subnet_info: "{{ item }}"
+      loop: "{{ _output.openstack_subnets }}"
+      when:
+        - _output.openstack_subnets | length > 0
+        - item.ip_version|int == 4
 
     # if filtering by project didn't work we try without any filter
     - name: Query os project net info (without filtering by project)
@@ -34,9 +37,11 @@
           os_subnets_info:
           register: _output
 
-        - name: Set var _os_net_info with the os project net details
+        - name: Set var _os_net_info with the os project IPV4 net details
           set_fact:
-            _os_project_subnet_info: "{{ _output.openstack_subnets[0] }}"
+            _os_project_subnet_info: "{{ item }}"
+          loop: "{{ _output.openstack_subnets }}"
+          when: item.ip_version|int == 4
 
       when: _os_project_subnet_info is not defined
 
