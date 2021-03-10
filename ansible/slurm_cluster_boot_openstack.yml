@@ -109,6 +109,21 @@
           set_fact:
             _slurm_login_internal_ip: "{{ _slurm_login_info.openstack.private_v4 | ipv4 }}"
 
+        - name: Try again to find the private (tenant) ip of login node if previous task failed
+          block:
+
+              - name: Define a list of dicts with all the ips in the login node
+                set_fact:
+                  _slurm_login_list_of_ips: "{{ item.value }}"
+                with_dict: "{{ _slurm_login_info.openstack.addresses }}"
+
+              # We assume _slurm_login_list_of_ips[0] is always the project/tenant private ip
+              - name: Set variable with private (tenant) ip of login node
+                set_fact:
+                  _slurm_login_internal_ip: "{{  _slurm_login_list_of_ips[0].addr | ipv4 }}"
+
+          when: not ( _slurm_login_internal_ip | ipv4 )
+
         - name: Set variable with public (floating) IPs of the login node
           set_fact:
             _slurm_login_floating_ip: "{% if _slurm_login_info.openstack.accessIPv4 | ipv4 %}{{ _slurm_login_info.openstack.accessIPv4 }}\
