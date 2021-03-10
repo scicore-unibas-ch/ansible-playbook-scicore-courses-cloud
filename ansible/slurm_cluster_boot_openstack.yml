@@ -5,6 +5,52 @@
 
   tasks:
 
+    - name: Query os project net info (without filtering by project)
+      block:
+
+        - name: Query os project subnet info (filtering by project) | Default
+          os_subnets_info:
+            filters:
+              project_id: "{{ ansible_env.OS_PROJECT_ID }}"
+          register: _output
+
+        - name: Set var _os_project_net_info with the os project IPV4 subnet details
+          set_fact:
+            _os_project_subnet_info: "{{ item }}"
+          loop: "{{ _output.openstack_subnets }}"
+          when:
+            - _output.openstack_subnets | length > 0
+            - item.ip_version|int == 4
+
+        - name: Set ansible variable with the os project internal network id
+          set_fact:
+            _os_project_network_id: "{{ _os_project_subnet_info.network_id }}"
+          when: _output.openstack_subnets | length > 0
+
+    # if filtering by project didn't work we try without any filter
+    - name: Query os project net info (without filtering by project)
+      block:
+
+        - name: Query os project net info (without any filter)
+          os_subnets_info:
+          register: _output
+
+        - name: Set var _os_net_info with the os project IPV4 net details
+          set_fact:
+            _os_project_subnet_info: "{{ item }}"
+          loop: "{{ _output.openstack_subnets }}"
+          when:
+            - _output.openstack_subnets | length > 0
+            - item.ip_version|int == 4
+
+        - name: Set ansible variable with the os project internal network id
+          set_fact:
+            _os_project_network_id: "{{ _os_project_subnet_info.network_id }}"
+          when: _output.openstack_subnets | length > 0
+
+      when: _os_project_subnet_info is not defined
+
+
     - name: Create a ssh keypair
       openssh_keypair:
         path: "{{ slurm_cluster_ssh_key_path }}"
@@ -46,6 +92,7 @@
         image: "{{ slurm_cluster_login_image }}"
         key_name: "{{ slurm_cluster_ssh_key_name }}"
         flavor: "{{ slurm_cluster_login_flavor }}"
+        network: "{{ _os_project_network_id | default(omit) }}"
         security_groups:
           - "{{ slurm_cluster_security_group_default }}"
           - "{{ slurm_cluster_security_group_login }}"
@@ -163,6 +210,7 @@
         image: "{{ slurm_cluster_compute_image }}"
         key_name: "{{ slurm_cluster_ssh_key_name }}"
         flavor: "{{ slurm_cluster_compute_flavor }}"
+        network: "{{ _os_project_network_id | default(omit) }}"
         security_groups:
           - "{{ slurm_cluster_security_group_default }}"
         auto_ip: no  # we don't need a public ip in the compute nodes. We will use the login node as ssh bastion host
@@ -212,6 +260,7 @@
             image: "{{ slurm_cluster_nfs_server_image }}"
             key_name: "{{ slurm_cluster_ssh_key_name }}"
             flavor: "{{ slurm_cluster_nfs_server_flavor }}"
+            network: "{{ _os_project_network_id | default(omit) }}"
             security_groups:
               - "{{ slurm_cluster_security_group_default }}"
             auto_ip: no  # we don't need a public ip
@@ -249,6 +298,7 @@
             image: "{{ slurm_cluster_slurm_master_image }}"
             key_name: "{{ slurm_cluster_ssh_key_name }}"
             flavor: "{{ slurm_cluster_slurm_master_flavor }}"
+            network: "{{ _os_project_network_id | default(omit) }}"
             security_groups:
               - "{{ slurm_cluster_security_group_default }}"
             auto_ip: no  # we don't need a public ip
