@@ -29,7 +29,8 @@
           slurm_image: "{{ slurm_image | default(omit) }}"
           slurm_ssh_key_name: "{{ slurm_ssh_key_name | default(omit) }}"
           slurm_login_flavor: "{{ slurm_login_flavor | default(omit) }}"
-          slurm_login_open_ports: "{{ slurm_login_open_ports | default(omit) | to_json }}"  # https://github.com/ansible/ansible/issues/51687#issuecomment-520078406
+          # https://github.com/ansible/ansible/issues/51687#issuecomment-520078406
+          slurm_login_open_ports: "{{ slurm_login_open_ports | default(omit) | to_json }}"
           slurm_compute_flavor: "{{ slurm_compute_flavor | default(omit) }}"
           slurm_nfs_server_shared_disk_size: "{{ slurm_nfs_server_shared_disk_size | default(omit) }}"
           slurm_compute_nodes_count: "{{ slurm_compute_nodes_count | default(omit) }}"
