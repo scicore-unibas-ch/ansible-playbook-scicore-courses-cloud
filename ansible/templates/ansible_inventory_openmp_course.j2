@@ -1,0 +1,6 @@
+localhost ansible_connection=local ansible_python_interpreter="/usr/bin/env python"
+
+[openmp_course]
+{% for host in groups['openmp_course'] %}
+{{ host }} ansible_host={{ hostvars[host]['ansible_host'] }} ansible_user={{ openmp_course_ssh_remote_user }} ansible_private_key_file={{ openmp_course_ssh_key_path }}
+{% endfor %}
