@@ -11,29 +11,29 @@
 
     - name: Create a ssh key
       community.crypto.openssh_keypair:
-        path: "{{ openmp_course_ssh_key_path }}"
+        path: "{{ local_ssh_key_path }}"
       register: _ssh_key_info
 
     # Don't change the name of the ssh key. It's used by terraform
     - name: Register the ssh key in OpenStack
       openstack.cloud.keypair:
-        name: "{{ openmp_course_ssh_key_name }}"
+        name: "{{ local_ssh_key_name }}"
         public_key: "{{ _ssh_key_info.public_key }}"
         state: present
 
     - name: Apply terraform code to boot the servers
       community.general.terraform:
-        project_path: "{{ openmp_course_terraform_project_path }}"
+        project_path: "{{ local_terraform_project_path }}"
         state: present
         variables:
-          openmp_course_image: "{{ openmp_course_image | default(omit) }}"
-          openmp_course_flavor: "{{ openmp_course_flavor | default(omit) }}"
-          openmp_course_ssh_key_name: "{{ openmp_course_ssh_key_name | default(omit) }}"
+          openmp_course_image: "{{ local_image | default(omit) }}"
+          openmp_course_flavor: "{{ local_flavor | default(omit) }}"
+          openmp_course_ssh_key_name: "{{ local_ssh_key_name | default(omit) }}"
           # https://github.com/ansible/ansible/issues/51687#issuecomment-520078406
-          openmp_course_open_ports: "{{ openmp_course_open_ports | default(omit) | to_json }}"
-          openmp_course_nodes_count: "{{ openmp_course_compute_nodes_count | default(omit) }}"
-          openmp_course_floating_ips_pools: "{{ openmp_course_floating_ips_pool | default(omit) }}"
-          openmp_course_private_network: "{{ openmp_course_private_network | default(omit) }}"
+          openmp_course_open_ports: "{{ local_open_ports | default(omit) | to_json }}"
+          openmp_course_nodes_count: "{{ local_nodes_count | default(omit) }}"
+          openmp_course_floating_ips_pools: "{{ local_floating_ips_pool | default(omit) }}"
+          openmp_course_private_network: "{{ local_private_network | default(omit) }}"
       register: _terraform
 
     - name: Add servers to ansible in-memory inventory
@@ -43,7 +43,7 @@
           - openmp_course
         ansible_host: "{{ item }}"
         ansible_user: centos
-        ansible_ssh_private_key_file: "{{ openmp_course_ssh_key_path }}"
+        ansible_ssh_private_key_file: "{{ local_ssh_key_path }}"
       changed_when: false
       loop: "{{ _terraform.outputs.openmp_course_floating_ips.value }}"
       loop_control:

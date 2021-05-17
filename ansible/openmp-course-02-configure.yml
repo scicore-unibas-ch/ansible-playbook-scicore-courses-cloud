@@ -27,9 +27,9 @@
         selinux_disable_reboot: true
       when: ansible_os_family == 'RedHat'
 
-    - name: Install some basic packages defined in variable 'openmp_course_packages_to_install'
+    - name: Install some basic packages defined in variable 'local_packages_to_install'
       ansible.builtin.package:
-        name: "{{ openmp_course_packages_to_install }}"
+        name: "{{ local_packages_to_install }}"
 
     - name: Configure sshd to allow password authentication
       ansible.builtin.import_role:
@@ -43,7 +43,7 @@
         name: '*'
         state: latest
       when:
-        - openmp_course_upgrade_all_packages
+        - local_upgrade_all_packages
         - ansible_os_family == 'RedHat'
 
     # we are going to configure fail2ban so we want a firewall
@@ -63,7 +63,7 @@
 
     - name: Create a default group {{ users_default_group }} for every user
       group:
-        name: "{{ openmp_course_users_default_group }}"
+        name: "{{ local_users_default_group }}"
         gid: 2000
         state: present
 
@@ -71,14 +71,14 @@
       user:
         name: "user{{ item }}"
         uid: "20{{ item }}"
-        group: "{{ openmp_course_users_default_group }}"
+        group: "{{ local_users_default_group }}"
         home: "/home/user{{ item }}"
         create_home: yes
         shell: /bin/bash
         update_password: always
-        password: "{{ openmp_course_users_password }}"
+        password: "{{ local_users_password }}"
         state: present
-      with_sequence: "count={{ openmp_course_users_accounts_to_create }} format=%02u"
+      with_sequence: "count={{ local_users_accounts_to_create }} format=%02u"
 
     - name: Query the size of the root partition in MB
       shell: |
