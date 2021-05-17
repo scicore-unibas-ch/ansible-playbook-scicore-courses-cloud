@@ -47,6 +47,10 @@ Tested with Python-3.6.6:
 $> virtualenv venv_cloud
 $> source venv_cloud/bin/activate
 (venv_cloud)$> pip install -r requirements.txt
+```
+
+### Install the required ansible dependencies
+```
 (venv_cloud)$> ansible-galaxy role install -r ansible/requirements.yml -p ansible/roles/
 (venv_cloud)$> ansible-galaxy collection install -r ansible/requirements.yml -p ansible/collections/
 ```
