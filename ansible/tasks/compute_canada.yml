@@ -19,7 +19,6 @@
   vars:
     cvmfs_client_configure_storage: false
     cvmfs_http_proxy: "DIRECT"
-    cvmfs_client_configure_storage: False
 
 - name: Deploy file /etc/modulerc to define "StdEnv/2020" as default StdEnv in the ComputeCanada software stack
   ansible.builtin.copy:
