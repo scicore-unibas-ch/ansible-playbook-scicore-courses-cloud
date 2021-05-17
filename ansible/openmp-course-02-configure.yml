@@ -7,7 +7,7 @@
 
   tasks:
 
-    - name: Waiting for the machine to be online
+    - name: Waiting for the machines to be online
       wait_for_connection:
 
     - name: Apply common setup
@@ -61,6 +61,21 @@
       import_role:
         name: pescobar.cgroups_mem_limit
       tags: cgroups
+
+    # we are going to configure fail2ban so we want a firewall
+    - name: Install and then start/enable firewalld
+      block:
+
+        - name: Install firewalld
+          package:
+            name: firewalld
+            state: installed
+
+        - name: Start and enable and firewalld
+          service:
+            name: firewalld
+            state: started
+            enabled: yes
 
     - name: Install and enable fail2ban
       import_role:
