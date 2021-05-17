@@ -38,6 +38,9 @@
         sshd:
           PasswordAuthentication: yes
 
+		- name: force all notified handlers to run at this point, not waiting for normal sync points
+			meta: flush_handlers
+
     - name: Upgrade all the packages (if configured)
       ansible.builtin.yum:
         name: '*'
@@ -99,6 +102,7 @@
       vars:
         cvmfs_client_configure_storage: false
         cvmfs_http_proxy: "DIRECT"
+        cvmfs_client_configure_storage: False
 
     - name: Deploy file /etc/modulerc to define "StdEnv/2020" as default StdEnv in the ComputeCanada software stack
       ansible.builtin.copy:

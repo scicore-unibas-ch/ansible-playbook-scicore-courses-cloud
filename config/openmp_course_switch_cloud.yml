@@ -51,7 +51,6 @@ local_packages_to_install:
   - screen
   - tmux
 
-cvmfs_client_configure_storage: False
 # Set this var to "True" to configure the ComputeCanada software stack in every machine
 local_enable_compute_canada_software_stack: true
 # should we launch a process in background to do initial sync of the software stack to local disk?
