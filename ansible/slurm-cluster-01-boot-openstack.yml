@@ -54,7 +54,7 @@
           - nfs_server
           - compute_canada_clients
         ansible_host: "{{  _terraform.outputs.slurm_login_internal_ip.value }}"
-        ansible_user: "{{ slurm_ssh_remote_user }}"
+        ansible_user: "{{ local_ssh_remote_user }}"
         ansible_ssh_private_key_file: "{{ slurm_ssh_key_path }}"
         ansible_ssh_extra_args: "-F {{ slurm_ssh_cfg_path }}"
       changed_when: false
@@ -68,7 +68,7 @@
           - nfs_clients
           - compute_canada_clients
         ansible_host: "{{ item.access_ip_v4 }}"
-        ansible_user: centos
+        ansible_user: "{{ local_ssh_remote_user }}"
         ansible_ssh_private_key_file: "{{ slurm_ssh_key_path }}"
         ansible_ssh_extra_args: "-F {{ slurm_ssh_cfg_path }}"
       changed_when: false

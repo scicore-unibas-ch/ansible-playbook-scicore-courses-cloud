@@ -14,7 +14,6 @@
         path: "{{ local_ssh_key_path }}"
       register: _ssh_key_info
 
-    # Don't change the name of the ssh key. It's used by terraform
     - name: Register the ssh key in OpenStack
       openstack.cloud.keypair:
         name: "{{ local_ssh_key_name }}"
@@ -42,7 +41,7 @@
         groups:
           - openmp_course
         ansible_host: "{{ item }}"
-        ansible_user: centos
+        ansible_user: "{{ local_ssh_remote_user }}"
         ansible_ssh_private_key_file: "{{ local_ssh_key_path }}"
       changed_when: false
       loop: "{{ _terraform.outputs.openmp_course_floating_ips.value }}"
