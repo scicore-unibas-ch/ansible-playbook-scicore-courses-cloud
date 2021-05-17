@@ -36,7 +36,7 @@
       register: _terraform
 
     - name: Add servers to ansible in-memory inventory
-      ansible_builtin.add_host:
+      ansible.builtin.add_host:
         name: "openmp-course-0{{ ansible_loop.index }}"
         groups:
           - openmp_course
@@ -49,7 +49,7 @@
         extended: true
 
     - name: Create the ansible static inventory
-      ansible_builtin.template:
+      ansible.builtin.template:
         dest: "{{ playbook_dir }}/inventory/openmp_course"
         src: ansible_inventory_openmp_course.j2
         mode: 0644
