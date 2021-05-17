@@ -67,7 +67,7 @@
         name: robertdebock.fail2ban
       tags: fail2ban
 
-    - name: Add the teacher's ssh public keys to the centos account in login node
+    - name: Add the teacher's ssh public keys to the centos account (grant sudo)
       authorized_key:
         user: "centos"
         key: "{{ item }}"
