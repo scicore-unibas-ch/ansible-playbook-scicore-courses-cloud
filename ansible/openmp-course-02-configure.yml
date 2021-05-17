@@ -8,7 +8,7 @@
   tasks:
 
     - name: Waiting for the machines to be online
-      wait_for_connection:
+      ansible.builtin.wait_for_connection:
 
     - name: Apply common setup
       ansible.builtin.import_tasks: tasks/common.yml
@@ -21,7 +21,7 @@
           PasswordAuthentication: yes
 
     - name: force all notified handlers to run at this point, not waiting for normal sync points
-      meta: flush_handlers
+      ansible.builtin.meta: flush_handlers
 
     # we are going to configure fail2ban so we want a firewall
     - name: Install and then start/enable firewalld
@@ -39,13 +39,13 @@
             enabled: yes
 
     - name: Create a default group {{ users_default_group }} for every user
-      group:
+      ansible.builtin.group:
         name: "{{ local_users_default_group }}"
         gid: 2000
         state: present
 
     - name: Create the user accounts (starting with uid 2001)
-      user:
+      ansible.builtin.user:
         name: "user{{ item }}"
         uid: "20{{ item }}"
         group: "{{ local_users_default_group }}"
@@ -58,7 +58,7 @@
       with_sequence: "count={{ local_users_accounts_to_create }} format=%02u"
 
     - name: Configure cgroups to limit memory by user
-      import_role:
+      ansible.builtin.import_role:
         name: pescobar.cgroups_mem_limit
       tags: cgroups
 
@@ -78,12 +78,12 @@
             enabled: yes
 
     - name: Install and enable fail2ban
-      import_role:
+      ansible.builtin.import_role:
         name: robertdebock.fail2ban
       tags: fail2ban
 
     - name: Add the teacher's ssh public keys to the centos account (grant sudo)
-      authorized_key:
+      ansible.posix.authorized_key:
         user: "centos"
         key: "{{ item }}"
       loop: "{{ local_teachers_ssh_keys }}"
