@@ -12,12 +12,12 @@
   tasks:
 
     - name: Add OpenHPC repositories
-      yum:
+      ansible.builtin.yum:
         name: "{{ local_ohpc_repos_url }}"
         state: installed
 
     - name: Install OpenHPC runtime Slurm packages
-      yum:
+      ansible.builtin.yum:
         name:
           - "slurm-ohpc"
           - "munge-ohpc"
@@ -25,7 +25,7 @@
         state: present
 
     - name: Ensure the Slurm spool directory exists
-      file:
+      ansible.builtin.file:
         path: /var/spool/slurm
         owner: slurm
         group: slurm
@@ -33,7 +33,7 @@
         state: directory
 
     - name: Ensure the Slurm log directory exists
-      file:
+      ansible.builtin.file:
         path: /var/log/slurm
         owner: slurm
         group: slurm
@@ -41,19 +41,19 @@
         state: directory
 
     - name: Generate a Munge key for the cluster (in slurm master machine)
-      command: "dd if=/dev/urandom of=/etc/munge/munge.key bs=1 count=1024"
+      ansible.builtin.command: "dd if=/dev/urandom of=/etc/munge/munge.key bs=1 count=1024"
       args:
         creates: "/etc/munge/munge.key"
       when: "'slurm_master' in group_names"
 
     - name: Retrieve Munge key from Slurm master host
-      slurp:
+      ansible.builtin.slurp:
         src: "/etc/munge/munge.key"
       register: _slurm_munge_key
       when: "'slurm_master' in group_names"
 
     - name: Write Munge key to every machine
-      copy:
+      ansible.builtin.copy:
         content: "{{ hostvars[groups.slurm_master[0]]['_slurm_munge_key']['content'] | b64decode }}"
         dest: "/etc/munge/munge.key"
         owner: munge
@@ -63,13 +63,13 @@
         - Restart Munge service
 
     - name: Start and enable munge service
-      service:
+      ansible.builtin.service:
         name: munge
         state: started
         enabled: true
 
     - name: Apply customised SLURM configuration
-      template:
+      ansible.builtin.template:
         src: slurm.conf.j2
         dest: /etc/slurm/slurm.conf
         owner: root
@@ -79,7 +79,7 @@
       tags: slurm_config
 
     - name: Create local /scratch folder with permission 777
-      file:
+      ansible.builtin.file:
         path: /scratch
         state: directory
         mode: 0777
@@ -166,7 +166,7 @@
       block:
 
         - name: Install slurm master rpms
-          yum:
+          ansible.builtin.yum:
             name:
               - "@ohpc-slurm-server"
               - "slurm-slurmctld-ohpc"
@@ -174,7 +174,7 @@
             state: installed
 
         - name: Deploy /etc/slurm/job_submit.lua
-          template:
+          ansible.builtin.template:
             dest: /etc/slurm/job_submit.lua
             src: job_submit.lua.j2
             owner: root
@@ -183,7 +183,7 @@
           tags: slurm_config
 
         - name: Start and enable slurm master daemon
-          service:
+          ansible.builtin.service:
             name: slurmctld
             state: started
             enabled: true
@@ -195,20 +195,20 @@
       block:
 
         - name: Install OpenHPC slurmd
-          yum:
+          ansible.builtin.yum:
             name:
               - "slurm-slurmd-ohpc"
             state: present
 
         - name: Install cgroups if this is a worker host
-          yum:
+          ansible.builtin.yum:
             name:
               - libcgroup
               - libcgroup-tools
             state: present
 
         - name: deploy /etc/slurm/cgroup.conf
-          template:
+          ansible.builtin.template:
             dest: /etc/slurm/cgroup.conf
             src: cgroup.conf.j2
             owner: root
@@ -218,7 +218,7 @@
           tags: slurm_config
 
         - name: enable and start cgroup services if this is a worker_node
-          service:
+          ansible.builtin.service:
             name: "{{ item }}"
             enabled: true
             state: started
@@ -227,14 +227,14 @@
             - cgconfig
 
         - name: Install slurm worker rpms
-          yum:
+          ansible.builtin.yum:
             name:
               - "@ohpc-base-compute"
               - "@ohpc-slurm-client"
             state: installed
 
         - name: Start and enable slurm worker daemon
-          service:
+          ansible.builtin.service:
             name: slurmd
             state: started
             enabled: true
@@ -245,26 +245,26 @@
   handlers:
 
     - name: Restart Munge service
-      service:
+      ansible.builtin.service:
         name: munge
         state: restarted
 
     - name: Restart slurmctld service
       listen: Restart SLURM service
-      service:
+      ansible.builtin.service:
         name: slurmctld
         state: restarted
       when: "'slurm_master' in group_names"
 
     - name: Restart slurmd service
       listen: Restart SLURM service
-      service:
+      ansible.builtin.service:
         name: slurmd
         state: restarted
       when: "'slurm_compute' in group_names"
 
     - name: Restart slurmdbd service
-      service:
+      ansible.builtin.service:
         name: slurmdbd
         state: restarted
       when: "'slurm_master' in group_names"

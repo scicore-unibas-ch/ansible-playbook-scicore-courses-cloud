@@ -13,14 +13,14 @@
   tasks:
 
     - name: Create a default group "users" for every user
-      group:
+      ansible.builtin.group:
         name: "users"
         gid: 2000
         state: present
 
     # We do this in the NFS server to make sure that root can access the home folders (just in case root squash is enabled)
     - name: Create the user accounts (starting with uid 2001) | First in the NFS server to create home folders
-      user:
+      ansible.builtin.user:
         name: "user{{ item }}"
         uid: "20{{ item }}"
         group: "users"
@@ -38,7 +38,7 @@
       when: "'nfs_server' in group_names"
 
     - name: Create the user accounts (starting with uid 2001) | Now in every machine
-      user:
+      ansible.builtin.user:
         name: "user{{ item }}"
         uid: "20{{ item }}"
         group: "users"
@@ -56,7 +56,7 @@
 
     # We do this in the NFS server to make sure that root can access the home folders (just in case root squash is enabled)
     - name: Get the ssh public keys for every user
-      slurp:
+      ansible.builtin.slurp:
         src: "{{ local_shared_folder }}/home/user{{ item }}/.ssh/id_rsa.pub"
       register: _all_users_ssh_public_keys
       with_sequence: "count={{ local_users_accounts }} format=%02u"
@@ -64,7 +64,7 @@
 
     # We do this in the NFS server to make sure that root can access the home folders (just in case root squash is enabled)
     - name: Add the user ssh keys to their accounts
-      authorized_key:
+      ansible.posix.authorized_key:
         user: "user{{ item.item }}"
         key: "{{ item.content | b64decode }}"
       loop: "{{ _all_users_ssh_public_keys.results }}"
@@ -72,7 +72,7 @@
 
     # We do this in the NFS server to make sure that root can access the home folders (just in case root squash is enabled)
     - name: Deploy custom ssh config for each user
-      blockinfile:
+      ansible.builtin.blockinfile:
         path: "{{ local_shared_folder }}/home/user{{ item }}/.ssh/config"
         create: yes
         backup: yes
@@ -87,7 +87,7 @@
       when: "'nfs_server' in group_names"
 
     - name: Check how many users are already registered in the Slurm DB
-      shell: |
+      ansible.builtin.shell: |
         set -o pipefail
         sacctmgr show users --noheader --parsable | wc -l
       register: _sacctmgr_users_list_output
@@ -98,21 +98,21 @@
 
     # Only execute this task if previous command returns less lines than the number of students in the course
     - name: Register all the users in the Slurm DB
-      command: "sacctmgr create user name=user{{ item }} DefaultAccount=root --immediate"
+      ansible.builtin.command: "sacctmgr create user name=user{{ item }} DefaultAccount=root --immediate"
       with_sequence: "count={{ local_users_accounts }} format=%02u"
       when:
         - "'slurm_login' in group_names"
         - "_sacctmgr_users_list_output.stdout|int <= local_users_accounts|int"
 
     - name: Add the teacher's ssh public keys to the centos account in login node
-      authorized_key:
+      ansible.posix.authorized_key:
         user: "centos"
         key: "{{ item }}"
       loop: "{{ local_teachers_ssh_keys }}"
       tags: ssh_keys_teachers
 
     - name: Create a private ssh key for user centos in login node
-      user:
+      ansible.builtin.user:
         name: "centos"
         generate_ssh_key: yes
         ssh_key_comment: "centos@slurm-login"
@@ -120,7 +120,7 @@
       tags: ssh_keys_teachers
 
     - name: Fetch the centos user public ssh key from login node to ansible control host
-      fetch:
+      ansible.builtin.fetch:
         src: "~centos/.ssh/id_rsa.pub"
         dest: "/tmp/id_rsa_centos_login_node.pub"
         flat: yes
@@ -128,13 +128,13 @@
       tags: ssh_keys_teachers
 
     - name: Add the public key for user centos to every machine
-      authorized_key:
+      ansible.builtin.authorized_key:
         user: "centos"
         key: "{{ lookup('file', '/tmp/id_rsa_centos_login_node.pub') }}"
       tags: ssh_keys_teachers
 
     - name: Configure a cgroups memory limit in login node for every user
-      import_role:
+      ansible.builtin.import_role:
         name: pescobar.cgroups_mem_limit
       vars:
         # this is the user group where all the users are created

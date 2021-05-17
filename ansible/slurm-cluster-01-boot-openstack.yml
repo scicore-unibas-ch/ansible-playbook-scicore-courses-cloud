@@ -45,7 +45,7 @@
         mode: 0600
 
     - name: Add slurm_login to ansible in-memory inventory
-      add_host:
+      ansible.builtin.add_host:
         name: slurm-login
         groups:
           - slurm_cluster_all
@@ -60,7 +60,7 @@
       changed_when: false
 
     - name: Add slurm compute nodes to ansible in-memory inventory
-      add_host:
+      ansible.builtin.add_host:
         name: "{{ item.name }}"
         groups:
           - slurm_cluster_all
@@ -76,7 +76,7 @@
       register: _test2
 
     - name: Create the ansible static inventory for the slurm cluster
-      template:
+      ansible.builtin.template:
         dest: "{{ playbook_dir }}/inventory/slurm_cluster"
         src: ansible_inventory_slurm.j2
         mode: 0644
