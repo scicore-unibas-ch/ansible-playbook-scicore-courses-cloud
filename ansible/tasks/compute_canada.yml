@@ -51,11 +51,3 @@
               #module load gcc/9.1.0 python/3.8.2 &> /dev/null
           fi
       fi
-
-- name: Launch process in background to prewarm the computeCanada cache in local disk
-  shell: source /cvmfs/soft.computecanada.ca/config/profile/bash.sh; module av
-  async: 2592000               # 60*60*24*30 – 1 month
-  poll: 0
-  args:
-    executable: /bin/bash
-  when: local_prewarm_compute_canada_software_stack_cache
