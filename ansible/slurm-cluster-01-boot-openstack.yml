@@ -1,0 +1,82 @@
+#!/usr/bin/env ansible-playbook
+---
+
+- name: Boot a SLURM cluster in OpenStack using Terraform and create an ansible static inventory
+  hosts: localhost
+  become: no
+  gather_facts: yes
+
+
+  tasks:
+
+    - name: Create a ssh key for the slurm cluster
+      community.crypto.openssh_keypair:
+        path: "{{ slurm_ssh_key_path }}"
+      register: _ssh_key_info
+
+    # Don't change the name of the ssh key. It's used by terraform
+    - name: Register the ssh key in OpenStack
+      openstack.cloud.keypair:
+        name: "{{ slurm_ssh_key_name }}"
+        public_key: "{{ _ssh_key_info.public_key }}"
+        state: present
+
+    - name: Apply terraform code to boot the slurm cluster
+      community.general.terraform:
+        project_path: "{{ slurm_terraform_project_path }}"
+        state: present
+        variables:
+          slurm_image: "{{ slurm_image | default(omit) }}"
+          slurm_ssh_key_name: "{{ slurm_ssh_key_name | default(omit) }}"
+          slurm_login_flavor: "{{ slurm_login_flavor | default(omit) }}"
+          # https://github.com/ansible/ansible/issues/51687#issuecomment-520078406
+          slurm_login_open_ports: "{{ slurm_login_open_ports | default(omit) | to_json }}"
+          slurm_compute_flavor: "{{ slurm_compute_flavor | default(omit) }}"
+          slurm_nfs_server_shared_disk_size: "{{ slurm_nfs_server_shared_disk_size | default(omit) }}"
+          slurm_compute_nodes_count: "{{ slurm_compute_nodes_count | default(omit) }}"
+          slurm_floating_ips_pools: "{{ slurm_floating_ips_pool | default(omit) }}"
+          slurm_private_network: "{{ slurm_private_network | default(omit) }}"
+      register: _terraform
+
+    - name: Create a ssh config to connect to any machine in the slurm cluster using login node as bastion host
+      ansible.builtin.template:
+        src: ssh_config_slurm.j2
+        dest: "{{ slurm_ssh_cfg_path }}"
+        mode: 0600
+
+    - name: Add slurm_login to ansible in-memory inventory
+      add_host:
+        name: slurm-login
+        groups:
+          - slurm_cluster_all
+          - slurm_master
+          - slurm_login
+          - nfs_server
+          - compute_canada_clients
+        ansible_host: "{{  _terraform.outputs.slurm_login_internal_ip.value }}"
+        ansible_user: "{{ slurm_ssh_remote_user }}"
+        ansible_ssh_private_key_file: "{{ slurm_ssh_key_path }}"
+        ansible_ssh_extra_args: "-F {{ slurm_ssh_cfg_path }}"
+      changed_when: false
+
+    - name: Add slurm compute nodes to ansible in-memory inventory
+      add_host:
+        name: "{{ item.name }}"
+        groups:
+          - slurm_cluster_all
+          - slurm_compute
+          - nfs_clients
+          - compute_canada_clients
+        ansible_host: "{{ item.access_ip_v4 }}"
+        ansible_user: centos
+        ansible_ssh_private_key_file: "{{ slurm_ssh_key_path }}"
+        ansible_ssh_extra_args: "-F {{ slurm_ssh_cfg_path }}"
+      changed_when: false
+      loop: "{{ _terraform.outputs.slurm_compute_nodes_details.value }}"
+      register: _test2
+
+    - name: Create the ansible static inventory for the slurm cluster
+      template:
+        dest: "{{ playbook_dir }}/inventory/slurm_cluster"
+        src: ansible_inventory_slurm.j2
+        mode: 0644

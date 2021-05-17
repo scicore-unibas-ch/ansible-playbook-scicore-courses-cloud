@@ -1,0 +1,77 @@
+#!/usr/bin/env ansible-playbook
+---
+
+- name: Boot the Slurm cluster resources
+  hosts: localhost
+  become: no
+  gather_facts: no
+
+  vars:
+
+    ssh_user: centos
+    ssh_key_path: ~/.ssh/slurm_cluster_cloud_id_rsa  # this key will be created
+    ssh_config_file_path: ~/.ssh/slurm_cluster_cloud.cfg
+    terraform_project_path: "{{ playbook_dir }}/../terraform/openstack-slurm/"
+
+
+  tasks:
+
+    - name: Create a ssh key for the slurm cluster
+      community.crypto.openssh_keypair:
+        path: "{{ ssh_key_path }}"
+      register: _ssh_key_info
+
+    # Don't change the name of the ssh key. It's used by terraform
+    - name: Register the ssh key in OpenStack
+      openstack.cloud.keypair:
+        name: slurm_cluster
+        public_key: "{{ _ssh_key_info.public_key }}"
+        state: present
+
+    - name: Apply terraform code to boot the slurm cluster
+      terraform:
+        project_path: "{{ terraform_project_path }}"
+        state: present
+      register: _terraform
+
+    - name: Create a ssh config to connect to any machine in the slurm cluster using login node as bastion host
+      template:
+        src: ssh_config.j2
+        dest: "{{ ssh_config_file_path }}"
+        mode: 0600
+
+    - name: Add slurm_login to ansible in-memory inventory
+      add_host:
+        name: slurm-login
+        groups:
+          - slurm_cluster_all
+          - slurm_login_group
+          - slurm_nfs_server_group
+          - slurm_master_group
+        ansible_host: "{{  _terraform.outputs.slurm_login_internal_ip.value }}"
+        ansible_user: "{{ ssh_user }}"
+        ansible_ssh_private_key_file: "{{ ssh_key_path }}"
+        ansible_ssh_extra_args: "-F {{ ssh_config_file_path }}"
+      changed_when: false
+      register: _test
+
+    - name: Add slurm compute nodes to ansible in-memory inventory
+      add_host:
+        name: "{{ item.name }}"
+        groups:
+          - slurm_cluster_all
+          - slurm_compute_group
+          - slurm_nfs_clients_group
+        ansible_host: "{{ item.access_ip_v4 }}"
+        ansible_user: centos
+        ansible_ssh_private_key_file: "{{ ssh_key_path }}"
+        ansible_ssh_extra_args: "-F {{ ssh_config_file_path }}"
+      changed_when: false
+      loop: "{{ _terraform.outputs.slurm_compute_nodes_details.value }}"
+      register: _test2
+
+    - name: Create the ansible static inventory for the slurm cluster
+      template:
+        dest: inventory/slurm_cluster_cloud
+        src: ansible_inventory_slurm.j2
+        mode: 0644

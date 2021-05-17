@@ -1,0 +1,65 @@
+---
+
+# ansible-galaxy role install -r requirements.yml -p ./roles
+roles:
+
+  - name: robertdebock.bootstrap
+    version: 4.2.5
+
+  - name: robertdebock.core_dependencies
+    version: 1.4.4
+
+  - name: robertdebock.ntp
+    version: 2.6.1
+
+  - name: robertdebock.cron
+    version: 1.6.1
+
+  - name: robertdebock.users
+    version: 4.3.3
+
+  - name: pescobar.upgrade_all_packages
+    version: v1.1
+
+  - name: pescobar.selinux_disable
+    version: 1.0.0
+
+  - name: wcm_io_devops.apache
+    version: 3.1.0-2
+
+  - name: ansible-cvmfs-client
+    src: https://git.computecanada.ca/cc-cvmfs-public/ansible-cvmfs-client.git
+    scm: git
+    version: master
+
+  - name: ome.nfs_mount
+    version: 1.3.0
+
+  - name: geerlingguy.nfs
+    version: 1.5.0
+
+  - name: pescobar.cgroups_mem_limit
+    version: v1.0.0
+
+  - name: robertdebock.fail2ban
+    version: 3.0.5
+
+  - name: geerlingguy.docker
+    version: 2.8.0
+
+  - name: riemers.gitlab-runner
+    version: v1.6.13
+
+  - name: pescobar.ansible_role_rstudio_server
+
+  - name: pescobar.dehydrated
+    version: v2.0.2
+
+  - name: geerlingguy.nodejs
+    version: 5.1.1
+
+  - name: geerlingguy.postgresql
+    version: 3.1.0
+
+  - name: 0x0i.systemd
+    version: v0.3.4

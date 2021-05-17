@@ -1,0 +1,60 @@
+---
+
+- name: Configure NFS
+  hosts:
+    - nfs_server
+    - nfs_clients
+  gather_facts: true
+  become: true
+  remote_user: "{{ slurm_ssh_remote_user }}"
+
+  tasks:
+
+    - name: Configure the NFS server
+      block:
+
+        - name: Format and mount the NFS data disk
+          ansible.builtin.import_role:
+            name: aeriscloud.disk
+          vars:
+            disk_additional_disks:
+              - disk: /dev/vdb
+                fstype: xfs
+                mount_options: defaults
+                mount: "{{ slurm_shared_folder }}"
+                user: root
+                group: root
+            disk_discover_aws_nvme_ebs: False
+
+        - name: Create folders "home" and "data" and "scratch" inside the NFS volume
+          ansible.builtin.file:
+            path: "{{ slurm_shared_folder }}/{{ item }}"
+            state: directory
+            mode: 0755
+            owner: root
+            group: root
+          loop:
+            - "home"
+            - "data"
+            - "scratch"
+
+        - name: Configure NFS exports
+          ansible.builtin.import_role:
+            name: geerlingguy.nfs
+          vars:
+            nfs_exports:
+              - "{{ slurm_shared_folder }}    *(rw,async,no_root_squash)"
+
+      when: "'nfs_server' in group_names"
+
+
+    - name: Configure NFS clients
+      ansible.builtin.import_role:
+        name: geerlingguy.nfs
+      vars:
+        nfs_share_mounts:
+          - path: "{{ slurm_shared_folder }}"
+            location: "{{ slurm_nfs_server }}:{{ slurm_shared_folder }}"
+        nfs_version: 3
+        nfs_mount_opts: rsize=8192,wsize=8192,timeo=14,intr
+      when: "'nfs_clients' in group_names"

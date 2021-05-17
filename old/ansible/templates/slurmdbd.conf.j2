@@ -33,8 +33,8 @@ PidFile=/var/run/slurmdbd.pid
 StorageType=accounting_storage/mysql
 #StorageHost=localhost
 #StoragePort=1234
-StoragePass={{ slurm_slurmdbd_mysql_password }}
-StorageUser={{ slurm_slurmdbd_mysql_user }}
-StorageLoc={{ slurm_slurmdbd_mysql_db }}
+StoragePass={{ slurm_cluster_slurmdbd_mysql_password }}
+StorageUser={{ slurm_cluster_slurmdbd_mysql_user }}
+StorageLoc={{ slurm_cluster_slurmdbd_mysql_db }}
 
 # vim: syntax=sh

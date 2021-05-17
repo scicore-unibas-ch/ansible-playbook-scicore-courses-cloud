@@ -1,0 +1,75 @@
+---
+
+# these are the variables which apply to every host in this playbook
+
+ntp_timezone: Europe/Zurich
+
+local_common_packages_to_install:
+  RedHat:
+    - vim
+    - git
+    - htop
+    - tmux
+    - bash-completion
+  Debian:
+    - vim
+    - git
+    - htop
+    - tmux
+    - bash-completion
+
+
+selinux_disable_reboot: true
+selinux_disable_reboot_timeout: 300
+
+# postfix_relayhost: "[smtp.example.com]"
+
+# Using geerlingguy.firewall role, we stick to iptables
+# firewall_log_dropped_packets: False
+# firewall_disable_firewalld: True
+# firewall_disable_ufw: False
+# firewall_flush_rules_and_chains: True  # Set this to false if there are other processes managing iptables (e.g. Docker or fail2ban)
+# firewall_enable_ipv6: False
+# firewall_allowed_tcp_ports:
+#   - "22"
+# firewall_additional_rules:
+#   - "iptables -A INPUT -s 192.168.10.10 -p tcp -m tcp --dport 22 -j ACCEPT"
+#   - "iptables -A INPUT -s 192.168.10.33/24 -p tcp -m tcp --match multiport --dports 80,443,5000 -j ACCEPT"
+
+# sshd:
+#   PasswordAuthentication: no
+#   Protocol: 2
+#   PermitRootLogin: no
+#   PubkeyAuthentication: yes 
+#   PermitEmptyPasswords: no
+#   X11Forwarding: yes 
+#   PermitTunnel: yes 
+#   AllowAgentForwarding: yes 
+#   AllowTcpForwarding: yes 
+#   #AllowUsers: user1 user2
+
+# fail2ban_bantime: 3600 
+# fail2ban_findtime: 600 
+# fail2ban_maxretry: 5
+# fail2ban_destemail: email@example.com
+# fail2ban_ignoreips: "127.0.0.1/8 ::1 10.1.0.177 192.168.34.23"
+# fail2ban_sender: root@{{ ansible_fqdn }}
+
+# fail2ban_jail_configuration:
+#   - section: sshd
+#     option: enabled
+#     value: "true"
+#   # options below are required when using geerlingguy.firewall role which uses iptables
+#   - section: DEFAULT
+#     option: banaction
+#     value: iptables-multiport
+#   - section: DEFAULT
+#     option: banaction_allports
+#     value: iptables-allports
+
+
+# users_user_list:
+#   - name: user1
+#     sudo_options: "ALL=(ALL) NOPASSWD: ALL"
+#     authorized_keys:
+#       - "ssh-ed25519 AAAAC3NzaC1lZDBBBBBBBBBAIHdBAua22OK2jd4OjHrUwd41O35DasuyCzJFGNyE6yfN user@hostname"

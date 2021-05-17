@@ -1,0 +1,12 @@
+---
+
+disk_additional_disks:
+ - disk: /dev/vdb
+   fstype: xfs
+   mount_options: defaults
+   mount: /shared
+   user: root
+   group: root
+   
+nfs_exports: 
+  - "/shared    *(rw,async,no_root_squash)"
