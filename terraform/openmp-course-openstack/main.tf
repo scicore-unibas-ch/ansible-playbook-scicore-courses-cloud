@@ -54,7 +54,7 @@ resource "openstack_compute_instance_v2" "openmp_course_nodes" {
 # allocate a floating ip for each node
 resource "openstack_networking_floatingip_v2" "openmp_course_floating_ips" {
   count             = var.openmp_course_nodes_count
-  pool              = var.openmp_course_floating_ips_pools
+  pool              = var.openmp_course_floating_ips_pool
 }
 
 # attach floating ips

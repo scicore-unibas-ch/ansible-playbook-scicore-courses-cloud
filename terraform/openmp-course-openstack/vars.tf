@@ -8,7 +8,7 @@ variable "openmp_course_nodes_count" {
   default = 2
 }
 
-variable "openmp_course_floating_ips_pools" {
+variable "openmp_course_floating_ips_pool" {
   type    = string
   default = "public"
 }

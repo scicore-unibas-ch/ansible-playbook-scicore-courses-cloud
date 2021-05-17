@@ -31,7 +31,7 @@
           # https://github.com/ansible/ansible/issues/51687#issuecomment-520078406
           openmp_course_open_ports: "{{ local_open_ports | default(omit) | to_json }}"
           openmp_course_nodes_count: "{{ local_nodes_count | default(omit) }}"
-          openmp_course_floating_ips_pools: "{{ local_floating_ips_pool | default(omit) }}"
+          openmp_course_floating_ips_pool: "{{ local_floating_ips_pool | default(omit) }}"
           openmp_course_private_network: "{{ local_private_network | default(omit) }}"
       register: _terraform
 
