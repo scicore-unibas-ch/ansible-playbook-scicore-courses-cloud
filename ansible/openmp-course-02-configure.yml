@@ -10,26 +10,8 @@
     - name: Waiting for the machine to be online
       wait_for_connection:
 
-    - name: Configure NTP time
-      ansible.builtin.import_role:
-        name: geerlingguy.ntp
-
-    - name: Add EPEL yum repo | RedHat
-      ansible.builtin.package:
-        name: epel-release
-        state: installed
-      when: ansible_os_family == 'RedHat'
-
-    - name: Disable SElinux in RedHat systems
-      ansible.builtin.import_role:
-        name: pescobar.selinux_disable
-      vars:
-        selinux_disable_reboot: true
-      when: ansible_os_family == 'RedHat'
-
-    - name: Install some basic packages defined in variable 'local_packages_to_install'
-      ansible.builtin.package:
-        name: "{{ local_packages_to_install }}"
+    - name: Apply common setup
+      ansible.builtin.import_tasks: tasks/common.yml
 
     - name: Configure sshd to allow password authentication
       ansible.builtin.import_role:
@@ -38,16 +20,8 @@
         sshd:
           PasswordAuthentication: yes
 
-		- name: force all notified handlers to run at this point, not waiting for normal sync points
-			meta: flush_handlers
-
-    - name: Upgrade all the packages (if configured)
-      ansible.builtin.yum:
-        name: '*'
-        state: latest
-      when:
-        - local_upgrade_all_packages
-        - ansible_os_family == 'RedHat'
+    - name: force all notified handlers to run at this point, not waiting for normal sync points
+      meta: flush_handlers
 
     # we are going to configure fail2ban so we want a firewall
     - name: Install and then start/enable firewalld
@@ -83,79 +57,6 @@
         state: present
       with_sequence: "count={{ local_users_accounts_to_create }} format=%02u"
 
-    - name: Query the size of the root partition in MB
-      shell: |
-        set -o pipefail
-        df -m / | awk {'print $2'} |tail -1
-      register: _root_partition_disk_size
-      args:
-        executable: /bin/bash
-      changed_when: false
-
-    - name: Set a variable in MB with the disk size we will use for CVMFS cache (30% of root partition)
-      set_fact:
-        cvmfs_cache_size: "{{ ( _root_partition_disk_size.stdout|int * 0.5) | int }}"
-
-    - name: Configure the CVMFS client to access the ComputeCanada soft stack
-      import_role:
-        name: ansible-cvmfs-client
-      vars:
-        cvmfs_client_configure_storage: false
-        cvmfs_http_proxy: "DIRECT"
-        cvmfs_client_configure_storage: False
-
-    - name: Deploy file /etc/modulerc to define "StdEnv/2020" as default StdEnv in the ComputeCanada software stack
-      ansible.builtin.copy:
-        dest: /etc/modulerc
-        owner: root
-        group: root
-        mode: 0644
-        content: |
-          #
-          # ansible managed
-          #
-          module-version StdEnv/2020 default
-
-    - name: Create profile file to enable the ComputeCanada software stack on login
-      ansible.builtin.copy:
-        dest: /etc/profile.d/compute_canada.sh
-        owner: root
-        group: root
-        mode: 0644
-        content: |
-          #
-          # ansible managed
-          #
-          # we create all students accounts with uid>2000
-          # and we only enable the software stack by default for them
-          if [ "$UID" -ge 2000 ]; then
-              if [ -f /cvmfs/soft.computecanada.ca/config/profile/bash.sh ]; then
-                  export MODULERCFILE=/etc/modulerc
-                  source /cvmfs/soft.computecanada.ca/config/profile/bash.sh &> /dev/null
-                  #module load gcc/9.1.0 python/3.8.2 &> /dev/null
-              fi
-          fi
-
-    - name: Launch process in background to prewarm the computeCanada cache in local disk
-      shell: source /cvmfs/soft.computecanada.ca/config/profile/bash.sh; module av
-      async: 2592000               # 60*60*24*30 – 1 month
-      poll: 0
-      args:
-        executable: /bin/bash
-      when: local_prewarm_compute_canada_software_stack_cache
-
-    - name: Create profile file to define OMP_NUM_THREADS on login
-      ansible.builtin.copy:
-        dest: /etc/profile.d/openmp.sh
-        owner: root
-        group: root
-        mode: 0644
-        content: |
-          #
-          # ansible managed
-          #
-          export OMP_NUM_THREADS=4
-
     - name: Configure cgroups to limit memory by user
       import_role:
         name: pescobar.cgroups_mem_limit
@@ -172,3 +73,18 @@
         key: "{{ item }}"
       loop: "{{ local_teachers_ssh_keys }}"
       tags: ssh_keys_teachers
+
+    - name: Configure the ComputeCanada software stack
+      ansible.builtin.import_tasks: tasks/compute_canada.yml
+
+    - name: Create profile file to define OMP_NUM_THREADS on login
+      ansible.builtin.copy:
+        dest: /etc/profile.d/openmp.sh
+        owner: root
+        group: root
+        mode: 0644
+        content: |
+          #
+          # ansible managed
+          #
+          export OMP_NUM_THREADS=4
