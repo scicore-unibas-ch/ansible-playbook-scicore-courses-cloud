@@ -7,7 +7,7 @@
 
   tasks:
 
-    - name: Waiting for the machine to be online
+    - name: Waiting for the machines to be online
       wait_for_connection:
 
     - name: Apply common setup
@@ -28,3 +28,7 @@
         dest: /etc/hosts
         src: hosts_slurm.j2
         mode: 0644
+
+    - name: Configure the ComputeCanada software stack
+      ansible.builtin.import_tasks: tasks/compute_canada.yml
+

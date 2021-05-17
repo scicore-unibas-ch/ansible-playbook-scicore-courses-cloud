@@ -11,13 +11,6 @@
 
   tasks:
 
-    - name: Configure a cgroups memory limit in login node
-      import_role:
-        name: pescobar.cgroups_mem_limit
-      vars:
-        # this is the user group we created in previous playbook
-        cgroup_to_whom_the_limit_applies: '@users'
-      when: "'slurm_login' in group_names"
 
     - name: Query the size of the root partition in MB
       shell: |

@@ -8,7 +8,7 @@
     - nfs_server
   gather_facts: true
   become: true
-  remote_user: "{{ slurm_ssh_remote_user }}"
+  remote_user: "{{ local_ssh_remote_user }}"
 
   tasks:
 
@@ -24,17 +24,17 @@
         name: "user{{ item }}"
         uid: "20{{ item }}"
         group: "users"
-        home: "{{ slurm_shared_folder }}/home/user{{ item }}"
+        home: "{{ local_shared_folder }}/home/user{{ item }}"
         create_home: yes
         shell: /bin/bash
         update_password: always
-        password: "{{ slurm_users_default_password }}"
+        password: "{{ local_users_default_password }}"
         generate_ssh_key: yes
         ssh_key_comment: "user{{ item }}_slurm_cluster@ansible-generated"
         state: present
         ssh_key_file: .ssh/id_rsa
         ssh_key_type: rsa
-      with_sequence: "count={{ slurm_users_accounts }} format=%02u"
+      with_sequence: "count={{ local_users_accounts }} format=%02u"
       when: "'nfs_server' in group_names"
 
     - name: Create the user accounts (starting with uid 2001) | Now in every machine
@@ -42,24 +42,24 @@
         name: "user{{ item }}"
         uid: "20{{ item }}"
         group: "users"
-        home: "{{ slurm_shared_folder }}/home/user{{ item }}"
+        home: "{{ local_shared_folder }}/home/user{{ item }}"
         create_home: yes
         shell: /bin/bash
         update_password: always
-        password: "{{ slurm_users_default_password }}"
+        password: "{{ local_users_default_password }}"
         generate_ssh_key: yes
         ssh_key_comment: "user{{ item }}_slurm_cluster@ansible-generated"
         state: present
         ssh_key_file: .ssh/id_rsa
         ssh_key_type: rsa
-      with_sequence: "count={{ slurm_users_accounts }} format=%02u"
+      with_sequence: "count={{ local_users_accounts }} format=%02u"
 
     # We do this in the NFS server to make sure that root can access the home folders (just in case root squash is enabled)
     - name: Get the ssh public keys for every user
       slurp:
-        src: "{{ slurm_shared_folder }}/home/user{{ item }}/.ssh/id_rsa.pub"
+        src: "{{ local_shared_folder }}/home/user{{ item }}/.ssh/id_rsa.pub"
       register: _all_users_ssh_public_keys
-      with_sequence: "count={{ slurm_users_accounts }} format=%02u"
+      with_sequence: "count={{ local_users_accounts }} format=%02u"
       when: "'nfs_server' in group_names"
 
     # We do this in the NFS server to make sure that root can access the home folders (just in case root squash is enabled)
@@ -73,7 +73,7 @@
     # We do this in the NFS server to make sure that root can access the home folders (just in case root squash is enabled)
     - name: Deploy custom ssh config for each user
       blockinfile:
-        path: "{{ slurm_shared_folder }}/home/user{{ item }}/.ssh/config"
+        path: "{{ local_shared_folder }}/home/user{{ item }}/.ssh/config"
         create: yes
         backup: yes
         owner: "user{{ item }}"
@@ -83,7 +83,7 @@
           Host *
               StrictHostKeyChecking no
               ServerAliveInterval 10
-      with_sequence: "count={{ slurm_users_accounts }} format=%02u"
+      with_sequence: "count={{ local_users_accounts }} format=%02u"
       when: "'nfs_server' in group_names"
 
     - name: Check how many users are already registered in the Slurm DB
@@ -99,16 +99,16 @@
     # Only execute this task if previous command returns less lines than the number of students in the course
     - name: Register all the users in the Slurm DB
       command: "sacctmgr create user name=user{{ item }} DefaultAccount=root --immediate"
-      with_sequence: "count={{ slurm_users_accounts }} format=%02u"
+      with_sequence: "count={{ local_users_accounts }} format=%02u"
       when:
         - "'slurm_login' in group_names"
-        - "_sacctmgr_users_list_output.stdout|int <= slurm_users_accounts|int"
+        - "_sacctmgr_users_list_output.stdout|int <= local_users_accounts|int"
 
     - name: Add the teacher's ssh public keys to the centos account in login node
       authorized_key:
         user: "centos"
         key: "{{ item }}"
-      loop: "{{ slurm_teachers_ssh_keys }}"
+      loop: "{{ local_teachers_ssh_keys }}"
       tags: ssh_keys_teachers
 
     - name: Create a private ssh key for user centos in login node
@@ -132,3 +132,11 @@
         user: "centos"
         key: "{{ lookup('file', '/tmp/id_rsa_centos_login_node.pub') }}"
       tags: ssh_keys_teachers
+
+    - name: Configure a cgroups memory limit in login node for every user
+      import_role:
+        name: pescobar.cgroups_mem_limit
+      vars:
+        # this is the user group where all the users are created
+        cgroup_to_whom_the_limit_applies: '@users'
+      when: "'slurm_login' in group_names"

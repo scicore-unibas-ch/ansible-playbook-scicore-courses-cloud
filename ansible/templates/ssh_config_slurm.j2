@@ -2,8 +2,8 @@
 
 Host slurm-login
   Hostname {{ _terraform.outputs.slurm_login_floating_ip.value }}
-  User {{ slurm_ssh_remote_user }}
-  IdentityFile {{ slurm_ssh_key_path }}
+  User {{ local_ssh_remote_user }}
+  IdentityFile {{ local_ssh_key_path }}
   AddKeysToAgent yes
   ForwardAgent yes
   StrictHostKeyChecking no
@@ -12,7 +12,7 @@ Host slurm-login
   # https://serverfault.com/questions/840011/ssh-host-key-checking-cannot-disable-when-using-proxy-jump
 
 Host * !slurm-login
-  User {{ slurm_ssh_remote_user }}
-  IdentityFile {{ slurm_ssh_key_path }}
+  User {{ local_ssh_remote_user }}
+  IdentityFile {{ local_ssh_key_path }}
   ProxyJump slurm-login
   StrictHostKeyChecking no

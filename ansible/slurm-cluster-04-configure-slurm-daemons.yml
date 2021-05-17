@@ -7,13 +7,13 @@
     - slurm_compute
   gather_facts: true
   become: true
-  remote_user: "{{ slurm_ssh_remote_user }}"
+  remote_user: "{{ local_ssh_remote_user }}"
 
   tasks:
 
     - name: Add OpenHPC repositories
       yum:
-        name: "{{ slurm_ohpc_repos_url }}"
+        name: "{{ local_ohpc_repos_url }}"
         state: installed
 
     - name: Install OpenHPC runtime Slurm packages
@@ -108,14 +108,14 @@
 
         - name: create mysql db for accounting
           community.mysql.mysql_db:
-            name: "{{ slurm_slurmdbd_mysql_db }}"
+            name: "{{ local_slurmdbd_mysql_db }}"
             state: present
 
         - name: create mysql account for slurm accounting daemon
           community.mysql.mysql_user:
-            name: "{{ slurm_slurmdbd_mysql_user }}"
-            password: "{{ slurm_slurmdbd_mysql_password }}"
-            priv: '{{ slurm_slurmdbd_mysql_db }}.*:ALL'
+            name: "{{ local_slurmdbd_mysql_user }}"
+            password: "{{ local_slurmdbd_mysql_password }}"
+            priv: '{{ local_slurmdbd_mysql_db }}.*:ALL'
             state: present
 
         - name: install slurm accounting daemon from OpenHPC (slurm-slurmdbd-ohpc rpm)
