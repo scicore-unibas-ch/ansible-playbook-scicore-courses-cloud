@@ -1,0 +1,66 @@
+---
+
+## UPDATE THESE VARS TO ADAPT THEM TO YOUR OPENSTACK CLOUD
+openmp_course_image: "CentOS 7 (SWITCHengines)"
+openmp_course_ssh_remote_user: "centos"
+openmp_course_flavor: "m1.small"
+openmp_course_floating_ips_pool: "public"
+openmp_course_private_network: "private"
+openmp_course_nodes_count: "2"
+openmp_course_terraform_project_path: "{{ playbook_dir }}/../terraform/openmp-course-openstack/"
+## UPDATE THESE VARS TO ADAPT THEM TO YOUR OPENSTACK CLOUD
+
+## UPDATE VARS BELOW ACCORDING TO YOUR PREFERENCE BUT IT'S NOT MANDATORY FOR INITIAL TESTING ##
+
+# Details for the ssh key we will create in the local machine to access the cloud machines
+# We will also create a ssh config file to use the login node as ssh bastion host
+openmp_course_ssh_key_path: "{{ ansible_env.HOME }}/.ssh/openmp_course_cloud"
+openmp_course_ssh_key_name: "openmp_course_cloud"  # name used to register the ssh key in openstack
+openmp_course_ssh_cfg_path: "{{ ansible_env.HOME }}/.ssh/openmp_course_cloud.cfg"
+
+ntp_timezone: Europe/Zurich
+
+# ports accesible from the internet
+openmp_course_open_ports:
+  - port: 22
+    source: 0.0.0.0/0
+  - port: 3000
+    source: 131.152.0.0/16
+
+openmp_course_users_default_group: "course"  # this is the default group for all the user accounts
+openmp_course_users_accounts_to_create: 32   # how many user accounts to create
+openmp_course_users_password: "$6$rJgMMBkqe$mk20Kv6tlmEl.A7yg0/jtGTIfBYEQBB67PJwkeEk7JUkiwymP7dDkUxxeOQU/tUPHK4VBiiPnlxMvCfWHcelx0"  # openmp_course_2021
+
+openhpc_repos_url: "https://github.com/openhpc/ohpc/releases/download/v1.3.GA/ohpc-release-1.3-1.el7.x86_64.rpm"
+
+cgroup_memory_limit: "4G"
+cgroup_to_whom_the_limit_applies: "@{{ openmp_course_users_default_group }}"
+
+fail2ban_ignoreips: "127.0.0.1/8 ::1 131.152.0.0/16"
+fail2ban_jail_configuration:
+  - section: sshd
+    option: enabled
+    value: "true"
+
+openmp_course_upgrade_all_packages: false
+openmp_course_packages_to_install:
+  - vim
+  - emacs-nox
+  - nano
+  - git
+  - htop
+  - bash-completion
+  - singularity
+  - screen
+  - tmux
+
+cvmfs_client_configure_storage: False
+# Set this var to "True" to configure the ComputeCanada software stack in every machine
+openmp_course_enable_compute_canada_software_stack: true
+# should we launch a process in background to do initial sync of the software stack to local disk?
+local_prewarm_compute_canada_software_stack_cache: true
+
+local_teachers_ssh_keys:
+  - "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQCzghWVPGdgvHrtIFv+9xoCDQD4N1ljhV5G0Ga2gyeigqo6ihoXKKUNtmecSaUsZYAPg+wUqCNhBb1oY0pC/MA/bCT4DAN/p+nt7wKc8okOWO5DRX9Asq00JmU9sDo8joKeUyGDl6+FmF6YBzfzwR7mEOyoq3cxim1jaBvuC/JaCE+e1Jdn++Vjz5fHQFuUPKMyXIXlaXLs6D7n2Zq9IfK1eMfCv22d3wm1MOEZSlkYHeyLdfNWVPpMroCyPkImI0gODde3yIaoDu/ETXQxFUHyvFZ7gOnm3/O6rpswB+DYRUlrpNQMZm5Koq7dG9HW4zhN6MMt8c2ZV3TlXxHgCMfJ6G6SNVZ8GaowxW3cGA0Hu55qgP8Vg+0U/o3VFqYJeh60mGILPhJqK+m/GwYWr4Mmi69/ehBX18KTVo7HrKNfUTwPhXg3hRa2KoLvhZrvtrm7gh3bj2Rao+E/WBwH3f9HAxtA8ebFy9Akre+BeF9+VrRbM7ZU1AX34bDfrHIwWx0Klr9MldZRzKvD1S3CUBkhDpy5FUKObVU3Vuz3ZkOqy+JKy8K5u/Q8WraFh5jiE2cmjSmsSGlVbQyHaLY5kS+yzMGWdlZ6mErGCOEfUk9xTd6i9A4Parsxctl0ybaySVn932x3Sc93pq1s7FPWwhA9wk8PqknKl+28ckf0tE3SQw=="
+
+grafana_admin_password: "grafana009988"
