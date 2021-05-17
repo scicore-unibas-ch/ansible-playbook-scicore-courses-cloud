@@ -1,65 +1,98 @@
 ---
 
-# ansible-galaxy role install -r requirements.yml -p ./roles
-roles:
+# ansible-galaxy collection install -r requirements.yml -p ./ansible/collections
+collections:
 
-  - name: robertdebock.bootstrap
-    version: 4.2.5
+  - name: community.general
+    version: 3.0.0
 
-  - name: robertdebock.core_dependencies
-    version: 1.4.4
+  - name: community.mysql
+    version: 2.1.0
 
-  - name: robertdebock.ntp
-    version: 2.6.1
+  - name: openstack.cloud
+    version: 1.4.0
 
-  - name: robertdebock.cron
+  - name: ansible.posix
+    version: 1.2.0
+
+  - name: community.crypto
     version: 1.6.1
 
-  - name: robertdebock.users
-    version: 4.3.3
+# ansible-galaxy role install -r requirements.yml -p ./ansible/roles
+roles:
 
-  - name: pescobar.upgrade_all_packages
-    version: v1.1
+  - name: robertdebock.cron
+    version: 2.0.1
+
+  - name: geerlingguy.ntp
+    version: 2.3.0
+
+  - name: aeriscloud.disk
+    version: v2.6.1
+
+  - name: ome.nfs_mount
+    version: 1.3.0
 
   - name: pescobar.selinux_disable
-    version: 1.0.0
+    version: 1.3.0
 
   - name: wcm_io_devops.apache
-    version: 3.1.0-2
+    version: 3.1.4-1
+
+  - name: pescobar.dehydrated
+    version: v2.0.2
 
   - name: ansible-cvmfs-client
     src: https://git.computecanada.ca/cc-cvmfs-public/ansible-cvmfs-client.git
     scm: git
     version: master
 
-  - name: ome.nfs_mount
-    version: 1.3.0
-
   - name: geerlingguy.nfs
-    version: 1.5.0
+    version: 2.0.0
 
   - name: pescobar.cgroups_mem_limit
     version: v1.0.0
 
   - name: robertdebock.fail2ban
-    version: 3.0.5
+    version: 4.0.1
 
   - name: geerlingguy.docker
-    version: 2.8.0
+    version: 3.1.1
 
   - name: riemers.gitlab-runner
-    version: v1.6.13
+    version: v1.6.31
 
-  - name: pescobar.ansible_role_rstudio_server
+  - name: willshersystems.sshd
+    version: v0.12.0
 
-  - name: pescobar.dehydrated
-    version: v2.0.2
+  # - name: robertdebock.users
+  #   version: 5.0.2
 
-  - name: geerlingguy.nodejs
-    version: 5.1.1
+  # - name: robertdebock.rsyslog
+  #   version: 4.0.1
 
-  - name: geerlingguy.postgresql
-    version: 3.1.0
+  # - name: 0x0i.systemd
+  #   version: v0.3.5
 
-  - name: 0x0i.systemd
-    version: v0.3.4
+  # - name: geerlingguy.firewall
+  #   version: 2.5.0
+
+  # - name: robertdebock.fail2ban
+  #   version: 4.0.1
+
+  # - name: geerlingguy.postgresql
+  #   version: 3.1.0
+
+  # - name: geerlingguy.mysql
+  #   version: 3.3.0
+
+  # - name: geerlingguy.php
+  #   version: 4.5.1
+
+  # - name: robertdebock.postfix
+  #   version: 4.3.0
+
+  # - name: nvidia.nvidia_driver
+  #   src: https://github.com/pescobar/ansible-role-nvidia-driver.git
+  #   scm: git
+  #   version: add_repos_optional

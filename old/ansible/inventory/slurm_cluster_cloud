@@ -1,0 +1,29 @@
+localhost ansible_connection=local ansible_python_interpreter="/usr/bin/env python"
+
+[slurm_cluster_all]
+slurm-login ansible_host=10.0.0.53 ansible_ssh_extra_args='-F /home/escobar/.ssh/slurm_cluster_cloud.cfg'
+slurm-compute-01 ansible_host=10.0.0.146 ansible_ssh_extra_args='-F /home/escobar/.ssh/slurm_cluster_cloud.cfg'
+slurm-compute-02 ansible_host=10.0.2.104 ansible_ssh_extra_args='-F /home/escobar/.ssh/slurm_cluster_cloud.cfg'
+slurm-compute-03 ansible_host=10.0.1.76 ansible_ssh_extra_args='-F /home/escobar/.ssh/slurm_cluster_cloud.cfg'
+
+[slurm_master]
+slurm-login 
+
+[slurm_login]
+slurm-login 
+
+[slurm_compute]
+slurm-compute-01 
+slurm-compute-02 
+slurm-compute-03 
+
+[nfs_server]
+slurm-login
+
+[nfs_clients]
+slurm-compute-01 
+slurm-compute-02 
+slurm-compute-03 
+
+[rstudio_server]
+slurm-login 

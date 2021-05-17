@@ -1,0 +1,13 @@
+---
+
+- name: debugging openstack api output
+  hosts: localhost
+
+  tasks:
+
+    - name: Query os project net info
+      os_subnets_info:
+      register: _output
+
+    - debug:
+        var: _output

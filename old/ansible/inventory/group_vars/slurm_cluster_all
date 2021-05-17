@@ -1,0 +1,22 @@
+---
+
+local_common_packages_to_install:
+  RedHat:
+    - vim
+    - git
+    - htop
+    - tmux
+    - bash-completion
+    - emacs-nox
+    - nano
+    - screen
+    - singularity
+  Debian:
+    - vim
+    - git
+    - htop
+    - tmux
+    - bash-completion
+
+users_group_list:
+  - name: slurm

@@ -1,0 +1,17 @@
+---
+
+# define here your vars for "example_host"
+
+interfaces_ether_interfaces:
+  - device: eth0
+    bootproto: static
+    address: 192.168.1.99
+    netmask: 255.255.255.0
+    gateway: 192.168.1.1
+    dnsnameservers: 192.168.1.1
+    dnssearch: "'cluster.domain.com domain.com'"
+  - device: eth1
+    bootproto: static
+    address: 192.168.10.10
+    netmask: 255.255.255.0
+

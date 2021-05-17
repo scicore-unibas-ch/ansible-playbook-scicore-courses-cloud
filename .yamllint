@@ -15,7 +15,9 @@ rules:
   comments: {require-starting-space: false}
 
 ignore: |
-  roles
+  ansible/roles
+  ansible/collections
+  ansible/README.md
   virtenv
   venv
   config/vault
