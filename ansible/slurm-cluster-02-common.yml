@@ -7,34 +7,11 @@
 
   tasks:
 
-    - name: Configure NTP time
-      ansible.builtin.import_role:
-        name: geerlingguy.ntp
-      vars:
-        ntp_timezone: "{{ slurm_ntp_timezone }}"
+    - name: Waiting for the machine to be online
+      wait_for_connection:
 
-    - name: Add EPEL yum repo | RedHat
-      ansible.builtin.package:
-        name: epel-release
-        state: installed
-      when: ansible_os_family == 'RedHat'
-
-    - name: Disable SElinux in RedHat systems
-      ansible.builtin.import_role:
-        name: pescobar.selinux_disable
-      vars:
-        selinux_disable_reboot: true
-      when: ansible_os_family == 'RedHat'
-
-    - name: Install some basic packages defined in variable 'slurm_packages_to_install'
-      ansible.builtin.package:
-        name: "{{ slurm_packages_to_install }}"
-
-    - name: Deploy a custom /etc/hosts with all VMs in the tenant
-      ansible.builtin.template:
-        dest: /etc/hosts
-        src: hosts_slurm.j2
-        mode: 0644
+    - name: Apply common setup
+      ansible.builtin.import_tasks: tasks/common.yml
 
     - name: Configure sshd to allow password authentication
       ansible.builtin.import_role:
@@ -43,10 +20,11 @@
         sshd:
           PasswordAuthentication: yes
 
-    - name: Upgrade all the packages (if configured)
-      ansible.builtin.yum:
-        name: '*'
-        state: latest
-      when:
-        - slurm_upgrade_all_packages
-        - ansible_os_family == 'RedHat'
+    - name: force all notified handlers to run at this point, not waiting for normal sync points
+      meta: flush_handlers
+
+    - name: Deploy a custom /etc/hosts with all VMs in the tenant
+      ansible.builtin.template:
+        dest: /etc/hosts
+        src: hosts_slurm.j2
+        mode: 0644
