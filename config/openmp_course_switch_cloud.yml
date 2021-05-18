@@ -3,7 +3,7 @@
 ## UPDATE THESE VARS TO ADAPT THEM TO YOUR OPENSTACK CLOUD
 local_image: "CentOS 7 (SWITCHengines)"
 local_ssh_remote_user: "centos"
-local_flavor: "m1.small"
+local_flavor: "m1.xxlarge"  # 16cpus / 32GB ram / 160GB hd
 local_floating_ips_pool: "public"
 local_private_network: "private"
 local_nodes_count: "2"
@@ -55,6 +55,7 @@ local_packages_to_install:
 local_enable_compute_canada_software_stack: true
 
 local_teachers_ssh_keys:
-  - "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQCzghWVPGdgvHrtIFv+9xoCDQD4N1ljhV5G0Ga2gyeigqo6ihoXKKUNtmecSaUsZYAPg+wUqCNhBb1oY0pC/MA/bCT4DAN/p+nt7wKc8okOWO5DRX9Asq00JmU9sDo8joKeUyGDl6+FmF6YBzfzwR7mEOyoq3cxim1jaBvuC/JaCE+e1Jdn++Vjz5fHQFuUPKMyXIXlaXLs6D7n2Zq9IfK1eMfCv22d3wm1MOEZSlkYHeyLdfNWVPpMroCyPkImI0gODde3yIaoDu/ETXQxFUHyvFZ7gOnm3/O6rpswB+DYRUlrpNQMZm5Koq7dG9HW4zhN6MMt8c2ZV3TlXxHgCMfJ6G6SNVZ8GaowxW3cGA0Hu55qgP8Vg+0U/o3VFqYJeh60mGILPhJqK+m/GwYWr4Mmi69/ehBX18KTVo7HrKNfUTwPhXg3hRa2KoLvhZrvtrm7gh3bj2Rao+E/WBwH3f9HAxtA8ebFy9Akre+BeF9+VrRbM7ZU1AX34bDfrHIwWx0Klr9MldZRzKvD1S3CUBkhDpy5FUKObVU3Vuz3ZkOqy+JKy8K5u/Q8WraFh5jiE2cmjSmsSGlVbQyHaLY5kS+yzMGWdlZ6mErGCOEfUk9xTd6i9A4Parsxctl0ybaySVn932x3Sc93pq1s7FPWwhA9wk8PqknKl+28ckf0tE3SQw=="
+  - "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEFya9i7rLPXOEtdGhHB4nTfjXKNZPfcLwrMTtbJqM/y wandrille.duchemin@unibas.ch"
+  - "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCfdQDNeDOqstuSqPYRzwkdjQRQOs7rf2+Ejb7HAxHkn7my9MW/Yoh/uF/QgEXbJTfCRsty1FOC+m/MOJ22KEjEEbkymIwKQqTTj2DoRchnOMbMo1dU4ohkDS+GBGsB0BhccFzXvmhVfTuPctA5b/agTHyozAV/9yK+vm7CfJPpjxpJUb7yXP+QVBIA653Tve+wB0JCzF4uJhhratuFYdvPSIzWTRGqKJ6jIfJ7GpeoobESOl56isHl+HerVF5ZBdUwEbb9rg/bRORw2Q3KuWGqWyyXOcrAJzg1cHcSAxtpDkAY5a8Tx69nZDvaQ/HQX9O0v24or/o3DwydRpGimpON acavelan@kahos"
 
 local_grafana_admin_password: "grafana009988"
