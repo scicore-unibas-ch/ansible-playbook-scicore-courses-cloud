@@ -48,6 +48,6 @@
           if [ -f /cvmfs/soft.computecanada.ca/config/profile/bash.sh ]; then
               export MODULERCFILE=/etc/modulerc
               source /cvmfs/soft.computecanada.ca/config/profile/bash.sh &> /dev/null
-              #module load gcc/9.1.0 python/3.8.2 &> /dev/null
+              module load gcc/9.3.0 python/3.8.2 &> /dev/null
           fi
       fi
