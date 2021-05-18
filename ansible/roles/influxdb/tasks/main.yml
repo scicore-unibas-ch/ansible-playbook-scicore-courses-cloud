@@ -1,0 +1,19 @@
+---
+# tasks file for influxdb
+
+- name: Add InfluxDB/Telegraf repository
+  ansible.builtin.yum_repository:
+    name: influxdb
+    description: InfluxDB
+    baseurl: https://repos.influxdata.com/centos/$releasever/{{ "arm64" if ansible_architecture == "aarch64" else ansible_architecture }}/stable/
+    gpgkey: https://repos.influxdata.com/influxdb.key
+
+- name: Install influxdb package
+  ansible.builtin.yum:
+    name: influxdb
+
+- name: Enable the influxdb service
+  ansible.builtin.service:
+    name: influxdb
+    state: started
+    enabled: yes

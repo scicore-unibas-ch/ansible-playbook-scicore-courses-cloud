@@ -1,0 +1,40 @@
+---
+# tasks file for telegraf
+
+- name: Add InfluxDB/Telegraf repository
+  ansible.builtin.yum_repository:
+    name: influxdb
+    description: InfluxDB
+    baseurl: https://repos.influxdata.com/centos/$releasever/{{ "arm64" if ansible_architecture == "aarch64" else ansible_architecture }}/stable/
+    gpgkey: https://repos.influxdata.com/influxdb.key
+
+- name: Install telegraf
+  ansible.builtin.yum:
+    name: telegraf
+    state: present
+
+- name: enable the telegraf service
+  ansible.builtin.service:
+    name: telegraf
+    state: started
+    enabled: yes
+
+- name: enable network monitoring in telegraf
+  community.general.ini_file:
+    path: /etc/telegraf/telegraf.conf
+    section: "[inputs.net]"
+    option: interfaces
+    value: '["*"]'
+    state: present
+    mode: u=rw,g=r,o=r
+  notify: restart telegraf
+
+- name: configure telegraf to use InfluxDB URL
+  community.general.ini_file:
+    path: /etc/telegraf/telegraf.conf
+    section: "[outputs.influxdb]"
+    option: urls
+    value: '["{{ telegraf_influxdb_url }}"]'
+    backup: yes
+    mode: u=rw,g=r,o=r
+  notify: restart telegraf

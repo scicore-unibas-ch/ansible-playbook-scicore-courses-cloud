@@ -1,0 +1,94 @@
+---
+# tasks file for grafana
+
+- name: Add Grafana repository
+  ansible.builtin.yum_repository:
+    name: grafana
+    description: Grafana
+    baseurl: https://packages.grafana.com/oss/rpm
+    gpgkey: https://packages.grafana.com/gpg.key
+
+- name: Install grafana package
+  ansible.builtin.yum:
+    name: grafana
+  notify: restart grafana
+
+- name: enable the grafana service
+  ansible.builtin.service:
+    name: grafana-server
+    state: started
+    enabled: yes
+
+- name: Check admin password
+  ansible.builtin.uri:
+    url: "{{ grafana_url }}/api/admin/settings"
+    user: admin
+    password: "{{ grafana_admin_password }}"
+    force_basic_auth: yes
+  ignore_errors: yes
+  register: grafana_password
+
+- name: Set admin password
+  uri:
+    url: "{{ grafana_url }}/api/user/password"
+    user: admin
+    password: admin
+    force_basic_auth: yes
+    method: PUT
+    body_format: json
+    body: '{ "oldPassword": "admin", "newPassword": "{{ grafana_admin_password }}", "confirmNew": "{{ grafana_admin_password }}"}'
+  ignore_errors: '{{ ansible_check_mode }}'
+  when:
+    - grafana_password.status == 401
+
+- name: Create influxdb telegraf datasource
+  community.grafana.grafana_datasource:
+    grafana_url: "{{ grafana_url }}"
+    grafana_user: admin
+    grafana_password: "{{ grafana_admin_password }}"
+    name: influxdb_telegraf
+    ds_type: influxdb
+    ds_url: "{{ grafana_influxdb_url }}"
+    database: telegraf
+
+- name: create directory for grafana dashboards
+  ansible.builtin.file:
+    path: /etc/citc/grafana
+    state: directory
+    mode: u=rwx,g=rx,o=rx
+
+- name: Check if we already downloaded the telegrafh dashboard
+  ansible.builtin.stat:
+    path: /etc/citc/grafana/928.json
+  register: _telegraf_dashboard
+
+- name: Download Telegraf dashboard
+  get_url:
+    url: https://grafana.com/api/dashboards/928/revisions/3/download
+    dest: /etc/citc/grafana/928.json
+    mode: u=rw,g=r,o=r
+  when: not _telegraf_dashboard.stat.exists
+
+- name: Set Influx datasource on dashboard
+  ansible.builtin.replace:
+    path: /etc/citc/grafana/928.json
+    regexp: '\${DS_INFLUXDB_TELEGRAF}'
+    replace: 'influxdb_telegraf'
+
+- name: Import dashboard
+  ansible.builtin.copy:
+    dest: /etc/grafana/provisioning/dashboards/citc.yaml
+    content: |
+      apiVersion: 1
+
+      providers:
+      - name: 'default'
+        orgId: 1
+        folder: ''
+        type: file
+        disableDeletion: false
+        updateIntervalSeconds: 10 #how often Grafana will scan for changed dashboards
+        options:
+          path: /etc/citc/grafana
+    mode: u=rw,g=r,o=r
+  notify: restart grafana

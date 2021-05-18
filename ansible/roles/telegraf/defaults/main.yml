@@ -1,0 +1,4 @@
+---
+# defaults file for telegraf
+
+telegraf_influxdb_url: "http://localhost:8086"

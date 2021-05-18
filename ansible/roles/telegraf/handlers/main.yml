@@ -1,0 +1,7 @@
+---
+# handlers file for telegraf
+
+- name: restart telegraf
+  ansible.builtin.service:
+    name: telegraf
+    state: restarted
