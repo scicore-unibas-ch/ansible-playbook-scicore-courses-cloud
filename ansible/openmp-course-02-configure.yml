@@ -103,3 +103,22 @@
           # ansible managed
           #
           export OMP_NUM_THREADS=4
+
+    - name: Install InfluxDB
+      ansible.builtin.import_role:
+        name: influxdb
+
+    - name: Install Grafana
+      ansible.builtin.import_role:
+        name: grafana
+
+    - name: Install Telegraf
+      ansible.builtin.import_role:
+        name: telegraf
+
+    - name: Open grafana port 3000/tcp in local firewall
+      ansible.posix.firewalld:
+        port: 3000/tcp
+        permanent: yes
+        state: enabled
+        immediate: yes
