@@ -58,4 +58,4 @@ local_teachers_ssh_keys:
   - "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEFya9i7rLPXOEtdGhHB4nTfjXKNZPfcLwrMTtbJqM/y wandrille.duchemin@unibas.ch"
   - "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCfdQDNeDOqstuSqPYRzwkdjQRQOs7rf2+Ejb7HAxHkn7my9MW/Yoh/uF/QgEXbJTfCRsty1FOC+m/MOJ22KEjEEbkymIwKQqTTj2DoRchnOMbMo1dU4ohkDS+GBGsB0BhccFzXvmhVfTuPctA5b/agTHyozAV/9yK+vm7CfJPpjxpJUb7yXP+QVBIA653Tve+wB0JCzF4uJhhratuFYdvPSIzWTRGqKJ6jIfJ7GpeoobESOl56isHl+HerVF5ZBdUwEbb9rg/bRORw2Q3KuWGqWyyXOcrAJzg1cHcSAxtpDkAY5a8Tx69nZDvaQ/HQX9O0v24or/o3DwydRpGimpON acavelan@kahos"
 
-local_grafana_admin_password: "grafana009988"
+grafana_admin_password: "grafana009988"
