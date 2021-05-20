@@ -53,3 +53,15 @@
         dest: "{{ playbook_dir }}/inventory/openmp_course"
         src: ansible_inventory_openmp_course.j2
         mode: 0644
+
+
+- name: Wait for the machines to boot
+  hosts: openmp_course
+  become: no
+  gather_facts: no
+  remote_user: "{{ local_ssh_remote_user }}"
+
+  tasks:
+
+    - name: Waiting for the machines to be accessible over ssh
+      ansible.builtin.wait_for_connection:

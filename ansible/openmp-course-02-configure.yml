@@ -7,9 +7,6 @@
 
   tasks:
 
-    - name: Waiting for the machines to be online
-      ansible.builtin.wait_for_connection:
-
     - name: Apply common setup
       ansible.builtin.import_tasks: tasks/common.yml
 
