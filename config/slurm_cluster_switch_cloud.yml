@@ -3,11 +3,11 @@
 ## UPDATE THESE VARS TO ADAPT THEM TO YOUR OPENSTACK CLOUD
 local_image: "CentOS 7 (SWITCHengines)"
 local_ssh_remote_user: "centos"
-local_login_flavor: "m1.small"
-local_compute_flavor: "m1.small"
+local_login_flavor: "m1.medium"
+local_compute_flavor: "m1.medium"
 local_floating_ips_pool: "public"
 local_private_network: "private"
-local_compute_nodes_count: "3"
+local_compute_nodes_count: "1"
 local_nfs_server_shared_disk_size: "50"
 local_terraform_project_path: "{{ playbook_dir }}/../terraform/slurm-cluster-openstack/"
 ## UPDATE THESE VARS TO ADAPT THEM TO YOUR OPENSTACK CLOUD
