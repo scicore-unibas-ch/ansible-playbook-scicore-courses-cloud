@@ -68,6 +68,9 @@ roles:
   - name: willshersystems.sshd
     version: v0.12.0
 
+  - name: scicore.slurm
+    version: 0.0.5
+
   # - name: robertdebock.users
   #   version: 5.0.2
 

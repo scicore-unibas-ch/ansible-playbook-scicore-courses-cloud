@@ -86,24 +86,6 @@
       with_sequence: "count={{ local_users_accounts }} format=%02u"
       when: "'nfs_server' in group_names"
 
-    - name: Check how many users are already registered in the Slurm DB
-      ansible.builtin.shell: |
-        set -o pipefail
-        sacctmgr show users --noheader --parsable | wc -l
-      register: _sacctmgr_users_list_output
-      args:
-        executable: /bin/bash
-      changed_when: false
-      when: "'slurm_login' in group_names"
-
-    # Only execute this task if previous command returns less lines than the number of students in the course
-    - name: Register all the users in the Slurm DB
-      ansible.builtin.command: "sacctmgr create user name=user{{ item }} DefaultAccount=root --immediate"
-      with_sequence: "count={{ local_users_accounts }} format=%02u"
-      when:
-        - "'slurm_login' in group_names"
-        - "_sacctmgr_users_list_output.stdout|int <= local_users_accounts|int"
-
     - name: Add the teacher's ssh public keys to the centos account in login node
       ansible.posix.authorized_key:
         user: "centos"

@@ -20,11 +20,5 @@
     - name: force all notified handlers to run at this point, not waiting for normal sync points
       ansible.builtin.meta: flush_handlers
 
-    - name: Deploy a custom /etc/hosts with all VMs in the tenant
-      ansible.builtin.template:
-        dest: /etc/hosts
-        src: hosts_slurm.j2
-        mode: 0644
-
     - name: Configure the ComputeCanada software stack
       ansible.builtin.import_tasks: tasks/compute_canada.yml
