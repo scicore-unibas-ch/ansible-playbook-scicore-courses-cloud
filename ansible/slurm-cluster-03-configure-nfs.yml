@@ -46,11 +46,12 @@
               - "{{ local_shared_folder }}    *(rw,async,no_root_squash)"
 
       when: "'nfs_server' in group_names"
+      tags: nfs_server
 
 
     - name: Configure NFS clients
       ansible.builtin.import_role:
-        name: geerlingguy.nfs
+        name: ome.nfs_mount
       vars:
         nfs_share_mounts:
           - path: "{{ local_shared_folder }}"
@@ -58,3 +59,4 @@
         nfs_version: 3
         nfs_mount_opts: rsize=8192,wsize=8192,timeo=14,intr
       when: "'nfs_clients' in group_names"
+      tags: nfs_clients
