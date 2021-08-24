@@ -6,7 +6,6 @@
   become: no
   gather_facts: yes
 
-
   tasks:
 
     - name: Create a ssh key for the slurm cluster
@@ -80,3 +79,13 @@
         dest: "{{ playbook_dir }}/inventory/slurm_cluster"
         src: ansible_inventory_slurm.j2
         mode: 0644
+
+- name: Wait for the machines to be online
+  hosts: slurm_cluster_all
+  become: no
+  gather_facts: no
+
+  tasks:
+
+    - name: Wait for the machines to be online
+      ansible.builtin.wait_for_connection:
