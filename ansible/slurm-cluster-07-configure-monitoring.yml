@@ -129,9 +129,9 @@
               fi
             mode: a=rx,u+w
 
-        - name: enable slurm monitoring in influx
+        - name: Enable slurm monitoring in telegraf
           ini_file:
-            path: /etc/telegraf/telegraf.conf
+            path: /etc/telegraf/telegraf.d/slurm.conf
             section: "[inputs.exec]"
             option: "{{ item.key }}"
             value: "{{ item.value }}"
@@ -208,7 +208,7 @@
 
         - name: enable network monitoring in telegraf
           ini_file:
-            path: /etc/telegraf/telegraf.conf
+            path: /etc/telegraf/telegraf.d/network.conf
             section: "[inputs.net]"
             option: interfaces
             value: '["*"]'
