@@ -48,6 +48,14 @@
       when: "'nfs_server' in group_names"
       tags: nfs_server
 
+    - name: Add the nfs server to /etc/hosts
+      ansible.builtin.blockinfile:
+        dest: /etc/hosts
+        marker_begin: "BEGIN nfs-server host"
+        marker_end: "END nfs-server host"
+        block: |
+          {{ hostvars[groups['nfs_server'][0]]['ansible_host'] }} {{ groups['nfs_server'][0] }}
+      tags: nfs_clients
 
     - name: Configure NFS clients
       ansible.builtin.import_role:
