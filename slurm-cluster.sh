@@ -11,3 +11,4 @@ ansible-playbook -e @${CONFIG_FILE} -i ${ANSIBLE_STATIC_INVENTORY} ansible/slurm
 ansible-playbook -e @${CONFIG_FILE} -i ${ANSIBLE_STATIC_INVENTORY} ansible/slurm-cluster-04-configure-slurm-daemons.yml
 ansible-playbook -e @${CONFIG_FILE} -i ${ANSIBLE_STATIC_INVENTORY} ansible/slurm-cluster-05-configure-user-accounts.yml
 ansible-playbook -e @${CONFIG_FILE} -i ${ANSIBLE_STATIC_INVENTORY} ansible/slurm-cluster-06-configure-rstudio.yml
+ansible-playbook -e @${CONFIG_FILE} -i ${ANSIBLE_STATIC_INVENTORY} ansible/slurm-cluster-07-configure-monitoring.yml

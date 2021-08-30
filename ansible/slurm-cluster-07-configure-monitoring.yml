@@ -1,0 +1,245 @@
+---
+
+# This playbook is heavily inspired in
+# https://github.com/clusterinthecloud/ansible/tree/6/roles/monitoring
+
+- name: Configure monitoring of the slurm cluster
+  hosts: slurm_cluster_all
+  gather_facts: true
+  become: true
+  remote_user: "{{ local_ssh_remote_user }}"
+
+  vars:
+
+    # these vars are used in the grafana template
+    entries:
+      - name: idle
+        colour: "#508642"
+      - name: idle#
+        colour: "#9ac48a"
+      - name: mix
+        colour: "#428675"
+      - name: mix#
+        colour: "#8ac4b6"
+      - name: allocated
+        colour: "#e5ac0e"
+      - name: allocated#
+        colour: "#f4d598"
+      - name: down
+        colour: "#bf1b00"
+
+  tasks:
+
+    - name: Add InfluxDB repository
+      yum_repository:
+        name: influxdb
+        description: InfluxDB
+        baseurl: https://repos.influxdata.com/centos/$releasever/{{ "arm64" if ansible_architecture == "aarch64" else ansible_architecture }}/stable/
+        gpgkey: https://repos.influxdata.com/influxdb.key
+
+
+    - name: Configure Influxdb + Grafana in the login node
+      block:
+
+        - name: install influxdb package in login node
+          yum:
+            name:
+              - influxdb
+          notify: restart influxdb
+
+        - name: enable the influxdb service
+          service:
+            name: influxdb
+            state: started
+            enabled: yes
+
+        - name: Add Grafana repository
+          yum_repository:
+            name: grafana
+            description: Grafana
+            baseurl: https://packages.grafana.com/oss/rpm
+            gpgkey: https://packages.grafana.com/gpg.key
+
+        - name: install grafana package
+          yum:
+            name:
+              - grafana
+          notify: restart grafana
+
+        - name: enable the grafana service
+          service:
+            name: grafana-server
+            state: started
+            enabled: yes
+
+        - name: Check admin password
+          uri:
+            url: http://localhost:3000/api/admin/settings
+            user: admin
+            password: "{{ grafana_admin_password }}"
+            force_basic_auth: yes
+          ignore_errors: yes
+          register: grafana_password
+
+        - name: Set admin password
+          uri:
+            url: http://localhost:3000/api/user/password
+            user: admin
+            password: admin
+            force_basic_auth: yes
+            method: PUT
+            body_format: json
+            body: '{ "oldPassword": "admin", "newPassword": "{{ grafana_admin_password }}", "confirmNew": "{{ grafana_admin_password }}"}'
+          ignore_errors: '{{ ansible_check_mode }}'
+          when:
+            - grafana_password.status == 401
+
+        - name: Create influxdb telegraf datasource
+          grafana_datasource:
+            grafana_url: http://localhost:3000
+            grafana_user: admin
+            grafana_password: "{{ grafana_admin_password }}"
+            name: influxdb_telegraf
+            ds_type: influxdb
+            ds_url: http://localhost:8086
+            database: telegraf
+
+        - name: install monitor_slurm script
+          copy:
+            dest: /usr/local/bin/monitor_slurm
+            content: |
+              #! /bin/bash
+              set -euo pipefail
+              IFS=$'\n\t'
+
+              data=$(sinfo --noheader --Format=StateLong,Nodes)
+
+              values=""
+
+              for i in $data
+              do
+                state=$(echo $i | awk '{print $1}')
+                count=$(echo $i | awk '{print $2}')
+                values+=",${state}=${count}"
+              done
+
+              if [[ ! -z "${values}" ]]
+              then
+                echo "nodestatuscount ${values:1}"
+              fi
+            mode: a=rx,u+w
+
+        - name: enable slurm monitoring in influx
+          ini_file:
+            path: /etc/telegraf/telegraf.conf
+            section: "[inputs.exec]"
+            option: "{{ item.key }}"
+            value: "{{ item.value }}"
+            state: present
+            mode: u=rw,g=r,o=r
+          loop: "{{ keys|dict2items }}"
+          vars:
+            keys:
+              commands: '["/usr/local/bin/monitor_slurm"]'
+              timeout: '"5s"'
+              name_suffix: '"_slurm"'
+              data_format: '"influx"'
+          notify: restart telegraf
+
+        - name: create directory for grafana dashboards
+          file:
+            path: /etc/citc/grafana
+            state: directory
+            mode: u=rwx,g=rx,o=rx
+
+        - name: Copy in Slurm Grafana dashboard
+          template:
+            src: slurm_dashboard.json.j2
+            dest: /etc/citc/grafana/slurm_dashboard.json
+            mode: u=rw,g=r,o=r
+
+        - name: Download Telegraf dashboard
+          get_url:
+            url: https://grafana.com/api/dashboards/928/revisions/3/download
+            dest: /etc/citc/grafana/928.json
+            mode: u=rw,g=r,o=r
+          tags:
+            - molecule-idempotence-notest  # We download and then change this file in-place
+
+        - name: Set Influx datasource on dashboard
+          replace:
+            path: /etc/citc/grafana/928.json
+            regexp: '\${DS_INFLUXDB_TELEGRAF}'
+            replace: 'influxdb_telegraf'
+
+        - name: Import dashboard
+          copy:
+            dest: /etc/grafana/provisioning/dashboards/citc.yaml
+            content: |
+              apiVersion: 1
+
+              providers:
+              - name: 'default'
+                orgId: 1
+                folder: ''
+                type: file
+                disableDeletion: false
+                updateIntervalSeconds: 10 #how often Grafana will scan for changed dashboards
+                options:
+                  path: /etc/citc/grafana
+            mode: u=rw,g=r,o=r
+          notify: restart grafana
+
+      when: "'slurm_login' in group_names"
+
+    - name: Install telegraf agent in every machine
+      block:
+
+        - name: Install telegraf
+          yum:
+            name: telegraf
+            state: present
+
+        - name: enable the telegraf service
+          service:
+            name: telegraf
+            state: started
+            enabled: yes
+
+        - name: enable network monitoring in telegraf
+          ini_file:
+            path: /etc/telegraf/telegraf.conf
+            section: "[inputs.net]"
+            option: interfaces
+            value: '["*"]'
+            state: present
+            mode: u=rw,g=r,o=r
+          notify: restart telegraf
+
+        - name: configure telegraf to use InfluxDB URL
+          ini_file:
+            path: /etc/telegraf/telegraf.conf
+            section: "[outputs.influxdb]"
+            option: urls
+            value: '["http://{{ hostvars[groups.slurm_login[0]].inventory_hostname }}:8086"]'
+            backup: yes
+            mode: u=rw,g=r,o=r
+          notify: restart telegraf
+
+
+  handlers:
+
+    - name: restart telegraf
+      service:
+        name: telegraf
+        state: restarted
+
+    - name: restart influxdb
+      service:
+        name: influxdb
+        state: restarted
+
+    - name: restart grafana
+      service:
+        name: grafana-server
+        state: restarted
