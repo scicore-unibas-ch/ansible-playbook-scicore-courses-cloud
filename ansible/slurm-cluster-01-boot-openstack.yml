@@ -74,6 +74,12 @@
       loop: "{{ _terraform.outputs.slurm_compute_nodes_details.value }}"
       register: _test2
 
+    - name: Create directory for the ansible inventory
+      ansible.builtin.file:
+        path: "{{ playbook_dir }}/inventory/"
+        state: directory
+        mode: 0755
+
     - name: Create the ansible static inventory for the slurm cluster
       ansible.builtin.template:
         dest: "{{ playbook_dir }}/inventory/slurm_cluster"
