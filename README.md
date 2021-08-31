@@ -16,6 +16,8 @@ ansible/slurm-cluster-02-common.yml
 ansible/slurm-cluster-03-configure-nfs.yml
 ansible/slurm-cluster-04-configure-slurm-daemons.yml
 ansible/slurm-cluster-05-configure-user-accounts.yml
+ansible/slurm-cluster-06-configure-rstudio.yml
+ansible/slurm-cluster-07-configure-monitoring.yml
 ```
 
 First playbook will use Terraform to boot the cloud the resources and will create an ansible static inventory. 
@@ -101,7 +103,6 @@ TO-DO: Improve the config docs
 $> ./slurm-cluster.sh
 ```
 
-
 ## Connecting to the slurm cluster
 
 ```
@@ -123,4 +124,5 @@ $> ansible slurm_cluster_all -i ansible/inventory/slurm_cluster -m shell -a 'yum
 ```
 $> cd terraform/slurm-cluster-openstack/
 $> terraform destroy
+$> openstack keypair delete slurm_cluster_cloud
 ```
