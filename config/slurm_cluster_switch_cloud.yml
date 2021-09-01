@@ -69,7 +69,7 @@ local_users_default_password: "$6$ldwSs5IPrUFC$mTJprVShXmBCd.DMYGR0SP31BcUUiReQE
 local_enable_compute_canada_software_stack: true
 
 # Define the list of R packages you want to install the login node (to be used in Rstudio)
-local_rstudio_server_extra_r_packages:
+rstudio_server_extra_r_packages:
   - cluster
   - DESeq2
   - edgeR
