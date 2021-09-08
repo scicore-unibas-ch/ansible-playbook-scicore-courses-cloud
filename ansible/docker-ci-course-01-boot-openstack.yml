@@ -1,0 +1,68 @@
+#!/usr/bin/env ansible-playbook
+---
+
+- name: Boot the Docker & CI course machines on OpenStack using Terraform and create an ansible static inventory
+  hosts: localhost
+  become: no
+  gather_facts: yes
+
+
+  tasks:
+
+    - name: Create a ssh key
+      community.crypto.openssh_keypair:
+        path: "{{ local_ssh_key_path }}"
+      register: _ssh_key_info
+
+    - name: Register the ssh key in OpenStack
+      openstack.cloud.keypair:
+        name: "{{ local_ssh_key_name }}"
+        public_key: "{{ _ssh_key_info.public_key }}"
+        state: present
+
+    - name: Apply terraform code to boot the servers
+      community.general.terraform:
+        project_path: "{{ local_terraform_project_path }}"
+        force_init: true
+        state: present
+        variables:
+          docker_ci_course_image: "{{ local_image | default(omit) }}"
+          docker_ci_course_flavor: "{{ local_flavor | default(omit) }}"
+          docker_ci_course_ssh_key_name: "{{ local_ssh_key_name | default(omit) }}"
+          # https://github.com/ansible/ansible/issues/51687#issuecomment-520078406
+          docker_ci_course_open_ports: "{{ local_open_ports | default(omit) | to_json }}"
+          docker_ci_course_nodes_count: "{{ local_nodes_count | default(omit) }}"
+          docker_ci_course_floating_ips_pool: "{{ local_floating_ips_pool | default(omit) }}"
+          docker_ci_course_private_network: "{{ local_private_network | default(omit) }}"
+      register: _terraform
+
+    - name: Add servers to ansible in-memory inventory
+      ansible.builtin.add_host:
+        name: "docker-ci-course-{{ '%02d' | format(ansible_loop.index) }}"
+        groups:
+          - docker_ci_course
+        ansible_host: "{{ item }}"
+        ansible_user: "{{ local_ssh_remote_user }}"
+        ansible_ssh_private_key_file: "{{ local_ssh_key_path }}"
+      changed_when: false
+      loop: "{{ _terraform.outputs.docker_ci_course_floating_ips.value }}"
+      loop_control:
+        extended: true
+
+    - name: Create the ansible static inventory
+      ansible.builtin.template:
+        dest: "{{ playbook_dir }}/inventory/docker_ci_course"
+        src: ansible_inventory_docker_ci_course.j2
+        mode: 0644
+
+
+- name: Wait for the machines to boot
+  hosts: docker_ci_course
+  become: no
+  gather_facts: no
+  remote_user: "{{ local_ssh_remote_user }}"
+
+  tasks:
+
+    - name: Waiting for the machines to be accessible over ssh
+      ansible.builtin.wait_for_connection:

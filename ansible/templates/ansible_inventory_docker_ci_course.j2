@@ -1,0 +1,6 @@
+localhost ansible_connection=local ansible_python_interpreter="/usr/bin/env python"
+
+[docker_ci_course]
+{% for host in groups['docker_ci_course'] %}
+{{ host }} ansible_host={{ hostvars[host]['ansible_host'] }} ansible_user={{ local_ssh_remote_user }} ansible_private_key_file={{ local_ssh_key_path }}
+{% endfor %}
