@@ -60,21 +60,21 @@ roles:
     version: 4.0.1
 
   - name: geerlingguy.docker
-    version: 3.1.1
+    version: 4.1.0
 
   - name: riemers.gitlab-runner
-    version: v1.6.31
+    version: v1.6.33
 
   - name: willshersystems.sshd
-    version: v0.12.0
+    version: v0.14.0
 
   - name: scicore.slurm
     version: 0.0.5
 
   - name: pescobar.ansible_role_rstudio_server
 
-  # - name: robertdebock.users
-  #   version: 5.0.2
+  - name: robertdebock.users
+    version: 5.3.2
 
   # - name: robertdebock.rsyslog
   #   version: 4.0.1
