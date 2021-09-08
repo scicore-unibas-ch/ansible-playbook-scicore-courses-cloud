@@ -74,28 +74,28 @@
             dest: ~/cathsm-server
             version: master
 
-        - name: Clone the cathsm-client git repo to the student home folder
+        - name: Clone the cathsm-client git repo to the student home folder (hidden)
           ansible.builtin.git:
             repo: https://github.com/CATH-SWISSMODEL/cathsm-client.git
-            dest: ~/cathsm-client
+            dest: ~/.cathsm-client-src
             version: master
 
         - name: Create the venv for the cathsm-client with a recent pip version
           ansible.builtin.pip:
             name: pip>21.0
-            virtualenv: ~/cathsm-client/venv
+            virtualenv: ~/cathsm-client-venv
             virtualenv_command: virtualenv-3
 
         - name: Install requirements.txt provided in the cathsm-client repo in the venv
           ansible.builtin.pip:
-            requirements: ~/cathsm-client/requirements.txt
-            virtualenv: ~/cathsm-client/venv
+            requirements: ~/.cathsm-client-src/requirements.txt
+            virtualenv: ~/cathsm-client-venv
             virtualenv_command: virtualenv-3
 
         - name: Install the cathsm-client package in the venv
           ansible.builtin.pip:
-            name: file:///home/student/cathsm-client/
-            virtualenv: ~/cathsm-client/venv
+            name: file:///home/student/.cathsm-client-src/
+            virtualenv: ~/cathsm-client-venv
             virtualenv_command: virtualenv-3
 
         - name: Create config folder ~/.config/cath-swissmodel-api/ for the student
