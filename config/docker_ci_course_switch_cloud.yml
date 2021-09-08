@@ -1,0 +1,54 @@
+---
+
+## UPDATE THESE VARS TO ADAPT THEM TO YOUR OPENSTACK CLOUD
+local_image: "CentOS 7 (SWITCHengines)"
+local_ssh_remote_user: "centos"
+local_flavor: "m1.medium"
+local_floating_ips_pool: "public"
+local_private_network: "private"
+local_nodes_count: "2"
+local_terraform_project_path: "{{ playbook_dir }}/../terraform/docker-ci-course-openstack/"
+## UPDATE THESE VARS TO ADAPT THEM TO YOUR OPENSTACK CLOUD
+
+## UPDATE VARS BELOW ACCORDING TO YOUR PREFERENCE BUT IT'S NOT MANDATORY FOR INITIAL TESTING ##
+
+# Details for the ssh key we will create in the local machine to access the cloud machines
+# We will also create a ssh config file to use the login node as ssh bastion host
+local_ssh_key_path: "{{ ansible_env.HOME }}/.ssh/docker_ci_course_cloud"
+local_ssh_key_name: "docker_ci_course_cloud"  # name used to register the ssh key in openstack
+
+ntp_timezone: Europe/Zurich
+
+# ports accesible from the internet
+local_open_ports:
+  - port: 22
+    source: 0.0.0.0/0
+  - port: 80
+    source: 0.0.0.0/0
+  - port: 443
+    source: 0.0.0.0/0
+  - port: 8080
+    source: 0.0.0.0/0
+  - port: 3000
+    source: 131.152.0.0/16
+
+local_upgrade_all_packages: false
+local_packages_to_install:
+  - vim
+  - emacs-nox
+  - nano
+  - git
+  - htop
+  - bash-completion
+  - screen
+  - tmux
+
+# https://docs.ansible.com/ansible/latest/reference_appendices/faq.html#how-do-i-generate-encrypted-passwords-for-the-user-module
+local_student_default_password: "$6$6WJ5fj3Q2g0iD$xXYdKRyE4n7ml/ttJHEopsxFldUAvbN5FZMkJ60cMkQTTQBZ2VWRWyAwDjO3BeHuzton3.1TLwv1uAuhpNY0e/"  # docker_ci_course
+
+local_teachers_ssh_keys:
+  - "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIIzkns+xvq10E81iMDzRpMXKDpqHI9ALvHxy4/sWDy0o b@bc2.conf"
+  - "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIC7iFrhplBHPXG5wxEYAliB6J3yT3gUdna04UMk3NQem jsurkont"
+  - "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIICDtR2bSVDXkO+OSVZ1WJbtbSf+vzVxIadO2Dk6LcXo pescobar_ed25529_2020"
+
+grafana_admin_password: "grafana009988"
