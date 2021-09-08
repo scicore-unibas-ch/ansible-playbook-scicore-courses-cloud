@@ -23,6 +23,7 @@
     - name: Apply terraform code to boot the slurm cluster
       community.general.terraform:
         project_path: "{{ local_terraform_project_path }}"
+        force_init: true
         state: present
         variables:
           slurm_image: "{{ local_image | default(omit) }}"
