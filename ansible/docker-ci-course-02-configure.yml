@@ -28,21 +28,20 @@
       ansible.builtin.import_role:
         name: riemers.gitlab-runner
 
-    - name: Create account for the student with sudo permissions
-      ansible.builtin.import_role:
-        name: robertdebock.users
-      vars:
-        users_user_list:
-          - name: student
-            comment: student account
-            password: "{{ local_student_default_password }}"
-            groups: docker
-            cron_allow: yes
-            authorized_keys: "{{ local_teachers_ssh_keys }}"
+    - name: Create account for the student
+      ansible.builtin.user:
+        name: student
+        password: "{{ local_student_default_password }}"
 
-    - name: Add the teacher's ssh public keys to the centos account (grant sudo)
+    - name: Add student user to docker group
+      user:
+        name: student
+        groups: docker
+        append: yes
+
+    - name: Add the teacher's ssh public keys to the student account
       ansible.posix.authorized_key:
-        user: "centos"
+        user: student
         key: "{{ item }}"
       loop: "{{ local_teachers_ssh_keys }}"
       tags: ssh_keys_teachers
@@ -52,6 +51,13 @@
         name: centos
         groups: docker
         append: yes
+
+    - name: Add the teacher's ssh public keys to the centos account (grant sudo)
+      ansible.posix.authorized_key:
+        user: centos
+        key: "{{ item }}"
+      loop: "{{ local_teachers_ssh_keys }}"
+      tags: ssh_keys_teachers
 
     - name: Add gitlab-runner user to docker group
       user:
@@ -112,7 +118,6 @@
 
       become: yes
       become_user: student
-
 
     - name: Install InfluxDB
       ansible.builtin.import_role:
