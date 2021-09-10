@@ -34,7 +34,7 @@
         password: "{{ local_student_default_password }}"
 
     - name: Add student user to docker group
-      user:
+      ansible.builtin.user:
         name: student
         groups: docker
         append: yes
@@ -67,7 +67,7 @@
       notify: restart_gitlab_runner
 
     - name: Install python36-virtualenv
-      yum:
+      ansible.builtin.yum:
         name: python36-virtualenv
         state: installed
 
