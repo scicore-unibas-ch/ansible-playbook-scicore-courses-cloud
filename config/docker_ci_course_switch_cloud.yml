@@ -3,10 +3,12 @@
 ## UPDATE THESE VARS TO ADAPT THEM TO YOUR OPENSTACK CLOUD
 local_image: "CentOS 7 (SWITCHengines)"
 local_ssh_remote_user: "centos"
+#local_image: "Ubuntu Focal 20.04 (SWITCHengines)"
+#local_ssh_remote_user: "ubuntu"
 local_flavor: "m1.medium"
 local_floating_ips_pool: "public"
 local_private_network: "private"
-local_nodes_count: "2"
+local_nodes_count: "14"
 local_terraform_project_path: "{{ playbook_dir }}/../terraform/docker-ci-course-openstack/"
 ## UPDATE THESE VARS TO ADAPT THEM TO YOUR OPENSTACK CLOUD
 

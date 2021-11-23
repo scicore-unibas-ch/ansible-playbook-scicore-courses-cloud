@@ -28,10 +28,21 @@
       ansible.builtin.import_role:
         name: riemers.gitlab-runner
 
-    - name: Create account for the student
-      ansible.builtin.user:
-        name: student
-        password: "{{ local_student_default_password }}"
+    - name: Add gitlab-runner user to docker group
+      user:
+        name: gitlab-runner
+        groups: docker
+        append: yes
+      notify: restart_gitlab_runner
+
+    - name: Add account for student (with sudo permission)
+      ansible.builtin.import_role:
+        name: robertdebock.users
+      vars:
+        users_user_list:
+          - name: student
+            password: "{{ local_student_default_password }}"
+            sudo_options: "ALL=(ALL) NOPASSWD: ALL"
 
     - name: Add student user to docker group
       ansible.builtin.user:
@@ -46,30 +57,62 @@
       loop: "{{ local_teachers_ssh_keys }}"
       tags: ssh_keys_teachers
 
-    - name: Add centos user to docker group
-      user:
-        name: centos
-        groups: docker
-        append: yes
 
-    - name: Add the teacher's ssh public keys to the centos account (grant sudo)
-      ansible.posix.authorized_key:
-        user: centos
-        key: "{{ item }}"
-      loop: "{{ local_teachers_ssh_keys }}"
-      tags: ssh_keys_teachers
+    - name: Customizations for RedHat/CentOS systems
+      block:
 
-    - name: Add gitlab-runner user to docker group
-      user:
-        name: gitlab-runner
-        groups: docker
-        append: yes
-      notify: restart_gitlab_runner
+        - name: RedHat | Add centos user to docker group
+          user:
+            name: centos
+            groups: docker
+            append: yes
 
-    - name: Install python36-virtualenv
-      ansible.builtin.yum:
-        name: python36-virtualenv
-        state: installed
+        - name: RedHat | Add the teacher's ssh public keys to the centos account (grant sudo)
+          ansible.posix.authorized_key:
+            user: centos
+            key: "{{ item }}"
+          loop: "{{ local_teachers_ssh_keys }}"
+          tags: ssh_keys_teachers
+
+        - name: RedHat | Install python36-virtualenv
+          ansible.builtin.yum:
+            name: python36-virtualenv
+            state: installed
+
+        - name: RedHat | Set ansible var with the venv binary to use
+          ansible.builtin.set_fact:
+            _venv_binary: virtualenv-3
+
+      when: ansible_os_family == 'RedHat'
+
+
+    - name: Customizations for Debian/Ubuntu systems
+      block:
+
+        - name: Debian/Ubuntu | Add ubuntu user to docker group
+          ansible.builtin.user:
+            name: ubuntu
+            groups: docker
+            append: yes
+
+        - name: Debian/Ubuntu | Add the teacher's ssh public keys to the ubuntu account (grant sudo)
+          ansible.posix.authorized_key:
+            user: ubuntu
+            key: "{{ item }}"
+          loop: "{{ local_teachers_ssh_keys }}"
+          tags: ssh_keys_teachers
+
+        - name: Debian/Ubuntu | Install python3-virtualenv
+          ansible.builtin.apt:
+            name: python3-virtualenv
+            state: present
+
+        - name: Debian/Ubuntu | Set ansible var with the venv binary to use
+          ansible.builtin.set_fact:
+            _venv_binary: virtualenv
+
+      when: ansible_os_family == 'Debian'
+
 
     - name: Download the required code in the student's home folder
       block:
@@ -90,19 +133,19 @@
           ansible.builtin.pip:
             name: pip>21.0
             virtualenv: ~/cathsm-client-venv
-            virtualenv_command: virtualenv-3
+            virtualenv_command: "{{ _venv_binary }}"
 
         - name: Install requirements.txt provided in the cathsm-client repo in the venv
           ansible.builtin.pip:
             requirements: ~/.cathsm-client-src/requirements.txt
             virtualenv: ~/cathsm-client-venv
-            virtualenv_command: virtualenv-3
+            virtualenv_command: "{{ _venv_binary }}"
 
         - name: Install the cathsm-client package in the venv
           ansible.builtin.pip:
             name: file:///home/student/.cathsm-client-src/
             virtualenv: ~/cathsm-client-venv
-            virtualenv_command: virtualenv-3
+            virtualenv_command: "{{ _venv_binary }}"
 
         - name: Create config folder ~/.config/cath-swissmodel-api/ for the student
           ansible.builtin.file:
@@ -119,14 +162,19 @@
       become: yes
       become_user: student
 
-    - name: Install InfluxDB
-      ansible.builtin.import_role:
-        name: influxdb
+    - name: Deploy monitoring in RedHat/CentOS
+      block:
 
-    - name: Install Grafana
-      ansible.builtin.import_role:
-        name: grafana
+        - name: Install InfluxDB
+          ansible.builtin.import_role:
+            name: influxdb
 
-    - name: Install Telegraf
-      ansible.builtin.import_role:
-        name: telegraf
+        - name: Install Grafana
+          ansible.builtin.import_role:
+            name: grafana
+
+        - name: Install Telegraf
+          ansible.builtin.import_role:
+            name: telegraf
+
+      when: ansible_os_family == 'RedHat'
