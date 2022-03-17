@@ -46,7 +46,7 @@ roles:
     version: v2.0.2
 
   - name: ansible-cvmfs-client
-    src: https://git.computecanada.ca/cc-cvmfs-public/ansible-cvmfs-client.git
+    src: https://github.com/cvmfs-contrib/ansible-cvmfs-client.git
     scm: git
     version: master
 
