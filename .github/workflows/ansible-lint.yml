@@ -15,5 +15,5 @@ jobs:
         uses: ansible/ansible-lint-action@main
         # optional:
         with:
-          args: "" # args to pass to ansible-lint command
+          args: "ansible/" # args to pass to ansible-lint command
 
