@@ -57,39 +57,38 @@
   tasks:
 
     - name: Query the public ip info for rstudio server
-      uri:
+      ansible.builtin.uri:
         url: https://ipinfo.io/json
       register: _public_ip_info
 
     - name: Set a variable with the public domain of the rstudio server (used to access Rstudio)
-      set_fact:
+      ansible.builtin.set_fact:
         rstudio_public_domain: "{{ _public_ip_info.json.hostname }}"
 
     - name: Set a variable with the letsencrypt domains
-      set_fact:
+      ansible.builtin.set_fact:
         dehydrated_domains:
           - "{{ rstudio_public_domain }}"
 
     - name: Install Rstudio
-      import_role:
+      ansible.builtin.import_role:
         name: pescobar.ansible_role_rstudio_server
 
     - name: Install and configure apache webserver (no ssl yet)
-      import_role:
+      ansible.builtin.import_role:
         name: wcm_io_devops.apache
 
     - name: Install dehydrated letsencrypt/acme client
-      import_role:
+      ansible.builtin.import_role:
         name: pescobar.dehydrated
 
-    # execute handlers so apache enables the .well-known folder and
-    # dehydrated requests the ssl certificates
-    - meta: flush_handlers
+    - name: Execute handlers so apache enables the .well-known folder and dehydrated requests the ssl certificates
+      ansible.builtin.meta: flush_handlers
 
     - name: Install and configure apache webserver again (configure ssl vhosts)
-      import_role:
+      ansible.builtin.import_role:
         name: wcm_io_devops.apache
 
     - name: Print the Rstudio url
-      debug:
+      ansible.builtin.debug:
         msg: "You can access Rstudio in https://{{ rstudio_public_domain }}"
