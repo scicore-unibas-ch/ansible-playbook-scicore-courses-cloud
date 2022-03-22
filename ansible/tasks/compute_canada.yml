@@ -1,7 +1,7 @@
 ---
 
 - name: Query the size of the root partition in MB
-  ansible.builtin.shell: |
+  shell: |
     set -o pipefail
     df -m / | awk {'print $2'} |tail -1
   register: _root_partition_disk_size
