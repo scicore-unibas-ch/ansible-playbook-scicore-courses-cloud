@@ -25,6 +25,8 @@
   ansible.builtin.yum:
     name: '*'
     state: latest
+  tags:
+    - skip_ansible_lint
   when:
     - local_upgrade_all_packages
     - ansible_os_family == 'RedHat'

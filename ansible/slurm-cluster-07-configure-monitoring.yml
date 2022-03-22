@@ -31,7 +31,7 @@
   tasks:
 
     - name: Add InfluxDB repository
-      yum_repository:
+      ansible.builtin.yum_repository:
         name: influxdb
         description: InfluxDB
         baseurl: https://repos.influxdata.com/centos/$releasever/{{ "arm64" if ansible_architecture == "aarch64" else ansible_architecture }}/stable/
@@ -42,38 +42,38 @@
       block:
 
         - name: install influxdb package in login node
-          yum:
+          ansible.builtin.yum:
             name:
               - influxdb
           notify: restart influxdb
 
         - name: enable the influxdb service
-          service:
+          ansible.builtin.service:
             name: influxdb
             state: started
             enabled: yes
 
         - name: Add Grafana repository
-          yum_repository:
+          ansible.builtin.yum_repository:
             name: grafana
             description: Grafana
             baseurl: https://packages.grafana.com/oss/rpm
             gpgkey: https://packages.grafana.com/gpg.key
 
         - name: install grafana package
-          yum:
+          ansible.builtin.yum:
             name:
               - grafana
           notify: restart grafana
 
         - name: enable the grafana service
-          service:
+          ansible.builtin.service:
             name: grafana-server
             state: started
             enabled: yes
 
         - name: Check admin password
-          uri:
+          ansible.builtin.uri:
             url: http://localhost:3000/api/admin/settings
             user: admin
             password: "{{ grafana_admin_password }}"
@@ -82,7 +82,7 @@
           register: grafana_password
 
         - name: Set admin password
-          uri:
+          ansible.builtin.uri:
             url: http://localhost:3000/api/user/password
             user: admin
             password: admin
@@ -105,7 +105,7 @@
             database: telegraf
 
         - name: install monitor_slurm script
-          copy:
+          ansible.builtin.copy:
             dest: /usr/local/bin/monitor_slurm
             content: |
               #! /bin/bash
@@ -147,19 +147,19 @@
           notify: restart telegraf
 
         - name: create directory for grafana dashboards
-          file:
+          ansible.builtin.file:
             path: /etc/citc/grafana
             state: directory
             mode: u=rwx,g=rx,o=rx
 
         - name: Copy in Slurm Grafana dashboard
-          template:
+          ansible.builtin.template:
             src: slurm_dashboard.json.j2
             dest: /etc/citc/grafana/slurm_dashboard.json
             mode: u=rw,g=r,o=r
 
         - name: Download Telegraf dashboard
-          get_url:
+          ansible.builtin.get_url:
             url: https://grafana.com/api/dashboards/928/revisions/3/download
             dest: /etc/citc/grafana/928.json
             mode: u=rw,g=r,o=r
@@ -167,13 +167,13 @@
             - molecule-idempotence-notest  # We download and then change this file in-place
 
         - name: Set Influx datasource on dashboard
-          replace:
+          ansible.builtin.replace:
             path: /etc/citc/grafana/928.json
             regexp: '\${DS_INFLUXDB_TELEGRAF}'
             replace: 'influxdb_telegraf'
 
         - name: Import dashboard
-          copy:
+          ansible.builtin.copy:
             dest: /etc/grafana/provisioning/dashboards/citc.yaml
             content: |
               apiVersion: 1
@@ -196,18 +196,18 @@
       block:
 
         - name: Install telegraf
-          yum:
+          ansible.builtin.yum:
             name: telegraf
             state: present
 
         - name: enable the telegraf service
-          service:
+          ansible.builtin.service:
             name: telegraf
             state: started
             enabled: yes
 
         - name: enable network monitoring in telegraf
-          ini_file:
+          community.general.ini_file:
             path: /etc/telegraf/telegraf.d/network.conf
             section: "[inputs.net]"
             option: interfaces
@@ -230,16 +230,16 @@
   handlers:
 
     - name: restart telegraf
-      service:
+      ansible.builtin.service:
         name: telegraf
         state: restarted
 
     - name: restart influxdb
-      service:
+      ansible.builtin.service:
         name: influxdb
         state: restarted
 
     - name: restart grafana
-      service:
+      ansible.builtin.service:
         name: grafana-server
         state: restarted

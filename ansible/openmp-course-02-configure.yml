@@ -49,12 +49,12 @@
       block:
 
         - name: Install firewalld
-          package:
+          ansible.builtin.package:
             name: firewalld
             state: installed
 
         - name: Start and enable and firewalld
-          service:
+          ansible.builtin.service:
             name: firewalld
             state: started
             enabled: yes

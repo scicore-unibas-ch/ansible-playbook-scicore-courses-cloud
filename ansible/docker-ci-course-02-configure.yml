@@ -29,7 +29,7 @@
         name: riemers.gitlab-runner
 
     - name: Add gitlab-runner user to docker group
-      user:
+      ansible.builtin.user:
         name: gitlab-runner
         groups: docker
         append: yes
@@ -62,7 +62,7 @@
       block:
 
         - name: RedHat | Add centos user to docker group
-          user:
+          ansible.builtin.user:
             name: centos
             groups: docker
             append: yes
@@ -158,6 +158,7 @@
             src: ~/cathsm-server/example_data/config.ini
             dest: ~/.config/cath-swissmodel-api/
             remote_src: true
+            mode: 0644
 
       become: yes
       become_user: student
