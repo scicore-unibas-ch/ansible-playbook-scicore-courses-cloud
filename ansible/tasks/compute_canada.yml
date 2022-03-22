@@ -1,7 +1,7 @@
 ---
 
 - name: Query the size of the root partition in MB
-  shell: |
+  ansible.builtin.shell: |
     set -o pipefail
     df -m / | awk {'print $2'} |tail -1
   register: _root_partition_disk_size
@@ -10,11 +10,11 @@
   changed_when: false
 
 - name: Set a variable in MB with the disk size we will use for CVMFS cache (50% of root partition)
-  set_fact:
+  ansible.builtin.set_fact:
     cvmfs_cache_size: "{{ ( _root_partition_disk_size.stdout|int * 0.5) | int }}"
 
 - name: Configure the CVMFS client to access the ComputeCanada soft stack
-  import_role:
+  ansible.builtin.import_role:
     name: ansible-cvmfs-client
   vars:
     cvmfs_client_configure_storage: false
