@@ -29,10 +29,17 @@ jobs:
       # Important: This sets up your GITHUB_WORKSPACE environment variable
       - uses: actions/checkout@v2
 
+      - name: Install required collections
+        run: ansible-galaxy collection install -r ansible/requirements.yml -p ./ansible/collections
+
+      - name: Install required roles
+        run: ansible-galaxy role install -r ansible/requirements.yml -p ./ansible/roles
+
       - name: Run ansible-lint
         # replace `main` with any valid ref, or tags like `v6`
         uses: ansible-community/ansible-lint-action@main
         # optional:
         # with:
         #   path: "playbooks/"  # <-- only one value is allowed
-        path: "ansible/"  # <-- only one value is allowed
+        with:
+          path: "ansible/"  # <-- only one value is allowed
