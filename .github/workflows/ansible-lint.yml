@@ -17,7 +17,7 @@ jobs:
 
       - name: Lint Ansible Playbook
         # replace "master" with any valid ref
-        uses: ansible/ansible-lint-action@main
+        uses: ansible/ansible-lint-action@v6.2.1
         with:
           # [optional]
           # Arguments to override a package and its version to be set explicitly.
@@ -47,4 +47,4 @@ jobs:
           #                         path to directories or files to skip. This option is
           #                         repeatable.
           #   -c C                  Specify configuration file to use. Defaults to ".ansible-lint"
-          args: "ansible/"
+          paths: "ansible/"
