@@ -1,5 +1,6 @@
-[![Ansible Lint](https://github.com/scicore-unibas-ch/ansible-playbook-scicore-courses-cloud/workflows/Ansible%20Lint/badge.svg)](https://github.com/scicore-unibas-ch/ansible-playbook-scicore-courses-cloud/actions?query=workflow%3A%22Ansible+Lint%22)
-[![yamllint](https://github.com/scicore-unibas-ch/ansible-playbook-scicore-courses-cloud/workflows/yamllint/badge.svg)](https://github.com/scicore-unibas-ch/ansible-playbook-scicore-courses-cloud/actions?query=workflow%3Ayamllint)
+[![ansible-lint](https://github.com/scicore-unibas-ch/ansible-playbook-scicore-courses-cloud/actions/workflows/ansible-lint.yml/badge.svg)](https://github.com/scicore-unibas-ch/ansible-playbook-scicore-courses-cloud/actions/workflows/ansible-lint.yml)
+[![yamllint](https://github.com/scicore-unibas-ch/ansible-playbook-scicore-courses-cloud/actions/workflows/yamllint.yml/badge.svg)](https://github.com/scicore-unibas-ch/ansible-playbook-scicore-courses-cloud/actions/workflows/yamllint.yml)
+
 
 # Cloud playbooks
 
