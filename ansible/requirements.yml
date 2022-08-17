@@ -28,7 +28,7 @@ roles:
     version: 2.0.1
 
   - name: geerlingguy.ntp
-    version: 2.3.0
+    version: 2.3.1
 
   - name: aeriscloud.disk
     version: v2.6.1
