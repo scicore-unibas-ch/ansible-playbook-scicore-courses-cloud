@@ -11,7 +11,7 @@
 
 - name: Set a variable in MB with the disk size we will use for CVMFS cache (50% of root partition)
   ansible.builtin.set_fact:
-    cvmfs_cache_size: "{{ ( _root_partition_disk_size.stdout|int * 0.5) | int }}"
+    cvmfs_cache_size: "{{ ( _root_partition_disk_size.stdout | int * 0.5) | int }}"
 
 - name: Configure the CVMFS client to access the ComputeCanada soft stack
   ansible.builtin.import_role:
