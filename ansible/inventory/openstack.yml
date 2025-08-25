@@ -1,0 +1,53 @@
+---
+
+plugin: openstack.cloud.openstack
+
+  #filters:
+  # metadata:property:role: db
+  #
+#keyed_groups:
+#  - prefix: tag
+#    key: tags | default('no_tags')
+
+# keyed_groups:
+#   - key: metadata.role | default('lala')
+#     strict: false
+#     separator: ""
+#     prefix: ""
+#  - prefix: role
+#    key: metadata.role | default('lala')
+#    strict: false
+
+
+#groups:
+#  {%- set roles = ['db', 'web', 'cache'] -%}
+#  {%- for r in roles -%}
+#  {%- if metadata.role is defined and metadata.role == r -%}
+#  role_{{ r }}: true
+#  {%- endif -%}
+#  {%- endfor -%}
+
+
+
+
+groups:
+ slurm: "'slurm' in (openstack.tags|list)"
+ slurm_submit: "'slurm_submit' in (openstack.tags|list)"
+ slurm_worker: "'slurm_worker' in (openstack.tags|list)"
+ login_node: "'login_node' in (openstack.tags|list)"
+ course: "'course' in (openstack.tags|list)"
+
+all_projects: false
+inventory_hostname: name
+expand_hostvars: true
+fail_on_errors: true
+strict: true
+
+
+#keyed_groups:
+#  - key: openstack.tags
+#    prefix: tags
+
+#compose:
+#  ansible_user: "'ubuntu'"
+#  ansible_private_key_file: "'~/.ssh/id_rsa_aivo_2020'"
