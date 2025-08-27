@@ -1,11 +1,11 @@
 resource "openstack_blockstorage_volume_v3" "slurm_worker_boot_volume" {
-  name     = "${var.slurm_worker_instance_name}-boot"
+  name     = "${var.slurm_worker_vm_name}-boot"
   size     = var.slurm_worker_volume_size
   image_id = data.openstack_images_image_v2.image.id
 }
 
-resource "openstack_compute_instance_v2" "slurm_worker_instance" {
-  name        = var.slurm_worker_instance_name
+resource "openstack_compute_instance_v2" "slurm_worker" {
+  name        = var.slurm_worker_vm_name
   flavor_name = var.slurm_worker_flavor_name
   key_pair    = "root-aivo"
 
@@ -14,6 +14,7 @@ resource "openstack_compute_instance_v2" "slurm_worker_instance" {
   tags = [
     "slurm_worker",
     "slurm", 
+    "cvmfs_client", 
     "course", 
   ]
 

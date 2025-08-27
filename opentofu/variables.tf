@@ -17,7 +17,7 @@ data "openstack_networking_network_v2" "public_net" {
 }
 
 ### login node
-variable "login_node_instance_name" {
+variable "login_node_vm_name" {
   default = "login-node"
 }
 
@@ -30,7 +30,7 @@ variable "login_node_volume_size" {
 }
 
 ### slurm master
-variable "slurm_master_instance_name" {
+variable "slurm_master_vm_name" {
   default = "slurm-master"
 }
 
@@ -43,7 +43,7 @@ variable "slurm_master_volume_size" {
 }
 
 ### slurm_worker
-variable "slurm_worker_instance_name" {
+variable "slurm_worker_vm_name" {
   default = "slurm-worker"
 }
 
@@ -52,5 +52,18 @@ variable "slurm_worker_flavor_name" {
 }
 
 variable "slurm_worker_volume_size" {
+  default = 30
+}
+
+### nfs_server
+variable "nfs_server_vm_name" {
+  default = "nfs-server"
+}
+
+variable "nfs_server_flavor_name" {
+  default = "c1.large"
+}
+
+variable "nfs_server_volume_size" {
   default = 30
 }

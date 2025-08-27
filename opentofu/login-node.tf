@@ -1,12 +1,12 @@
 
 resource "openstack_blockstorage_volume_v3" "login_node_boot_volume" {
-  name     = "${var.login_node_instance_name}-boot"
+  name     = "${var.login_node_vm_name}-boot"
   size     = var.login_node_volume_size
   image_id = data.openstack_images_image_v2.image.id
 }
 
-resource "openstack_compute_instance_v2" "login_node_instance" {
-  name        = var.login_node_instance_name
+resource "openstack_compute_instance_v2" "login_node" {
+  name        = var.login_node_vm_name
   flavor_name = var.login_node_flavor_name
   key_pair    = "root-aivo"
 
@@ -16,6 +16,7 @@ resource "openstack_compute_instance_v2" "login_node_instance" {
     "login_node",
     "slurm_submit",
     "slurm", 
+    "cvmfs_client", 
     "course", 
   ]
 
@@ -38,7 +39,7 @@ resource "openstack_compute_instance_v2" "login_node_instance" {
 }
 
 resource "openstack_networking_port_v2" "login_node_fip_port" {
-  name               = "${var.login_node_instance_name}-port"
+  name               = "${var.login_node_vm_name}-port"
   network_id         = data.openstack_networking_network_v2.private_net.id
   admin_state_up     = true
 }
@@ -47,7 +48,7 @@ resource "openstack_networking_floatingip_v2" "login_node_fip" {
   pool = data.openstack_networking_network_v2.public_net.name
 }
 
-resource "openstack_networking_floatingip_associate_v2" "fip_assoc" {
+resource "openstack_networking_floatingip_associate_v2" "login_node_fip_assoc" {
   floating_ip = openstack_networking_floatingip_v2.login_node_fip.address
   port_id     = openstack_networking_port_v2.login_node_fip_port.id
 }
