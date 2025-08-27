@@ -1,0 +1,70 @@
+---
+
+- name: Configure course environment
+  hosts: slurm
+  gather_facts: true
+  become: true
+
+  tasks:
+
+    - name: Configure timesyncd time
+      ansible.builtin.import_role:
+        name: wf72.systemd_timesyncd
+      tags: timesyncd
+
+    - name: Install some basic packages defined in variable "local_common_packages_to_install"
+      ansible.builtin.apt:
+        name: "{{ local_common_packages_to_install }}"
+        cache_valid_time: 600
+      when:
+        - local_common_packages_to_install is defined
+        - local_common_packages_to_install | length > 0
+      tags: common_packages
+
+    - name: Format and mount local disks if defined
+      ansible.builtin.import_role:
+        name: aeriscloud.disk
+      when: disk_additional_disks | length > 0
+      tags: local_mounts
+
+    - name: Mount NFS shares if defined
+      ansible.builtin.import_role:
+        name: ome.nfs_mount
+      when: nfs_share_mounts | length > 0
+      tags: nfs_mounts
+
+    - name: Create local accounts if defined
+      ansible.builtin.import_role:
+        name: robertdebock.users
+      when:
+        - users is defined
+        - users | length > 0
+      tags: users
+
+    - name: Install the cvmfs client if machine is in the cvmfs_client group
+      ansible.builtin.import_role:
+        name: pescobar.cvmfs_client
+      when: "'cvmfs_client' in group_names"
+      tags: cvmfs_client
+
+    # - name: Configure sshd if sshd config is defined
+    #   ansible.builtin.import_role:
+    #     name: willshersystems.sshd
+    #   when:
+    #     - sshd is defined
+    #     - sshd | length > 0
+    #   tags: sshd
+
+    # - name: Install and configure docker if machine is in the docker group
+    #   ansible.builtin.import_role:
+    #     name: geerlingguy.docker
+    #   when: "'docker' in group_names"
+    #   tags: docker
+
+    # - name: Configure fail2ban if fail2ban config is defined
+    #   ansible.builtin.import_role:
+    #     name: robertdebock.fail2ban
+    #   when: fail2ban_jail_configuration | length > 0
+    #   tags: fail2ban
+
+    # vim: tabstop=2 shiftwidth=2

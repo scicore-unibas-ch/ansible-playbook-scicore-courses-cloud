@@ -1,0 +1,51 @@
+---
+
+# ansible-galaxy role install -r requirements.yml -p roles/
+roles:
+
+  - name: wf72.systemd_timesyncd
+    src: https://github.com/wf72/systemd_timesyncd.git
+    scm: git
+    version: 0.0.11
+
+  - name: aeriscloud.disk
+    version: v2.6.4
+
+  - name: ome.nfs_mount
+    version: 1.4.0
+
+  - name: robertdebock.users
+    version: 6.1.6
+
+  - name: pescobar.cvmfs_client
+    src: git@github.com:pescobar/pescobar.cvmfs_client.git
+    scm: git
+    version: master
+
+  - name: geerlingguy.nfs
+    version: 2.1.0
+
+  # - name: geerlingguy.docker
+  #   version: 7.5.0
+
+  # - name: willshersystems.sshd
+  #   src: https://github.com/willshersystems/ansible-sshd.git
+  #   scm: git
+  #   version: v0.27.1
+
+  # - name: robertdebock.postfix
+  #   version: 5.4.1
+
+  # - name: riemers.ansible-gitlab-runner
+  #   version: v2.0.12
+
+  # - name: nvidia.nvidia_driver
+  #   src: https://github.com/NVIDIA/ansible-role-nvidia-driver.git
+  #   scm: git
+  #   version: v2.3.0
+
+  # - name: robertdebock.fail2ban
+  #   version: 5.0.6
+
+  # - name: robertdebock.cron
+  #   version: 2.2.6
