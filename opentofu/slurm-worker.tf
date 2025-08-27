@@ -14,8 +14,9 @@ resource "openstack_compute_instance_v2" "slurm_worker" {
   tags = [
     "slurm_worker",
     "slurm", 
-    "cvmfs_client", 
-    "course", 
+    "cvmfs_clients", 
+    "nfs_clients",
+    "course",
   ]
 
   block_device {

@@ -35,7 +35,8 @@ groups:
  slurm_submit: "'slurm_submit' in (openstack.tags|list)"
  slurm_worker: "'slurm_worker' in (openstack.tags|list)"
  login_node: "'login_node' in (openstack.tags|list)"
- cvmfs_client: "'cvmfs_client' in (openstack.tags|list)"
+ cvmfs_clients: "'cvmfs_clients' in (openstack.tags|list)"
+ nfs_clients: "'nfs_clients' in (openstack.tags|list)"
  nfs_server: "'nfs_server' in (openstack.tags|list)"
  course: "'course' in (openstack.tags|list)"
 

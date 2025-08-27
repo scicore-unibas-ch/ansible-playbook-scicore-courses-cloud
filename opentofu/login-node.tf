@@ -16,8 +16,9 @@ resource "openstack_compute_instance_v2" "login_node" {
     "login_node",
     "slurm_submit",
     "slurm", 
-    "cvmfs_client", 
-    "course", 
+    "cvmfs_clients", 
+    "nfs_clients",
+    "course",
   ]
 
   block_device {
