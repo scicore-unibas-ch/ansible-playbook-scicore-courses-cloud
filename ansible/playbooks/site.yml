@@ -1,7 +1,7 @@
 ---
 
 - name: Configure course environment
-  hosts: slurm
+  hosts: course
   gather_facts: true
   become: true
 
@@ -27,6 +27,15 @@
       when: disk_additional_disks | length > 0
       tags: local_mounts
 
+    - name: Configure nfs exports if machine is in group nfs_server
+      ansible.builtin.import_role:
+        name: geerlingguy.nfs
+      when: "'nfs_server' in group_names"
+      tags: nfs_server
+
+    - name: Flush handlers so NFS server is restarted
+      ansible.builtin.meta: flush_handlers
+
     - name: Mount NFS shares if defined
       ansible.builtin.import_role:
         name: ome.nfs_mount
@@ -44,8 +53,8 @@
     - name: Install the cvmfs client if machine is in the cvmfs_client group
       ansible.builtin.import_role:
         name: pescobar.cvmfs_client
-      when: "'cvmfs_client' in group_names"
-      tags: cvmfs_client
+      when: "'cvmfs_clients' in group_names"
+      tags: cvmfs_clients
 
     # - name: Configure sshd if sshd config is defined
     #   ansible.builtin.import_role:

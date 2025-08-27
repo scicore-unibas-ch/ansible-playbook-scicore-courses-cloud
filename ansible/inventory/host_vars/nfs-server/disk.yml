@@ -1,0 +1,11 @@
+---
+
+disk_additional_disks:
+ - disk: "{{ local_nfs_data_disk }}"
+   fstype: xfs
+   mount_options: defaults
+   mount: "{{ local_nfs_mount_point }}"
+   user: root
+   group: root
+   mode: '0755'
+   disable_periodic_fsck: false

@@ -1,0 +1,4 @@
+---
+
+nfs_exports:
+  - "{{ local_nfs_mount_point }}  *(rw,async,no_root_squash)"
