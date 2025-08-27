@@ -43,3 +43,5 @@ go.mod
 go.sum
 
 opentofu/backup/
+ansible/roles/
+ansible/collections/
