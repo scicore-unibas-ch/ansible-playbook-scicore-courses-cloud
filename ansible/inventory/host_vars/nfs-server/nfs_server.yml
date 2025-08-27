@@ -9,7 +9,7 @@ nfs_server_exports:
           - 'async'
           - 'no_subtree_check'
           - 'no_root_squash'
-    mode: "0755"
+    #mode: "0755"
     path: "{{ local_nfs_mount_point }}"
 
 # Number of servers to start up

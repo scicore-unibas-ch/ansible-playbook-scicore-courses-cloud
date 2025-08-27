@@ -5,7 +5,7 @@ disk_additional_disks:
    fstype: xfs
    mount_options: defaults
    mount: "{{ local_nfs_mount_point }}"
-   user: root
-   group: root
+   user: nobody
+   group: nogroup
    mode: '0755'
    disable_periodic_fsck: false
