@@ -1,0 +1,16 @@
+---
+
+nfs_server_exports:
+  - export:
+    access:
+      - hostname: '*'
+        options:
+          - 'rw'
+          - 'async'
+          - 'no_subtree_check'
+          - 'no_root_squash'
+    mode: "0755"
+    path: "{{ local_nfs_mount_point }}"
+
+# Number of servers to start up
+nfs_server_rpcnfsdcount: '{{ hostvars["nfs-server"].ansible_processor_vcpus | int * 4 }}'

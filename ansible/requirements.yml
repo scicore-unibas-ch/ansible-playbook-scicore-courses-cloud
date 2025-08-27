@@ -22,8 +22,7 @@ roles:
     scm: git
     version: master
 
-  - name: geerlingguy.nfs
-    version: 2.1.0
+  - name: mrlesmithjr.nfs-server
 
   # - name: geerlingguy.docker
   #   version: 7.5.0
