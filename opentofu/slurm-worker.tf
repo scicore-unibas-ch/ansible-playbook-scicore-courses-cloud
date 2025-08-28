@@ -14,7 +14,7 @@ resource "openstack_compute_instance_v2" "slurm_worker" {
   # these tags define the groups this machine belongs to in the ansible inventory
   # if you add a new tag here you should also add it in inventory/opentack.yml
   tags = [
-    "slurm_worker",
+    "slurm_workers",
     "slurm", 
     "cvmfs_clients", 
     "nfs_clients",

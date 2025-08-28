@@ -14,7 +14,7 @@ resource "openstack_compute_instance_v2" "login_node" {
   # if you add a new tag here you should also add it in inventory/opentack.yml
   tags = [
     "login_node",
-    "slurm_submit",
+    "slurm_submit_hosts",
     "slurm", 
     "cvmfs_clients", 
     "nfs_clients",

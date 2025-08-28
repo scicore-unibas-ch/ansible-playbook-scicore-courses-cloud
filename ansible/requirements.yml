@@ -18,11 +18,16 @@ roles:
     version: 6.1.6
 
   - name: pescobar.cvmfs_client
-    src: git@github.com:pescobar/pescobar.cvmfs_client.git
+    src: https://github.com/pescobar/pescobar.cvmfs_client.git
     scm: git
     version: master
 
   - name: mrlesmithjr.nfs-server
+
+  - name: scicore.slurm
+    src: https://github.com/scicore-unibas-ch/ansible-role-slurm.git
+    scm: git
+    version: ubuntu
 
   # - name: geerlingguy.docker
   #   version: 7.5.0

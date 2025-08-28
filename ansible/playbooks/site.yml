@@ -190,4 +190,11 @@
         #     # this is the user group where all the users are created
         #     cgroup_to_whom_the_limit_applies: '@users'
         #   when: "'slurm_login' in group_names"
+
+    - name: Configure slurm if machine is in the slurm group
+      ansible.builtin.import_role:
+        name: scicore.slurm
+      when: "'slurm' in group_names"
+      tags: slurm
+
     # vim: tabstop=2 shiftwidth=2
