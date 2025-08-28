@@ -43,6 +43,10 @@ variable "slurm_master_volume_size" {
 }
 
 ### slurm_worker
+variable "slurm_worker_count" {
+  default = 3
+}
+
 variable "slurm_worker_vm_name" {
   default = "slurm-worker"
 }

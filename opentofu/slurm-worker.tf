@@ -1,11 +1,13 @@
 resource "openstack_blockstorage_volume_v3" "slurm_worker_boot_volume" {
-  name     = "${var.slurm_worker_vm_name}-boot"
+  count    = var.slurm_worker_count
+  name     = "${var.slurm_worker_vm_name}-${count.index}-boot"
   size     = var.slurm_worker_volume_size
   image_id = data.openstack_images_image_v2.image.id
 }
 
 resource "openstack_compute_instance_v2" "slurm_worker" {
-  name        = var.slurm_worker_vm_name
+  count       = var.slurm_worker_count
+  name        = "${var.slurm_worker_vm_name}-${count.index}"
   flavor_name = var.slurm_worker_flavor_name
   key_pair    = "root-aivo"
 
@@ -20,7 +22,7 @@ resource "openstack_compute_instance_v2" "slurm_worker" {
   ]
 
   block_device {
-    uuid                  = openstack_blockstorage_volume_v3.slurm_worker_boot_volume.id
+    uuid                  = openstack_blockstorage_volume_v3.slurm_worker_boot_volume[count.index].id
     source_type           = "volume"
     destination_type      = "volume"
     boot_index            = 0
