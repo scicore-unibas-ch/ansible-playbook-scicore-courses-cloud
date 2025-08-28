@@ -1,3 +1,5 @@
 ---
 
 local_nfs_mount_point: /shared
+
+local_users_accounts: 3
