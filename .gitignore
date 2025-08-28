@@ -45,3 +45,4 @@ go.sum
 opentofu/backup/
 ansible/roles/
 ansible/collections/
+*venv*
