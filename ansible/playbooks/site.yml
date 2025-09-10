@@ -97,7 +97,7 @@
             create_home: yes
             shell: /bin/bash
             #update_password: always
-            password: "$6$rounds=656000$mysecretsalt$ptVAEFNNskK.g.xBusowWMB8YYMlFtHb4MNWYTEHim4PWsY.fPZyljfs2UilgBDGtC2x694LgIqObrxgloGbV0"
+            password: "{{ local_users_accounts_password }}"
             generate_ssh_key: yes
             ssh_key_comment: "user{{ item }}_slurm_cluster@ansible-generated"
             state: present
@@ -113,8 +113,8 @@
             home: "{{ local_nfs_mount_point }}/home/user{{ item }}"
             create_home: yes
             shell: /bin/bash
-            # update_password: always
-            password: "$6$rounds=656000$mysecretsalt$ptVAEFNNskK.g.xBusowWMB8YYMlFtHb4MNWYTEHim4PWsY.fPZyljfs2UilgBDGtC2x694LgIqObrxgloGbV0"
+            #update_password: always
+            password: "{{ local_users_accounts_password }}"
             generate_ssh_key: yes
             ssh_key_comment: "user{{ item }}_slurm_cluster@ansible-generated"
             state: present

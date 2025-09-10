@@ -5,7 +5,7 @@ local_users_accounts: 30
 
 # default password: scicore.course
 # https://docs.ansible.com/ansible/latest/reference_appendices/faq.html#how-do-i-generate-encrypted-passwords-for-the-user-module
-local_users_accounts_password: "$6$rounds=656000$mysecretsalt$ptVAEFNNskK.g.xBusowWMB8YYMlFtHb4MNWYTEHim4PWsY.fPZyljfs2UilgBDGtC2x694LgIqObrxgloGbV0"
+local_users_accounts_password: $6$rounds=656000$mysecretsalt$ptVAEFNNskK.g.xBusowWMB8YYMlFtHb4MNWYTEHim4PWsY.fPZyljfs2UilgBDGtC2x694LgIqObrxgloGbV0
 
 local_teachers_ssh_keys:
   - "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEFya9i7rLPXOEtdGhHB4nTfjXKNZPfcLwrMTtbJqM/y wandrille.duchemin@unibas.ch"
