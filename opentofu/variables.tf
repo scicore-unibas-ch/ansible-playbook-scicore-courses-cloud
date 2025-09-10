@@ -45,7 +45,7 @@ variable "slurm_master_boot_volume_size" {
 
 ### slurm_worker
 variable "slurm_worker_count" {
-  default = 4
+  default = 1
 }
 
 variable "slurm_worker_vm_name" {
@@ -53,7 +53,8 @@ variable "slurm_worker_vm_name" {
 }
 
 variable "slurm_worker_flavor_name" {
-  default = "m1.xxxlarge"
+  default = "c1.xlarge"
+  #default = "m1.xxxlarge"
 }
 
 variable "slurm_worker_boot_volume_size" {
