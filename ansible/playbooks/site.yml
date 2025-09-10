@@ -97,7 +97,7 @@
             create_home: yes
             shell: /bin/bash
             #update_password: always
-            #password: "{{ local_users_default_password }}"
+            password: "$6$rounds=656000$mysecretsalt$ptVAEFNNskK.g.xBusowWMB8YYMlFtHb4MNWYTEHim4PWsY.fPZyljfs2UilgBDGtC2x694LgIqObrxgloGbV0"
             generate_ssh_key: yes
             ssh_key_comment: "user{{ item }}_slurm_cluster@ansible-generated"
             state: present
@@ -114,7 +114,7 @@
             create_home: yes
             shell: /bin/bash
             # update_password: always
-            # password: "{{ local_users_default_password }}"
+            password: "$6$rounds=656000$mysecretsalt$ptVAEFNNskK.g.xBusowWMB8YYMlFtHb4MNWYTEHim4PWsY.fPZyljfs2UilgBDGtC2x694LgIqObrxgloGbV0"
             generate_ssh_key: yes
             ssh_key_comment: "user{{ item }}_slurm_cluster@ansible-generated"
             state: present
@@ -154,12 +154,12 @@
                   ServerAliveInterval 10
           with_sequence: "count={{ local_users_accounts }} format=%02u"
 
-        # - name: Add the teacher's ssh public keys to the centos account in login node
-        #   ansible.posix.authorized_key:
-        #     user: "centos"
-        #     key: "{{ item }}"
-        #   loop: "{{ local_teachers_ssh_keys }}"
-        #   tags: ssh_keys_teachers
+        - name: Add the teacher's ssh public keys to the ubuntu account in every machine
+          ansible.posix.authorized_key:
+            user: ubuntu
+            key: "{{ item }}"
+          loop: "{{ local_teachers_ssh_keys }}"
+          tags: ssh_keys_teachers
 
         # - name: Create a private ssh key for user centos in login node
         #   ansible.builtin.user:
@@ -197,4 +197,4 @@
       when: "'slurm' in group_names"
       tags: slurm
 
-    # vim: tabstop=2 shiftwidth=2
+# vim: tabstop=2 shiftwidth=2

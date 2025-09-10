@@ -1,0 +1,40 @@
+---
+
+- name: Configure RStudio
+  hosts: login_node
+  gather_facts: true
+  become: true
+
+  tasks:
+
+    - name: Install some R deps in the login node
+      ansible.builtin.apt:
+        name:
+          - pandoc
+          - libgraphviz-dev
+          - libcurl4-openssl-dev
+          - libmagick++-dev
+          - libblas-dev
+          - liblapack-dev
+          - gfortran
+          - libgfortran-13-dev
+        cache_valid_time: 600
+      when: "'login_node' in group_names"
+      tags: r_deps
+
+    - name: Install R packages
+      ansible.builtin.apt:
+        name:
+          - r-bioc-deseq2
+          - r-bioc-edger
+          - r-cran-remotes
+          - r-cran-markdown
+          - r-cran-pheatmap
+          - r-cran-statmod
+          - r-bioc-annotationhub
+        cache_valid_time: 600
+      when: "'login_node' in group_names"
+      tags: r_deps
+
+
+# vim: tabstop=2 shiftwidth=2
