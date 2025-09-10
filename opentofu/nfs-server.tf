@@ -34,7 +34,7 @@ resource "openstack_compute_instance_v2" "nfs_server" {
 # create an extra volume for NFS share
 resource "openstack_blockstorage_volume_v3" "nfs_server_data_vol" {
   name = "nfs-server-data-volume"
-  size = 30
+  size = var.nfs_server_data_volume_size
 }
 
 resource "openstack_compute_volume_attach_v2" "nfs_server_data_vol_attach" {
