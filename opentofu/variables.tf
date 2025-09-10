@@ -23,10 +23,11 @@ variable "login_node_vm_name" {
 
 variable "login_node_flavor_name" {
   default = "c1.large"
+  #default = "m1.xxxlarge"
 }
 
 variable "login_node_volume_size" {
-  default = 30
+  default = 100
 }
 
 ### slurm master
@@ -35,16 +36,16 @@ variable "slurm_master_vm_name" {
 }
 
 variable "slurm_master_flavor_name" {
-  default = "c1.large"
+  default = "c1.xlarge"
 }
 
 variable "slurm_master_volume_size" {
-  default = 30
+  default = 100
 }
 
 ### slurm_worker
 variable "slurm_worker_count" {
-  default = 3
+  default = 4
 }
 
 variable "slurm_worker_vm_name" {
@@ -52,11 +53,11 @@ variable "slurm_worker_vm_name" {
 }
 
 variable "slurm_worker_flavor_name" {
-  default = "c1.large"
+  default = "m1.xxxlarge"
 }
 
 variable "slurm_worker_volume_size" {
-  default = 30
+  default = 100
 }
 
 ### nfs_server
@@ -65,9 +66,13 @@ variable "nfs_server_vm_name" {
 }
 
 variable "nfs_server_flavor_name" {
-  default = "c1.large"
+  default = "m1.xxlarge"
 }
 
 variable "nfs_server_volume_size" {
-  default = 30
+  default = 100
+}
+
+variable "nfs_server_data_volume_size" {
+  default = 300
 }
