@@ -1,0 +1,4 @@
+---
+
+sshd:
+  PasswordAuthentication: yes

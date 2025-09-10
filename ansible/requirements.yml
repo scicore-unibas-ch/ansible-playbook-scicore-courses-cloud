@@ -24,18 +24,18 @@ roles:
 
   - name: mrlesmithjr.nfs-server
 
-  - name: scicore.slurm
-    src: https://github.com/scicore-unibas-ch/ansible-role-slurm.git
+  # - name: scicore.slurm
+  #   src: https://github.com/scicore-unibas-ch/ansible-role-slurm.git
+  #   scm: git
+  #   version: ubuntu
+
+  - name: willshersystems.sshd
+    src: https://github.com/willshersystems/ansible-sshd.git
     scm: git
-    version: ubuntu
+    version: v0.27.1
 
   # - name: geerlingguy.docker
   #   version: 7.5.0
-
-  # - name: willshersystems.sshd
-  #   src: https://github.com/willshersystems/ansible-sshd.git
-  #   scm: git
-  #   version: v0.27.1
 
   # - name: robertdebock.postfix
   #   version: 5.4.1

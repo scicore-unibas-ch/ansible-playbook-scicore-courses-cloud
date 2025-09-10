@@ -56,13 +56,13 @@
       when: "'cvmfs_clients' in group_names"
       tags: cvmfs_clients
 
-    # - name: Configure sshd if sshd config is defined
-    #   ansible.builtin.import_role:
-    #     name: willshersystems.sshd
-    #   when:
-    #     - sshd is defined
-    #     - sshd | length > 0
-    #   tags: sshd
+    - name: Configure sshd if sshd config is defined
+      ansible.builtin.import_role:
+        name: willshersystems.sshd
+      when:
+        - sshd is defined
+        - sshd | length > 0
+      tags: sshd
 
     # - name: Install and configure docker if machine is in the docker group
     #   ansible.builtin.import_role:
