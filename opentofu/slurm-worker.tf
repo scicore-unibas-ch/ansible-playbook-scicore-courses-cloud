@@ -1,13 +1,13 @@
 resource "openstack_blockstorage_volume_v3" "slurm_worker_boot_volume" {
   count    = var.slurm_worker_count
-  name     = "${var.slurm_worker_vm_name}-${count.index}-boot"
+  name     = "${var.slurm_worker_vm_name}-${format("%02d", count.index)}-boot"
   size     = var.slurm_worker_volume_size
   image_id = data.openstack_images_image_v2.image.id
 }
 
 resource "openstack_compute_instance_v2" "slurm_worker" {
   count       = var.slurm_worker_count
-  name        = "${var.slurm_worker_vm_name}-${count.index}"
+  name        = "${var.slurm_worker_vm_name}-${format("%02d", count.index)}"
   flavor_name = var.slurm_worker_flavor_name
   key_pair    = "root-aivo"
 
