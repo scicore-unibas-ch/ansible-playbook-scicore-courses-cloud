@@ -1,6 +1,6 @@
 resource "openstack_blockstorage_volume_v3" "slurm_master_boot_volume" {
   name     = "${var.slurm_master_vm_name}-boot"
-  size     = var.slurm_master_volume_size
+  size     = var.slurm_master_boot_volume_size
   image_id = data.openstack_images_image_v2.image.id
 }
 

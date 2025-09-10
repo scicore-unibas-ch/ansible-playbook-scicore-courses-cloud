@@ -1,7 +1,7 @@
 
 resource "openstack_blockstorage_volume_v3" "login_node_boot_volume" {
   name     = "${var.login_node_vm_name}-boot"
-  size     = var.login_node_volume_size
+  size     = var.login_node_boot_volume_size
   image_id = data.openstack_images_image_v2.image.id
 }
 

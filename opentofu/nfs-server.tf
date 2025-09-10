@@ -1,6 +1,6 @@
 resource "openstack_blockstorage_volume_v3" "nfs_server_boot_volume" {
   name     = "${var.nfs_server_vm_name}-boot"
-  size     = var.nfs_server_volume_size
+  size     = var.nfs_server_boot_volume_size
   image_id = data.openstack_images_image_v2.image.id
 }
 
