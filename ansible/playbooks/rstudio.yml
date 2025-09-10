@@ -1,40 +1,118 @@
 ---
+# sudo apt install r-cran-remotes r-cran-markdown r-cran-pheatmap r-cran-statmod
+# sudo apt install r-bioc-deseq2 r-bioc-apeglm r-bioc-edger r-bioc-annotationhub r-bioc-clusterprofiler r-bioc-org.mm.eg.db r-bioc-org.hs.eg.db r-bioc-ggtree
 
-- name: Configure RStudio
-  hosts: login_node
+- name: Deploy R lang and Rstudio using apt repos
+  hosts: login-node
   gather_facts: true
   become: true
 
   tasks:
 
-    - name: Install some R deps in the login node
-      ansible.builtin.apt:
-        name:
-          - pandoc
-          - libgraphviz-dev
-          - libcurl4-openssl-dev
-          - libmagick++-dev
-          - libblas-dev
-          - liblapack-dev
-          - gfortran
-          - libgfortran-13-dev
-        cache_valid_time: 600
-      when: "'login_node' in group_names"
-      tags: r_deps
+    # https://cloud.r-project.org/bin/linux/ubuntu/
+    - name: Add ubuntu apt repo providing latest r-lang
+      block:
 
-    - name: Install R packages
-      ansible.builtin.apt:
-        name:
-          - r-bioc-deseq2
-          - r-bioc-edger
-          - r-cran-remotes
-          - r-cran-markdown
-          - r-cran-pheatmap
-          - r-cran-statmod
-          - r-bioc-annotationhub
-        cache_valid_time: 600
-      when: "'login_node' in group_names"
-      tags: r_deps
+        - name: Install some packages required by the r-lang repo
+          ansible.builtin.apt:
+            name:
+              - software-properties-common
+              - dirmngr
+            cache_valid_time: 600
+
+        - name: Download gpg key for the r-lang apt repo
+          ansible.builtin.get_url:
+            url: https://cloud.r-project.org/bin/linux/ubuntu/marutter_pubkey.asc
+            dest: /etc/apt/trusted.gpg.d/cran_ubuntu_key.asc
+
+        - name: Add the apt repo for latest r-lang
+          ansible.builtin.apt_repository:
+            repo: "deb [arch=amd64 signed-by=/etc/apt/trusted.gpg.d/cran_ubuntu_key.asc] https://cloud.r-project.org/bin/linux/ubuntu {{ ansible_distribution_release }}-cran40/"
+            filename: r-lang
+            state: present
+
+        - name: Download gpg key for r2u apt repo
+          ansible.builtin.get_url:
+            url: https://eddelbuettel.github.io/r2u/assets/dirk_eddelbuettel_key.asc
+            dest: /etc/apt/trusted.gpg.d/cranapt_key.asc
+
+        - name: Add the apt repo r2u
+          ansible.builtin.apt_repository:
+            repo: "deb [arch=amd64 signed-by=/etc/apt/trusted.gpg.d/cranapt_key.asc] https://r2u.stat.illinois.edu/ubuntu {{ ansible_distribution_release }} main"
+            filename: r2u
+            state: present
+
+        - name: Configure priority for the r2u apt repo
+          ansible.builtin.copy:
+            dest: /etc/apt/preferences.d/99cranapt
+            owner: root
+            group: root
+            mode: 0644
+            backup: yes
+            content: |
+              # ansible managed
+              Package: *
+              Pin: release o=CRAN-Apt Project
+              Pin: release l=CRAN-Apt Packages
+              Pin-Priority: 700
+
+        - name: Install R lang
+          ansible.builtin.apt:
+            name: r-base
+
+        - name: Install R CRAN packages
+          ansible.builtin.apt:
+            name: "r-cran-{{ item }}"
+          loop: "{{ local_r_cran_packages }}"
+
+        - name: Install R bioconductor packages
+          ansible.builtin.apt:
+            name: "r-bioc-{{ item }}"
+          loop: "{{ local_r_bioconductor_packages }}"
+
+        - name: Install RStudio server
+          ansible.builtin.apt:
+            deb: "{{ local_rstudio_server_package }}"
+
+        # - name: Install some R deps in the login node
+        #   ansible.builtin.apt:
+        #     name:
+        #       - build-essential
+        #       - pandoc
+        #       - libgraphviz-dev
+        #       - libcurl4-openssl-dev
+        #       - libmagick++-dev
+        #       - libblas-dev
+
+    # - name: Install some R deps in the login node
+    #   ansible.builtin.apt:
+    #     name:
+    #       - build-essential
+    #       - pandoc
+    #       - libgraphviz-dev
+    #       - libcurl4-openssl-dev
+    #       - libmagick++-dev
+    #       - libblas-dev
+    #       - liblapack-dev
+    #       - gfortran
+    #       - libgfortran-13-dev
+    #     cache_valid_time: 600
+    #   when: "'login_node' in group_names"
+    #   tags: r_deps
+
+    # - name: Install R packages
+    #   ansible.builtin.apt:
+    #     name:
+    #       - r-bioc-deseq2
+    #       - r-bioc-edger
+    #       - r-cran-remotes
+    #       - r-cran-markdown
+    #       - r-cran-pheatmap
+    #       - r-cran-statmod
+    #       - r-bioc-annotationhub
+    #     cache_valid_time: 600
+    #   when: "'login_node' in group_names"
+    #   tags: r_deps
 
 
 # vim: tabstop=2 shiftwidth=2

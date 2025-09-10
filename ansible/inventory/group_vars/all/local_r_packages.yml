@@ -1,0 +1,19 @@
+---
+
+local_r_cran_packages:
+  - remotes
+  - markdown
+  - pheatmap
+  - statmod
+
+local_r_bioconductor_packages:
+  - deseq2
+  - apeglm
+  - edger
+  - annotationhub
+  - clusterprofiler
+  - org.mm.eg.db
+  - org.hs.eg.db
+  - ggtree
+
+local_rstudio_server_package: https://download2.rstudio.org/server/jammy/amd64/rstudio-server-2025.05.1-513-amd64.deb
