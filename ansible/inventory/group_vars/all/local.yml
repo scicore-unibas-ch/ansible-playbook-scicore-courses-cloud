@@ -2,4 +2,11 @@
 
 local_nfs_mount_point: /shared
 
-local_users_accounts: 3
+local_users_accounts: 30
+
+local_common_packages_to_install:
+  - unzip
+  - 7zip
+  - git
+  - htop
+  - tree
