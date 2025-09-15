@@ -1,0 +1,26 @@
+---
+
+- name: Presync the cvmfs cache so first load is quicker
+  hosts: cvmfs_clients
+  gather_facts: true
+  become: false
+
+  tasks:
+
+    - name: Load the EESSI software stack and list the available software
+      ansible.builtin.shell: |
+        source /cvmfs/software.eessi.io/versions/2023.06/init/bash
+        module spider &> /dev/null
+        #module load Trimmomatic FastQC Salmon Subread &> /dev/null
+      args:
+        executable: /bin/bash
+
+    - name: Load the ComputeCanada software stack and list the available software
+      ansible.builtin.shell: |
+        source /cvmfs/soft.computecanada.ca/config/profile/bash.sh
+        module spider &> /dev/null
+        #module load Trimmomatic FastQC Salmon Subread &> /dev/null
+      args:
+        executable: /bin/bash
+
+# vim: tabstop=2 shiftwidth=2
