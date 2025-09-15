@@ -1,4 +1,5 @@
 ---
 
 sshd:
+  ClientAliveInterval: 60
   PasswordAuthentication: yes
