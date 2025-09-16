@@ -75,5 +75,5 @@ variable "nfs_server_boot_volume_size" {
 }
 
 variable "nfs_server_data_volume_size" {
-  default = 300
+  default = 500
 }
