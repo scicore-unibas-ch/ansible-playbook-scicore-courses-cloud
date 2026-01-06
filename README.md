@@ -4,11 +4,11 @@ OpenTofu and ansible code used to boot and configure the infrastructure for the 
 
 ## Setting up the control host
 
-### OpenTofu
+### Install OpenTofu
 
-Install OpenTofu (tested with version 1.9.1)
+Install OpenTofu using your preferred method (tested with version 1.9.1)
 
-### Ansible and Openstack client
+### Install Ansible and Openstack client inside a python virtualenv
 
 ```bash
 $> git clone https://github.com/scicore-unibas-ch/ansible-playbook-scicore-courses-cloud.git
