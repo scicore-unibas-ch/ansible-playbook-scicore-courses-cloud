@@ -47,6 +47,7 @@ oslo.serialization==5.8.0
 oslo.utils==9.1.0
 osprofiler==4.3.0
 packaging==25.0
+passlib==1.7.4
 pbr==7.0.1
 platformdirs==4.4.0
 ply==3.11
