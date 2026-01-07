@@ -38,10 +38,7 @@ $> openstack server list
 $> cd ansible/
 $> ansible-galaxy role install -r requirements.yml -p roles/
 $> ansible course -m shell -a 'uname -r'
-$> ansible-playbook playbooks/apt-dist-upgrade.yml
 $> ansible-playbook playbooks/site.yml
-$> ansible-playbook playbooks/cvmfs-presync.yml
-$> ansible-playbook playbooks/rstudio.yml
 ```
 
 ## Stop and destroy all the machines
