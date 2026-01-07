@@ -64,18 +64,6 @@
         - sshd | length > 0
       tags: sshd
 
-    # - name: Install and configure docker if machine is in the docker group
-    #   ansible.builtin.import_role:
-    #     name: geerlingguy.docker
-    #   when: "'docker' in group_names"
-    #   tags: docker
-
-    # - name: Configure fail2ban if fail2ban config is defined
-    #   ansible.builtin.import_role:
-    #     name: robertdebock.fail2ban
-    #   when: fail2ban_jail_configuration | length > 0
-    #   tags: fail2ban
-
     - name: Configure users accounts in the cluster
       tags: user_accounts
       block:
@@ -161,35 +149,26 @@
           loop: "{{ local_teachers_ssh_keys }}"
           tags: ssh_keys_teachers
 
-        # - name: Create a private ssh key for user centos in login node
-        #   ansible.builtin.user:
-        #     name: "centos"
-        #     generate_ssh_key: yes
-        #     ssh_key_comment: "centos@slurm-login"
-        #   when: "'slurm_login' in group_names"
-        #   tags: ssh_keys_teachers
+        - name: Create a private ssh key for user ubuntu in login node
+          become: true
+          become_user: ubuntu
+          ansible.builtin.openssh_keypair:
+            path: ~ubuntu/.ssh/id_ed25519
+            type: ed25519
+            comment: "ubuntu@{{ inventory_hostname }}"
+            mode: '0600'
 
-        # - name: Fetch the centos user public ssh key from login node to ansible control host
-        #   ansible.builtin.fetch:
-        #     src: "~centos/.ssh/id_rsa.pub"
-        #     dest: "/tmp/id_rsa_centos_login_node.pub"
-        #     flat: yes
-        #   when: "'slurm_login' in group_names"
-        #   tags: ssh_keys_teachers
+        - name: Fetch the ubuntu user public ssh key from login node to ansible control host
+          ansible.builtin.fetch:
+            src: ~ubuntu/.ssh/id_ed25519.pub
+            dest: ~/.ansible/tmp/id_ed25519_ubuntu_login_node.pub
+            flat: yes
+          when: "'login_node' in group_names"
 
-        # - name: Add the public key for user centos to every machine
-        #   ansible.builtin.authorized_key:
-        #     user: "centos"
-        #     key: "{{ lookup('file', '/tmp/id_rsa_centos_login_node.pub') }}"
-        #   tags: ssh_keys_teachers
-
-        # - name: Configure a cgroups memory limit in login node for every user
-        #   ansible.builtin.import_role:
-        #     name: pescobar.cgroups_mem_limit
-        #   vars:
-        #     # this is the user group where all the users are created
-        #     cgroup_to_whom_the_limit_applies: '@users'
-        #   when: "'slurm_login' in group_names"
+        - name: Add the public key for user ubuntu to every machine
+          ansible.builtin.authorized_key:
+            user: ubuntu
+            key: "{{ lookup('file', '~/.ansible/tmp/id_ed25519_ubuntu_login_node.pub') }}"
 
     - name: Configure slurm if machine is in the slurm group
       ansible.builtin.import_role:
