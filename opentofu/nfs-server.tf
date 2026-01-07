@@ -7,7 +7,7 @@ resource "openstack_blockstorage_volume_v3" "nfs_server_boot_volume" {
 resource "openstack_compute_instance_v2" "nfs_server" {
   name        = var.nfs_server_vm_name
   flavor_name = var.nfs_server_flavor_name
-  key_pair    = "root-aivo"
+  key_pair    = var.ssh_key_name
 
   # these tags define the groups this machine belongs to in the ansible inventory
   # if you add a new tag here you should also add it in inventory/opentack.yml
@@ -28,7 +28,10 @@ resource "openstack_compute_instance_v2" "nfs_server" {
     name = data.openstack_networking_network_v2.private_net.name
   }
 
-  depends_on = [openstack_blockstorage_volume_v3.nfs_server_boot_volume]
+  depends_on = [
+    openstack_blockstorage_volume_v3.nfs_server_boot_volume,
+    openstack_compute_keypair_v2.tofu_bootstrap_key
+  ]
 }
 
 # create an extra volume for NFS share

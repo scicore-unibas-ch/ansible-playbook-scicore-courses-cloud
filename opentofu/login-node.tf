@@ -8,7 +8,7 @@ resource "openstack_blockstorage_volume_v3" "login_node_boot_volume" {
 resource "openstack_compute_instance_v2" "login_node" {
   name        = var.login_node_vm_name
   flavor_name = var.login_node_flavor_name
-  key_pair    = "root-aivo"
+  key_pair    = var.ssh_key_name
 
   # these tags define the groups this machine belongs to in the ansible inventory
   # if you add a new tag here you should also add it in inventory/opentack.yml
@@ -35,7 +35,8 @@ resource "openstack_compute_instance_v2" "login_node" {
   
   depends_on = [
     openstack_blockstorage_volume_v3.login_node_boot_volume,
-    openstack_networking_port_v2.login_node_fip_port
+    openstack_networking_port_v2.login_node_fip_port,
+    openstack_compute_keypair_v2.tofu_bootstrap_key
   ]
 }
 
