@@ -1,0 +1,48 @@
+---
+
+- name: Configure a memory limit per user in the login node
+  hosts: login_node
+  gather_facts: true
+  become: true
+
+  vars:
+
+    # local_systemd_user_slice_mem_limit_folder: /etc/systemd/system/user-.slice.d
+
+    local_systemd_user_slice_mem_config: |
+      [Slice]
+      Slice=user.slice
+      MemoryMax=8G # hard limit
+      MemorySwapMax=0 # Disable swapping altogether
+
+  tasks:
+
+    - name: Create folder to contain mem limits for any user that logs in
+      ansible.builtin.file:
+        dest: /etc/systemd/system/user-.slice.d  # using this folder name it applies to every user
+        state: directory
+        owner: root
+        group: root
+        mode: 0755
+
+    # After this is generated/updated we should reload systemd with
+    # systemctl daemon-reload. This can however crash some sessions if the
+    # memory to update is much lower or more importantly if this is the first
+    # time the file is created as systemd will try to move all sessions to the
+    # new slice (breaking things in the process), so better reboot.
+    - name: Deploy memory limits slice unit
+      ansible.builtin.copy:
+        dest: /etc/systemd/system/user-.slice.d/memory.conf
+        owner: root
+        group: root
+        mode: 0644
+        content: "{{ local_systemd_user_slice_mem_config }}"
+      notify: reboot
+
+
+  handlers:
+
+    - name: reboot
+      ansible.builtin.reboot:
+
+# vim: tabstop=2 shiftwidth=2
