@@ -8,6 +8,9 @@ resource "openstack_compute_instance_v2" "nfs_server" {
   name        = var.nfs_server_vm_name
   flavor_name = var.nfs_server_flavor_name
   key_pair    = var.ssh_key_name
+  security_groups   = [
+    "opentofu_default",
+  ]
 
   # these tags define the groups this machine belongs to in the ansible inventory
   # if you add a new tag here you should also add it in inventory/opentack.yml

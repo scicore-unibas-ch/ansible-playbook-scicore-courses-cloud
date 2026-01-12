@@ -9,6 +9,10 @@ resource "openstack_compute_instance_v2" "login_node" {
   name        = var.login_node_vm_name
   flavor_name = var.login_node_flavor_name
   key_pair    = var.ssh_key_name
+  security_groups   = [
+    "opentofu_default",
+    "opentofu_login_node"
+  ]
 
   # these tags define the groups this machine belongs to in the ansible inventory
   # if you add a new tag here you should also add it in inventory/opentack.yml

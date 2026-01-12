@@ -10,6 +10,9 @@ resource "openstack_compute_instance_v2" "slurm_worker" {
   name        = "${var.slurm_worker_vm_name}-${format("%02d", count.index + 1)}"
   flavor_name = var.slurm_worker_flavor_name
   key_pair    = var.ssh_key_name
+  security_groups   = [
+    "opentofu_default",
+  ]
 
   # these tags define the groups this machine belongs to in the ansible inventory
   # if you add a new tag here you should also add it in inventory/opentack.yml
