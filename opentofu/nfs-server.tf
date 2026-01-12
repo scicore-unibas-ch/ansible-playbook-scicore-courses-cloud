@@ -9,7 +9,7 @@ resource "openstack_compute_instance_v2" "nfs_server" {
   flavor_name = var.nfs_server_flavor_name
   key_pair    = var.ssh_key_name
   security_groups   = [
-    "opentofu_default",
+    openstack_networking_secgroup_v2.opentofu_default.name,
   ]
 
   # these tags define the groups this machine belongs to in the ansible inventory
