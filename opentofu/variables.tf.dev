@@ -33,7 +33,8 @@ variable "login_node_flavor_name" {
 }
 
 variable "login_node_boot_volume_size" {
-  default = 100
+  default = 50
+  #default = 100
 }
 
 ### slurm master
@@ -46,7 +47,8 @@ variable "slurm_master_flavor_name" {
 }
 
 variable "slurm_master_boot_volume_size" {
-  default = 100
+  default = 20
+  #default = 100
 }
 
 ### slurm_worker
