@@ -85,7 +85,7 @@ python-zaqarclient==4.0.0
 python-zunclient==5.2.1
 PyYAML==6.0.2
 referencing==0.36.2
-requests==2.32.5
+requests==2.33.0
 requestsexceptions==1.4.0
 resolvelib==1.0.1
 rfc3986==2.0.0
