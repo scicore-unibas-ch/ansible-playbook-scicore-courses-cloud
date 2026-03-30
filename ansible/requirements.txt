@@ -55,7 +55,7 @@ prettytable==0.7.2
 psutil==7.0.0
 pycparser==2.22
 pydot==4.0.1
-Pygments==2.19.2
+Pygments==2.20.0
 pyOpenSSL==25.1.0
 pyparsing==3.2.3
 pyperclip==1.9.0
