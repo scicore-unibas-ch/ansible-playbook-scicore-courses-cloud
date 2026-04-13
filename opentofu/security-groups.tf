@@ -20,28 +20,26 @@ resource "openstack_networking_secgroup_rule_v2" "allow_any_from_lan" {
 }
 
 resource "openstack_networking_secgroup_v2" "opentofu_login_node" {
-  name                    = "opentofu_login_node"
-  delete_default_rules    = true
+  name                 = "opentofu_login_node"
+  delete_default_rules = true
 }
 
-resource "openstack_networking_secgroup_rule_v2" "allow_ssh_from_internet" {
+locals {
+  login_node_ingress_rules = {
+    ssh     = { port = 22,   description = "allow ssh from internet" }
+    rstudio = { port = 8787, description = "allow rstudio from internet" }
+  }
+}
+
+resource "openstack_networking_secgroup_rule_v2" "login_node_ingress" {
+  for_each = local.login_node_ingress_rules
+
   security_group_id = openstack_networking_secgroup_v2.opentofu_login_node.id
-  description       = "allow ssh from internet"
+  description       = each.value.description
   direction         = "ingress"
   ethertype         = "IPv4"
   protocol          = "tcp"
-  port_range_min    = 22
-  port_range_max    = 22
-  remote_ip_prefix  = "0.0.0.0/0"
-}
-
-resource "openstack_networking_secgroup_rule_v2" "allow_rstudio_from_internet" {
-  security_group_id = openstack_networking_secgroup_v2.opentofu_login_node.id
-  description       = "allow rstudio from internet"
-  direction         = "ingress"
-  ethertype         = "IPv4"
-  protocol          = "tcp"
-  port_range_min    = 8787
-  port_range_max    = 8787
+  port_range_min    = each.value.port
+  port_range_max    = each.value.port
   remote_ip_prefix  = "0.0.0.0/0"
 }
