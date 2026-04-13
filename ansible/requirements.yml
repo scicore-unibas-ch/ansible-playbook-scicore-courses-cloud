@@ -24,10 +24,10 @@ roles:
 
   - name: mrlesmithjr.nfs-server
 
-  # - name: scicore.slurm
-  #   src: https://github.com/scicore-unibas-ch/ansible-role-slurm.git
-  #   scm: git
-  #   version: ubuntu
+  - name: scicore.slurm
+    src: https://github.com/scicore-unibas-ch/ansible-role-slurm.git
+    scm: git
+    version: ubuntu
 
   - name: willshersystems.sshd
     src: https://github.com/willshersystems/ansible-sshd.git
