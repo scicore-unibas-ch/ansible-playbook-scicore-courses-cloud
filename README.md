@@ -23,15 +23,24 @@ $> openstack server list
 
 ## Booting the machines (OpenTofu)
 
-Configure the cluster by editing file `opentofu/variables.tf`
+Environment-specific values (flavors, volume sizes, image names, network names) are defined
+in `opentofu/environments/dev.tfvars` and `opentofu/environments/prod.tfvars`.
+Variable definitions and descriptions live in `opentofu/variables.tf`.
 
 ```bash
 $> cd opentofu/
 $> tofu init
-$> tofu plan
-$> tofu apply
+
+# deploy dev environment
+$> tofu plan -var-file=environments/dev.tfvars
+$> tofu apply -var-file=environments/dev.tfvars
+
+# deploy prod environment
+$> tofu plan -var-file=environments/prod.tfvars
+$> tofu apply -var-file=environments/prod.tfvars
+
 $> openstack server list
-``` 
+```
 
 ## Configuring the machines (ansible)
 
@@ -46,5 +55,5 @@ $> ansible-playbook playbooks/site.yml
 
 ```bash
 $> cd opentofu/
-$> tofu destroy
+$> tofu destroy -var-file=environments/dev.tfvars   # or prod.tfvars
 ```
