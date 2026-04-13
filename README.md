@@ -27,6 +27,7 @@ Configure the cluster by editing file `opentofu/variables.tf`
 
 ```bash
 $> cd opentofu/
+$> tofu init
 $> tofu plan
 $> tofu apply
 $> openstack server list

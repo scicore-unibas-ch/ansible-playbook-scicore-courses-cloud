@@ -33,7 +33,8 @@ resource "openstack_compute_instance_v2" "nfs_server" {
 
   depends_on = [
     openstack_blockstorage_volume_v3.nfs_server_boot_volume,
-    openstack_compute_keypair_v2.tofu_bootstrap_key
+    openstack_compute_keypair_v2.tofu_bootstrap_key,
+    openstack_networking_secgroup_v2.opentofu_default
   ]
 }
 
