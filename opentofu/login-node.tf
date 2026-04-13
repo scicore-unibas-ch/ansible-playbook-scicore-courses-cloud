@@ -40,7 +40,9 @@ resource "openstack_compute_instance_v2" "login_node" {
   depends_on = [
     openstack_blockstorage_volume_v3.login_node_boot_volume,
     openstack_networking_port_v2.login_node_fip_port,
-    openstack_compute_keypair_v2.tofu_bootstrap_key
+    openstack_compute_keypair_v2.tofu_bootstrap_key,
+    openstack_networking_secgroup_v2.opentofu_default,
+    openstack_networking_secgroup_v2.opentofu_login_node
   ]
 }
 

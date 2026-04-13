@@ -32,5 +32,8 @@ resource "openstack_compute_instance_v2" "slurm_master" {
     name = data.openstack_networking_network_v2.private_net.name
   }
 
-  depends_on = [openstack_blockstorage_volume_v3.slurm_master_boot_volume]
+  depends_on = [
+    openstack_blockstorage_volume_v3.slurm_master_boot_volume,
+    openstack_networking_secgroup_v2.opentofu_default
+  ]
 }
