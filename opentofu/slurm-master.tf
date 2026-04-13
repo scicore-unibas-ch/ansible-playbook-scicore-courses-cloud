@@ -1,39 +1,22 @@
-resource "openstack_blockstorage_volume_v3" "slurm_master_boot_volume" {
-  name     = "${var.slurm_master_vm_name}-boot"
-  size     = var.slurm_master_boot_volume_size
-  image_id = data.openstack_images_image_v2.image.id
-}
+module "slurm_master" {
+  source = "./modules/compute_node"
 
-resource "openstack_compute_instance_v2" "slurm_master" {
-  name        = var.slurm_master_vm_name
-  flavor_name = var.slurm_master_flavor_name
-  key_pair    = var.ssh_key_name
-  security_groups   = [
-    openstack_networking_secgroup_v2.opentofu_default.name,
-  ]
+  name             = var.slurm_master_vm_name
+  flavor_name      = var.slurm_master_flavor_name
+  boot_volume_size = var.slurm_master_boot_volume_size
+  image_id         = data.openstack_images_image_v2.image.id
+  network_name     = data.openstack_networking_network_v2.private_net.name
+  key_pair         = openstack_compute_keypair_v2.tofu_bootstrap_key.name
 
   # these tags define the groups this machine belongs to in the ansible inventory
-  # if you add a new tag here you should also add it in inventory/opentack.yml
+  # if you add a new tag here you should also add it in inventory/openstack.yml
   tags = [
     "slurm_master",
-    "slurm", 
+    "slurm",
     "course",
   ]
 
-  block_device {
-    uuid                  = openstack_blockstorage_volume_v3.slurm_master_boot_volume.id
-    source_type           = "volume"
-    destination_type      = "volume"
-    boot_index            = 0
-    delete_on_termination = true
-  }
-  
-  network {
-    name = data.openstack_networking_network_v2.private_net.name
-  }
-
-  depends_on = [
-    openstack_blockstorage_volume_v3.slurm_master_boot_volume,
-    openstack_networking_secgroup_v2.opentofu_default
+  security_group_names = [
+    openstack_networking_secgroup_v2.opentofu_default.name,
   ]
 }

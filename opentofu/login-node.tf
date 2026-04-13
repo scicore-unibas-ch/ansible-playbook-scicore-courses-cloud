@@ -1,71 +1,29 @@
+module "login_node" {
+  source = "./modules/compute_node"
 
-resource "openstack_blockstorage_volume_v3" "login_node_boot_volume" {
-  name     = "${var.login_node_vm_name}-boot"
-  size     = var.login_node_boot_volume_size
-  image_id = data.openstack_images_image_v2.image.id
-}
-
-resource "openstack_compute_instance_v2" "login_node" {
-  name        = var.login_node_vm_name
-  flavor_name = var.login_node_flavor_name
-  key_pair    = var.ssh_key_name
-  # security groups for machines with floating ip must be attached at the port level
-  # see https://search.opentofu.org/provider/terraform-provider-openstack/openstack/latest/docs/resources/compute_instance_v2#instances-and-ports
-  # When attaching an Instance to one or more networks using Ports, place the security
-  # groups on the Port and not the Instance. If you place the security groups on the Instance,
-  # the security groups will not be applied upon creation, but they will be applied upon a refresh.
-  # This is a known OpenStack bug.
-  #security_groups   = []
+  name             = var.login_node_vm_name
+  flavor_name      = var.login_node_flavor_name
+  boot_volume_size = var.login_node_boot_volume_size
+  image_id         = data.openstack_images_image_v2.image.id
+  key_pair         = openstack_compute_keypair_v2.tofu_bootstrap_key.name
 
   # these tags define the groups this machine belongs to in the ansible inventory
-  # if you add a new tag here you should also add it in inventory/opentack.yml
+  # if you add a new tag here you should also add it in inventory/openstack.yml
   tags = [
     "login_node",
     "slurm_submit_hosts",
-    "slurm", 
-    "cvmfs_clients", 
+    "slurm",
+    "cvmfs_clients",
     "nfs_clients",
     "course",
   ]
 
-  block_device {
-    uuid                  = openstack_blockstorage_volume_v3.login_node_boot_volume.id
-    source_type           = "volume"
-    destination_type      = "volume"
-    boot_index            = 0
-    delete_on_termination = true
-  }
-
-  network {
-    port = openstack_networking_port_v2.login_node_fip_port.id
-  }
-  
-  depends_on = [
-    openstack_blockstorage_volume_v3.login_node_boot_volume,
-    openstack_networking_port_v2.login_node_fip_port,
-    openstack_compute_keypair_v2.tofu_bootstrap_key,
-    openstack_networking_secgroup_v2.opentofu_default,
-    openstack_networking_secgroup_v2.opentofu_login_node
-  ]
-}
-
-resource "openstack_networking_port_v2" "login_node_fip_port" {
-  name               = "${var.login_node_vm_name}-port"
-  network_id         = data.openstack_networking_network_v2.private_net.id
-  admin_state_up     = true
-
+  # floating IP requires security groups attached at port level (not instance level)
+  attach_floating_ip  = true
+  network_id          = data.openstack_networking_network_v2.private_net.id
+  public_network_name = data.openstack_networking_network_v2.public_net.name
   security_group_ids = [
     openstack_networking_secgroup_v2.opentofu_default.id,
     openstack_networking_secgroup_v2.opentofu_login_node.id,
   ]
-
-}
-
-resource "openstack_networking_floatingip_v2" "login_node_fip" {
-  pool = data.openstack_networking_network_v2.public_net.name
-}
-
-resource "openstack_networking_floatingip_associate_v2" "login_node_fip_assoc" {
-  floating_ip = openstack_networking_floatingip_v2.login_node_fip.address
-  port_id     = openstack_networking_port_v2.login_node_fip_port.id
 }
