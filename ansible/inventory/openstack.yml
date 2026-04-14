@@ -18,9 +18,10 @@ expand_hostvars: true
 fail_on_errors: true
 strict: true
 
-  #filters:
-  # metadata:property:role: db
-  #
+#filters:
+# metadata:property:role: db
+#
+
 #keyed_groups:
 #  - prefix: tag
 #    key: tags | default('no_tags')
@@ -34,7 +35,6 @@ strict: true
 #    key: metadata.role | default('lala')
 #    strict: false
 
-
 #groups:
 #  {%- set roles = ['db', 'web', 'cache'] -%}
 #  {%- for r in roles -%}
@@ -42,11 +42,6 @@ strict: true
 #  role_{{ r }}: true
 #  {%- endif -%}
 #  {%- endfor -%}
-
-
-
-
-
 
 #keyed_groups:
 #  - key: openstack.tags

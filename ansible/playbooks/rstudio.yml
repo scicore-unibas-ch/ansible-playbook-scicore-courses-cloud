@@ -53,7 +53,7 @@
             dest: /etc/apt/preferences.d/99cranapt
             owner: root
             group: root
-            mode: 0644
+            mode: "0644"
             backup: yes
             content: |
               # ansible managed

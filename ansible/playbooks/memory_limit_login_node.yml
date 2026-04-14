@@ -23,7 +23,7 @@
         state: directory
         owner: root
         group: root
-        mode: 0755
+        mode: "0755"
 
     # After this is generated/updated we should reload systemd with
     # systemctl daemon-reload. This can however crash some sessions if the
@@ -35,14 +35,14 @@
         dest: /etc/systemd/system/user-.slice.d/memory.conf
         owner: root
         group: root
-        mode: 0644
+        mode: "0644"
         content: "{{ local_systemd_user_slice_mem_config }}"
-      notify: reboot
+      notify: Reboot
 
 
   handlers:
 
-    - name: reboot
+    - name: Reboot
       ansible.builtin.reboot:
 
 # vim: tabstop=2 shiftwidth=2
