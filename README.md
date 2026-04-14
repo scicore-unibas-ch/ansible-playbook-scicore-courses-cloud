@@ -1,5 +1,7 @@
 # sciCORE courses
 
+[![Lint](https://github.com/scicore-unibas-ch/ansible-playbook-scicore-courses-cloud/actions/workflows/lint.yml/badge.svg)](https://github.com/scicore-unibas-ch/ansible-playbook-scicore-courses-cloud/actions/workflows/lint.yml)
+
 OpenTofu and ansible code used to boot and configure the infrastructure for the sciCORE courses
 
 ## Setting up the control host
