@@ -91,7 +91,7 @@
             state: present
             ssh_key_file: .ssh/id_ed25519
             ssh_key_type: ed25519
-          with_sequence: "count={{ local_users_accounts }} format=%02u"
+          loop: "{{ query('sequence', 'count=' ~ local_users_accounts ~ ' format=%02u') }}"
 
         - name: Create the user accounts (starting with uid 2001) | Now in every machine
           ansible.builtin.user:
@@ -108,7 +108,7 @@
             state: present
             ssh_key_file: .ssh/id_ed25519
             ssh_key_type: ed25519
-          with_sequence: "count={{ local_users_accounts }} format=%02u"
+          loop: "{{ query('sequence', 'count=' ~ local_users_accounts ~ ' format=%02u') }}"
 
         # We do this in the NFS server to make sure that root can access the home folders (just in case root squash is enabled)
         - name: Get the ssh public keys for every user
@@ -116,7 +116,7 @@
           ansible.builtin.slurp:
             src: "{{ local_nfs_mount_point }}/home/user{{ item }}/.ssh/id_ed25519.pub"
           register: _all_users_ssh_public_keys
-          with_sequence: "count={{ local_users_accounts }} format=%02u"
+          loop: "{{ query('sequence', 'count=' ~ local_users_accounts ~ ' format=%02u') }}"
 
         # We do this in the NFS server to make sure that root can access the home folders (just in case root squash is enabled)
         - name: Add the user ssh keys to their accounts
@@ -134,13 +134,13 @@
             create: yes
             backup: yes
             owner: "user{{ item }}"
-            mode: 0600
+            mode: '0600'
             marker: "# {mark} ANSIBLE MANAGED SSH CONFIG"
             block: |
               Host *
                   StrictHostKeyChecking no
                   ServerAliveInterval 10
-          with_sequence: "count={{ local_users_accounts }} format=%02u"
+          loop: "{{ query('sequence', 'count=' ~ local_users_accounts ~ ' format=%02u') }}"
 
         - name: Add the teacher's ssh public keys to the ubuntu account in every machine
           ansible.posix.authorized_key:

@@ -1,0 +1,13 @@
+---
+
+profile: moderate
+
+exclude_paths:
+  - roles/
+
+warn_list:
+  - yaml[line-length]
+
+skip_list:
+  # Training environment intentionally uses password authentication
+  - no-changed-when
