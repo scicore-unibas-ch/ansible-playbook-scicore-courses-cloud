@@ -1,6 +1,6 @@
 resource "openstack_networking_secgroup_v2" "opentofu_default" {
-  name                    = "opentofu_default"
-  delete_default_rules    = true
+  name                 = "opentofu_default"
+  delete_default_rules = true
 }
 
 resource "openstack_networking_secgroup_rule_v2" "allow_any_outgoing_traffic_ipv4" {
@@ -26,7 +26,7 @@ resource "openstack_networking_secgroup_v2" "opentofu_login_node" {
 
 locals {
   login_node_ingress_rules = {
-    ssh     = { port = 22,   description = "allow ssh from internet" }
+    ssh     = { port = 22, description = "allow ssh from internet" }
     rstudio = { port = 8787, description = "allow rstudio from internet" }
   }
 }

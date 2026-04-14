@@ -8,11 +8,11 @@ terraform {
     }
 
     null = {
-      source  = "hashicorp/null"
+      source = "hashicorp/null"
     }
 
     local = {
-      source  = "hashicorp/local"
+      source = "hashicorp/local"
     }
 
   }
