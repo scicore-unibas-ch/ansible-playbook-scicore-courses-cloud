@@ -1,3 +1,3 @@
 ---
 
-local_nfs_data_disk: /dev/vdb
+local_nfs_data_disk: /dev/sdb
