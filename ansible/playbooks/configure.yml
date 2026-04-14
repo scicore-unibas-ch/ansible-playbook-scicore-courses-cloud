@@ -134,7 +134,7 @@
             create: yes
             backup: yes
             owner: "user{{ item }}"
-            mode: 0600
+            mode: '0600'
             marker: "# {mark} ANSIBLE MANAGED SSH CONFIG"
             block: |
               Host *
