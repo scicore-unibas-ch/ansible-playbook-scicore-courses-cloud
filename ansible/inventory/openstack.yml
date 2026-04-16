@@ -2,51 +2,16 @@
 
 plugin: openstack.cloud.openstack
 
-groups:
-  slurm: "'slurm' in (openstack.tags|list)"
-  slurm_submit_hosts: "'slurm_submit_hosts' in (openstack.tags|list)"
-  slurm_workers: "'slurm_workers' in (openstack.tags|list)"
-  login_node: "'login_node' in (openstack.tags|list)"
-  cvmfs_clients: "'cvmfs_clients' in (openstack.tags|list)"
-  nfs_clients: "'nfs_clients' in (openstack.tags|list)"
-  nfs_server: "'nfs_server' in (openstack.tags|list)"
-  course: "'course' in (openstack.tags|list)"
+# for each tag defined in the VMs we add it to the right group
+# e.g. if VM has tags "login_node" and "slurm_sumbmit" it will
+# belong to those two groups in the ansible inventory
+keyed_groups:
+  - key: openstack.tags | default([])
+    prefix: ""
+    separator: ""
 
 all_projects: false
 inventory_hostname: name
 expand_hostvars: true
 fail_on_errors: true
 strict: true
-
-#filters:
-# metadata:property:role: db
-#
-
-#keyed_groups:
-#  - prefix: tag
-#    key: tags | default('no_tags')
-
-# keyed_groups:
-#   - key: metadata.role | default('lala')
-#     strict: false
-#     separator: ""
-#     prefix: ""
-#  - prefix: role
-#    key: metadata.role | default('lala')
-#    strict: false
-
-#groups:
-#  {%- set roles = ['db', 'web', 'cache'] -%}
-#  {%- for r in roles -%}
-#  {%- if metadata.role is defined and metadata.role == r -%}
-#  role_{{ r }}: true
-#  {%- endif -%}
-#  {%- endfor -%}
-
-#keyed_groups:
-#  - key: openstack.tags
-#    prefix: tags
-
-#compose:
-#  ansible_user: "'ubuntu'"
-#  ansible_private_key_file: "'~/.ssh/id_rsa_aivo_2020'"
