@@ -1,6 +1,6 @@
 # sciCORE courses
 
-[![Lint](https://github.com/scicore-unibas-ch/ansible-playbook-scicore-courses-cloud/actions/workflows/lint.yml/badge.svg)](https://github.com/scicore-unibas-ch/ansible-playbook-scicore-courses-cloud/actions/workflows/lint.yml)
+[![Lint](https://github.com/scicore-unibas-ch/scicore-courses-cloud/actions/workflows/lint.yml/badge.svg)](https://github.com/scicore-unibas-ch/scicore-courses-cloud/actions/workflows/lint.yml)
 
 OpenTofu and ansible code used to boot and configure the infrastructure for the sciCORE courses
 
@@ -13,8 +13,8 @@ Install OpenTofu using your preferred method (tested with version 1.9.1)
 ### Install Ansible and Openstack client inside a python virtualenv
 
 ```bash
-$> git clone https://github.com/scicore-unibas-ch/ansible-playbook-scicore-courses-cloud.git
-$> cd ansible-playbook-scicore-courses-cloud
+$> git clone https://github.com/scicore-unibas-ch/scicore-courses-cloud.git
+$> cd scicore-courses-cloud
 $> python3 -m venv .venv
 $> source .venv/bin/activate
 $> pip install -U pip
