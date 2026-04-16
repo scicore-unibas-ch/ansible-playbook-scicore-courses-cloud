@@ -8,7 +8,6 @@ module "login_node" {
   key_pair         = openstack_compute_keypair_v2.tofu_bootstrap_key.name
 
   # these tags define the groups this machine belongs to in the ansible inventory
-  # if you add a new tag here you should also add it in inventory/openstack.yml
   tags = [
     "login_node",
     "slurm_submit_hosts",
